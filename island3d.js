@@ -703,6 +703,28 @@ function buildFish3(){                                            // 港裡的�
     });
   });
 }
+function buildFar(){                                              // 海的另一端：迷你創業島，點了切到創業島網站
+  var a = FAR.at, r = FAR.r, g = new T3.Group(); g.position.set(a[0], 0, a[1]);
+  var sand = mesh(new T3.CylinderGeometry(r + .38, r + .75, 2.2, 36), std('#f3d798'), 0, LAND - .08 - 1.1, 0, g);
+  mesh(new T3.CylinderGeometry(r, r + .1, .16, 36), std('#9edb6f'), 0, LAND, 0, g);
+  [[-.4, -.1, '#ff6f59'], [.3, .5, '#4f9dff']].forEach(function(h){
+    mesh(new T3.BoxGeometry(.5, .38, .5), std('#f3ead9'), h[0], LAND + .27, h[1], g);
+    var rf = pyramid(.62, .3, std(h[2])); rf.position.set(h[0], LAND + .46, h[1]); g.add(rf);
+  });
+  mesh(new T3.CylinderGeometry(.12, .17, 1.1, 14), std('#faf4e8'), .9, LAND + .6, -.2, g);
+  mesh(new T3.CylinderGeometry(.13, .15, .14, 14), std('#e05a47'), .9, LAND + .5, -.2, g);
+  mesh(new T3.ConeGeometry(.17, .28, 14), std('#e05a47'), .9, LAND + 1.3, -.2, g);
+  mesh(new T3.SphereGeometry(.09, 12, 10), glow('#ffe08a', .5, 2), .9, LAND + 1.12, -.2, g);
+  [[-.9, -.6], [.2, -1.1], [-.9, .7], [1.0, .8], [-.2, -.7]].forEach(function(t){ mesh(new T3.ConeGeometry(.2, .55, 9), std('#5cc45a'), t[0], LAND + .36, t[1], g); });
+  g.traverse(function(m){ if (m.isMesh){ m.userData.id = '__far'; O.pick.push(m); } });
+  scene.add(inkAll(shadowAll(g), .012));
+  farLabel('🏝️ 創業島 →', 1.9);
+}
+function farLabel(text, y){
+  var d = document.createElement('button'); d.type = 'button'; d.className = 'tag3 board3'; d.textContent = text; d.title = '點一下前往' + FAR.name;
+  d.addEventListener('click', function(e){ e.stopPropagation(); goFar(); }); d.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  labRoot.appendChild(d); O.zoneTags.push({el:d, x:FAR.at[0], z:FAR.at[1], y:LAND + y});
+}
 function buildZoneMarks(){
   O.glows = O.glows || []; O.markSpots = [];
   var hub = zoneById.hub, gates = [];
@@ -1225,7 +1247,7 @@ function bindInput(){
       var now = performance.now(); if (now - lastHover < 60) return; lastHover = now;
       var h = pickAt(e.clientX, e.clientY, O.pick), id = h ? h.object.userData.id : null;
       hoverId = id; canvas.style.cursor = id ? 'pointer' : 'grab';
-      if (id === '__board') showBoardTip(e.clientX, e.clientY - 12); else if (id) showTip(toolById[id], e.clientX, e.clientY - 12); else $('tip').classList.remove('show');
+      if (id === '__far') showFarTip(e.clientX, e.clientY - 12); else if (id === '__board') showBoardTip(e.clientX, e.clientY - 12); else if (id) showTip(toolById[id], e.clientX, e.clientY - 12); else $('tip').classList.remove('show');
       return;
     }
     ptr[e.pointerId] = {x:e.clientX, y:e.clientY};
@@ -1247,7 +1269,7 @@ function bindInput(){
     if (e.type !== 'pointerup' || !d || d.moved) return;
     var pid = peerAt(e.clientX, e.clientY); if (pid){ openTalk(pid); return; }   // 點到別人的動物
     var hb = pickAt(e.clientX, e.clientY, O.pick);
-    if (hb){ if (hb.object.userData.id === '__board') openBoard(); else openTool(hb.object.userData.id); return; }
+    if (hb){ if (hb.object.userData.id === '__far') goFar(); else if (hb.object.userData.id === '__board') openBoard(); else openTool(hb.object.userData.id); return; }
     var hg = pickAt(e.clientX, e.clientY, [O.terrain]);
     if (hg){ if (cam.overview) setOverview(false); walker.goal = null; walkTo(hg.point.x, hg.point.z); }
   }
@@ -1375,7 +1397,7 @@ function build(){
   var sc = sun.shadow.camera; sc.left = -16; sc.right = 16; sc.top = 16; sc.bottom = -16; sc.near = 1; sc.far = 70; sun.shadow.bias = -.0004; sun.shadow.normalBias = .02;
   scene.add(sun); scene.add(sun.target);
   raycaster = new T3.Raycaster(); ndc = new T3.Vector2(); V = new T3.Vector3();
-  buildTerrain(); buildWater(); buildRoads(); TOOLS.forEach(buildBuilding); buildDecor(); buildZoneMarks(); buildTrees(); buildFlowers(); buildSkyStuff(); buildLabels();
+  buildTerrain(); buildWater(); buildRoads(); TOOLS.forEach(buildBuilding); buildDecor(); buildZoneMarks(); buildTrees(); buildFlowers(); buildSkyStuff(); buildLabels(); buildFar();
   O.ring = new T3.Mesh(new T3.RingGeometry(.42, .5, 40), new T3.MeshBasicMaterial({color:'#ff6f59', transparent:true, opacity:.9, side:T3.DoubleSide, depthWrite:false}));
   O.ring.rotation.x = -Math.PI / 2; scene.add(O.ring);
   built = true;

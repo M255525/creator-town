@@ -54,3 +54,10 @@
 - 網頁：公開 repo <https://github.com/M255525/creator-town>，GitHub Pages <https://m255525.github.io/creator-town/>（`master`、`.github/workflows/deploy-pages.yml`）。建公開 repo 被權限擋下，由使用者自己執行 `gh repo create ... --push` 加 `gh api .../pages -X POST -f build_type=workflow`；第一次 push 觸發的 Actions run 成功。
 - 已用正式網址驗證：兩個小鎮分頁進房間 `ZZCT7Q` 互相看到（2 人）、聊天互通；同一時間創業島用同代碼進房只有 1 人（隔離正確）。
 - 程式牆：從 `LOCAL_APPS` 移除、改加 `REPO_META`；github-dashboard `REPO_META` 同步補一行。
+
+## 海的另一端：姊妹地圖互連（2026-10-30）
+使用者要求「把創業島放到這個畫面，在海的另一端新增，點擊就切到創業島的網域；創業島也一樣新增一個創作者小鎮」。兩邊各有 `FAR = {sign, at, r, url, name, host, emoji}`：
+- 平面：`drawFar()` 畫在 `L.far`（在 `L.boats` 之後、陸地之前，海上不會被蓋到），招牌 `farSign()` 畫在最上層 `L.farTop`（**放在陸地層會被蓋住**；外層 g 負責定位、內層 `.board-flag` 負責浮動，**CSS 動畫的 transform 會蓋掉 SVG transform 屬性**，踩過）。`farRoute()` 是從岸邊到小島的虛線航線；`islandBox()` 取景有把小島算進去。點擊／Enter → `goFar()`（寫足跡後同一分頁 `location.href` 切過去），滑過 `showFarTip()`。
+- 立體：`buildFar()`（在 `buildLabels()` 之後）把小島網格標 `userData.id='__far'` 加進 `O.pick`，`farLabel()` 加一顆 `.tag3.board3` 名牌；pointermove／點擊判斷 `'__far'`。
+- 兩邊的 `FAR.url` 寫死對方的 GitHub Pages 網址；改網址要兩個 repo 一起改。
+- 創作者小鎮這邊：`FAR.at=[24.6,6.4]` 迷你創業島（沙灘、草地、兩棟小屋、燈塔、尖頂樹、小帆船），航線從 `[20.9,9.4]` 岸邊出發。
