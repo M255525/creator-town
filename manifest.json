@@ -1,0 +1,31 @@
+{
+  "name": "創作者小鎮",
+  "short_name": "創作者小鎮",
+  "description": "把 27 個 AI 內容創作工具放進一座可以探索的小鎮：九個地點、作品接力線與時間軸。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#5b3f8c",
+  "theme_color": "#5b3f8c",
+  "lang": "zh-TW",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
