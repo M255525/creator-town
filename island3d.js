@@ -48,7 +48,10 @@ function landY(gx, gy){
   return y;
 }
 function onBridge(gx, gy){ return riverDist(gx, gy) < .85 && minDist(BRIDGE_S, gx, gy) < .42; }
-function standY(gx, gy){ var y = landY(gx, gy); return onBridge(gx, gy) ? Math.max(y, DECK + .04) : Math.max(y, SEA - .05); }
+function standY(gx, gy){
+  if (farBridgeDist(gx, gy) < .3) return LAND + .12;            // 跨海大橋橋面
+  if (onFarIsland(gx, gy, -.1)) return LAND + .09;               // 對面小島
+  var y = landY(gx, gy); return onBridge(gx, gy) ? Math.max(y, DECK + .04) : Math.max(y, SEA - .05); }
 
 function zoneOfPoint(gx, gy){
   for (var i = 0; i < ZONES.length; i++){ var b = ZONES[i].box; if (gx > b[0] && gx < b[2] && gy > b[1] && gy < b[3]) return ZONES[i]; }
@@ -703,7 +706,23 @@ function buildFish3(){                                            // 港裡的�
     });
   });
 }
-function buildFar(){                                              // 海的另一端：迷你創業島，點了切到創業島網站
+function buildFarBridge(){                                        // 跨海大橋（立體）：橋面、欄杆、橋墩，角色走在橋面上
+  var a = FAR.bridge[0], b = FAR.bridge[1], dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) + .5;
+  var g = new T3.Group(); g.position.set((a[0] + b[0]) / 2, LAND + .04, (a[1] + b[1]) / 2); g.rotation.y = Math.atan2(dx, dy);
+  var deckM = std('#eef1f3'), beamM = std('#4f7699');
+  g.add(new T3.Mesh(new T3.BoxGeometry(.56, .08, len), deckM));
+  var n = Math.max(2, Math.round(len / .9));
+  for (var i = 1; i < n; i++){ var pier = new T3.Mesh(new T3.BoxGeometry(.18, 1.9, .18), beamM); pier.position.set(0, -.98, -len / 2 + len * i / n); g.add(pier); }
+  [-.27, .27].forEach(function(x){
+    var rail = new T3.Mesh(new T3.BoxGeometry(.035, .035, len), beamM); rail.position.set(x, .24, 0); g.add(rail);
+    for (var z = -len / 2 + .1; z <= len / 2; z += .3){ var post = new T3.Mesh(new T3.BoxGeometry(.04, .22, .04), beamM); post.position.set(x, .12, z); g.add(post); }
+    if (FAR.self === 'creator'){ var ar = new T3.Mesh(new T3.TorusGeometry(len / 2, .03, 6, 32, Math.PI), deckM); ar.rotation.y = Math.PI / 2; ar.scale.set(1, .3, 1); ar.position.set(x, .04, 0); g.add(ar); }
+  });
+  g.traverse(function(m){ if (m.isMesh) m.userData.noPickWalk = true; });
+  scene.add(inkAll(shadowAll(g), .013));
+}
+function buildFar(){
+  buildFarBridge();                                              // 海的另一端：迷你創業島，點了切到創業島網站
   var a = FAR.at, r = FAR.r, g = new T3.Group(); g.position.set(a[0], 0, a[1]);
   var sand = mesh(new T3.CylinderGeometry(r + .38, r + .75, 2.2, 36), std('#f3d798'), 0, LAND - .08 - 1.1, 0, g);
   mesh(new T3.CylinderGeometry(r, r + .1, .16, 36), std('#9edb6f'), 0, LAND, 0, g);
@@ -722,7 +741,7 @@ function buildFar(){                                              // 海的另�
 }
 function farLabel(text, y){
   var d = document.createElement('button'); d.type = 'button'; d.className = 'tag3 board3'; d.textContent = text; d.title = '點一下前往' + FAR.name;
-  d.addEventListener('click', function(e){ e.stopPropagation(); goFar(); }); d.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  d.addEventListener('click', function(e){ e.stopPropagation(); farGoClick(); }); d.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   labRoot.appendChild(d); O.zoneTags.push({el:d, x:FAR.at[0], z:FAR.at[1], y:LAND + y});
 }
 function buildZoneMarks(){
@@ -1269,7 +1288,7 @@ function bindInput(){
     if (e.type !== 'pointerup' || !d || d.moved) return;
     var pid = peerAt(e.clientX, e.clientY); if (pid){ openTalk(pid); return; }   // 點到別人的動物
     var hb = pickAt(e.clientX, e.clientY, O.pick);
-    if (hb){ if (hb.object.userData.id === '__far') goFar(); else if (hb.object.userData.id === '__board') openBoard(); else openTool(hb.object.userData.id); return; }
+    if (hb){ if (hb.object.userData.id === '__far') farGoClick(); else if (hb.object.userData.id === '__board') openBoard(); else openTool(hb.object.userData.id); return; }
     var hg = pickAt(e.clientX, e.clientY, [O.terrain]);
     if (hg){ if (cam.overview) setOverview(false); walker.goal = null; walkTo(hg.point.x, hg.point.z); }
   }

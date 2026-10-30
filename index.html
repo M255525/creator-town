@@ -796,7 +796,7 @@ var HILLS = [
 ];
 // 公布欄：影音片場旁的大看板，和創業島讀同一份 Google 試算表「board-template」（A 欄欄位名稱、B 欄內容），改一次兩邊一起更新；讀不到時用 BOARD_DEFAULT（與創業島相同）
 var BOARD_SHEET = '1reL32KcSUL-YNh4ICVxm-fROcjBzRiKVLjy05t7q_bs', KEY_BOARD = 'creatorTownBoard';
-var FAR = {sign:'🏝️ 創業島 →', at:[24.6, 6.4], r:1.6, url:'https://m255525.github.io/startup-island/', name:'創業島', host:'另一個網站', emoji:'🏝️'};
+var FAR = {self:'creator', shape:'circle', bridge:[[20.0, 6.4], [23.25, 6.4]], sign:'🏝️ 創業島 →', at:[24.6, 6.4], r:1.6, url:'https://m255525.github.io/startup-island/', name:'創業島', host:'另一個網站', emoji:'🏝️'};
 var BOARD_AT = [18.55, 5.6];
 var BOARD_FIELDS = [   // [程式用 key, 試算表 A 欄名稱, 字數上限]
   ['title', '標題', 8], ['sub', '副標', 16], ['l1', '內容1', 14], ['l2', '內容2', 14], ['l3', '內容3', 14],
@@ -976,7 +976,9 @@ function farRoute(g, from){
 }
 function goFar(){
   addLog('搭船前往' + FAR.name);
-  var u = FAR.url; setTimeout(function(){ location.href = u; }, 120);
+  var look = {n:me.name, a:me.animal, s:me.shirt};
+  lsSet('startupIslandAvatar', Object.assign({}, lsGet('startupIslandAvatar', {}), {name:me.name, animal:me.animal, shirt:me.shirt}));   // 同網域時直接寫進對面的角色存檔
+  var u = FAR.url + '?from=' + FAR.self + '&me=' + encodeURIComponent(JSON.stringify(look)); setTimeout(function(){ location.href = u; }, 120);
 }
 function showFarTip(x, y){
   var tip = $('tip'); tip.textContent = FAR.emoji + ' 點一下前往' + FAR.name + '（' + FAR.host + '）';
@@ -986,7 +988,7 @@ function showFarTip(x, y){
 }
 function drawFar(g){                                            // 海的另一端：迷你創業島（沙灘、草地、小房子、燈塔、尖頂樹）
   var a = FAR.at, r = FAR.r;
-  farRoute(g, [20.9, 9.4]);
+  drawFarBridge(g);
   el('polygon', {points:pts(circlePts(a[0], a[1], r + .5, 40).map(function(p){ return [p[0], p[1] + 7]; })), fill:'var(--foam)', opacity:.5}, g);
   el('polygon', {points:pts(circlePts(a[0], a[1], r + .38, 40).map(function(p){ return [p[0], p[1] + 12]; })), fill:'#b98a4e'}, g);
   el('polygon', {points:pts(circlePts(a[0], a[1], r + .38, 40)), fill:'#f3d798'}, g);
@@ -1003,6 +1005,65 @@ function drawFar(g){                                            // 海的另一�
   el('path', {d:'M' + (bt[0] - 10) + ' ' + bt[1] + ' L' + (bt[0] + 10) + ' ' + bt[1] + ' L' + (bt[0] + 6) + ' ' + (bt[1] + 5) + ' L' + (bt[0] - 6) + ' ' + (bt[1] + 5) + ' Z', fill:'#fff'}, g);
   el('path', {d:'M' + bt[0] + ' ' + (bt[1] - 1) + ' L' + bt[0] + ' ' + (bt[1] - 17) + ' L' + (bt[0] + 9) + ' ' + (bt[1] - 4) + ' Z', fill:'#ff6f59'}, g);
   el('polygon', {class:'hit', points:pts(circlePts(a[0], a[1], r + .6, 24).map(function(p){ return [p[0], p[1] - 10]; }))}, g);
+}
+
+// ---- 跨海大橋：走過去才會到另一座島 ----
+function farBridgeDist(gx, gy){
+  var a = FAR.bridge[0], b = FAR.bridge[1], dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy;
+  var t = Math.max(0, Math.min(1, ((gx - a[0]) * dx + (gy - a[1]) * dy) / L2));
+  return Math.hypot(gx - a[0] - dx * t, gy - a[1] - dy * t);
+}
+function onFarIsland(gx, gy, m){
+  var dx = gx - FAR.at[0], dy = gy - FAR.at[1], r = FAR.r - (m == null ? .2 : m);
+  return FAR.shape === 'square' ? Math.abs(dx) < r && Math.abs(dy) < r : Math.hypot(dx, dy) < r;
+}
+function drawFarBridge(g){
+  var a = FAR.bridge[0], b = FAR.bridge[1], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy), nx = -dy / l * .26, ny = dx / l * .26;
+  var P = [[a[0] + nx, a[1] + ny], [b[0] + nx, b[1] + ny], [b[0] - nx, b[1] - ny], [a[0] - nx, a[1] - ny]].map(function(q){ return iso(q[0], q[1]); });
+  var n = Math.max(2, Math.round(l / .9));
+  for (var i = 1; i < n; i++){ var q = iso(a[0] + dx * i / n, a[1] + dy * i / n); el('rect', {x:q[0] - 3, y:q[1] - 2, width:6, height:20, fill:'#5b7c99'}, g); }   // 橋墩
+  el('polygon', {points:pts(P.map(function(p){ return [p[0], p[1] + 5]; })), fill:'#5b7c99'}, g);
+  el('polygon', {points:pts(P), fill:'#f4f6f7', stroke:'#5b7c99', 'stroke-width':1}, g);
+  [[P[0], P[1]], [P[3], P[2]]].forEach(function(e){
+    el('line', {x1:e[0][0], y1:e[0][1] - 7, x2:e[1][0], y2:e[1][1] - 7, stroke:'#5b7c99', 'stroke-width':1.6}, g);
+    for (var k = 0; k <= n * 2; k++){ var t = k / (n * 2), x = e[0][0] + (e[1][0] - e[0][0]) * t, y = e[0][1] + (e[1][1] - e[0][1]) * t; el('line', {x1:x, y1:y, x2:x, y2:y - 7, stroke:'#5b7c99', 'stroke-width':1}, g); }
+  });
+}
+// 點對面的島：角色走過橋過去；走不過去（例如關掉人物）就直接切換
+function farGoClick(){
+  if (onFarIsland(walker.gx, walker.gy, FAR.r * .35)){ showFarCard('arrive'); return; }   // 已經站在島上
+  var before = walker.goal; walker.goal = null; walkTo(FAR.at[0], FAR.at[1]);
+  if (!walker.path.length && !onFarIsland(walker.gx, walker.gy)) { walker.goal = before; goFar(); return; }
+  far.walking = true;
+  showFarCard('walk');
+}
+var far = {inside:false, dismissed:false, timer:null, left:0, walking:false};
+function showFarCard(kind){
+  var c = $('farCard');
+  if (!c){ c = document.createElement('section'); c.id = 'farCard'; c.className = 'card talk-card'; c.setAttribute('aria-live', 'polite'); $('app').appendChild(c); }
+  clearInterval(far.timer);
+  if (kind === 'walk'){
+    c.innerHTML = '<span class="msg">' + FAR.emoji + ' 正在走過橋去<b>' + FAR.name + '</b>…</span><button type="button" class="main" data-far="go">直接前往</button><button type="button" class="x2" data-far="no" aria-label="取消">×</button>';
+  } else {
+    far.left = 3;
+    c.innerHTML = '<span class="msg">' + FAR.emoji + ' 到了<b>' + FAR.name + '</b>！<b id="farLeft">3</b> 秒後切換過去</span><button type="button" class="main" data-far="go">立即前往</button><button type="button" data-far="stay">留在這裡</button>';
+    far.timer = setInterval(function(){ far.left--; var e = $('farLeft'); if (e) e.textContent = far.left; if (far.left <= 0){ clearInterval(far.timer); goFar(); } }, 1000);
+  }
+  c.hidden = false;
+  c.onclick = function(e){
+    var b = e.target.closest('[data-far]'); if (!b) return;
+    var k = b.getAttribute('data-far');
+    if (k === 'go'){ clearInterval(far.timer); goFar(); }
+    else { clearInterval(far.timer); c.hidden = true; far.walking = false; if (k === 'stay') far.dismissed = true; if (k === 'no'){ walker.path = []; walker.goal = null; } }
+  };
+}
+function hideFarCard(){ clearInterval(far.timer); var c = $('farCard'); if (c) c.hidden = true; }
+function farTick(){
+  var inside = onFarIsland(walker.gx, walker.gy, FAR.r * .35);
+  if (inside && !far.inside && !far.dismissed){ addLog('走過橋，到了' + FAR.name); showFarCard('arrive'); }
+  if (!inside && far.inside){ far.dismissed = false; hideFarCard(); }
+  if (!inside && far.walking && !walker.path.length){ far.walking = false; hideFarCard(); }
+  far.inside = inside;
 }
 
 function buildMap(){
@@ -1100,6 +1161,7 @@ function buildMap(){
   // 樹
   var trees = [], tr = rng(42);
   function treeOK(gx, gy){
+    if (farBridgeDist(gx, gy) < .8) return false;
     var a = Math.atan2(gy - C[1], gx - C[0]);
     if (Math.hypot(gx - C[0], gy - C[1]) > islandR(a) - .7) return false;
     if (riverDist(gx, gy) < .95 || minDist(ROAD_S, gx, gy) < .45 || trackDist(gx, gy) < .7) return false;
@@ -1549,6 +1611,7 @@ function tick(ts){
     tram.u += tram.s * dt; if (tram.u > 19.6 || tram.u < 11.6){ tram.s = -tram.s; tram.u = Math.max(11.6, Math.min(19.6, tram.u)); }
   }
   stepWalker(dt, ts);
+  farTick();
   stepPeers(dt);
   netTick(ts);
   boats.forEach(function(b){
@@ -1640,15 +1703,27 @@ var me = lsGet(KEY_AVATAR, null), firstVisit = false;
 if (!me || !me.name){ me = newAvatar(); lsSet(KEY_AVATAR, me); firstVisit = true; }
 else if (hasBadWord(me.name)){ me.name = randomName(); lsSet(KEY_AVATAR, me); }
 if (!animalById[me.animal]){ me.animal = pick(ANIMALS).id; lsSet(KEY_AVATAR, me); }   // 舊訪客：自動配一隻動物
+// 走橋過來的人：沿用對面島上的名字、動物、衣服顏色（網址 ?me=），角色不會因為換島而改變
+(function(){
+  var q = /[?&]me=([^&#]*)/.exec(location.search); if (!q) return;
+  try {
+    var d = JSON.parse(decodeURIComponent(q[1])), n = cleanName(d.n);
+    if (n && !hasBadWord(n)) me.name = n;
+    if (animalById[d.a]) me.animal = d.a;
+    if (/^#[0-9a-fA-F]{6}$/.test(d.s || '')) me.shirt = d.s;
+    lsSet(KEY_AVATAR, me); firstVisit = false;
+  } catch(e){}
+})();
 
 // 可走格子：0.5 格一格；海、河（橋除外）、建築、池塘與噴水池不能走
-var WG = {x0:-4, y0:-4, step:.25, n:120}, walkCells = null;          // 尋路格子：0.25 格一格
-var FG = {x0:-4, y0:-4, step:.08, n:376}, fineCells = null;            // 碰撞格子：0.08 格一格，檢查「走直線會不會撞到」用
+var WG = {x0:-4, y0:-4, step:.25, n:136}, walkCells = null;          // 尋路格子：0.25 格一格
+var FG = {x0:-4, y0:-4, step:.08, n:426}, fineCells = null;            // 碰撞格子：0.08 格一格，檢查「走直線會不會撞到」用
 var BODY = .2;                                                          // 角色身體半徑＋屋簷外伸，離牆至少這麼遠
 function cellOf(gx, gy){ return [Math.round((gx - WG.x0) / WG.step), Math.round((gy - WG.y0) / WG.step)]; }
 function cellPos(i, j){ return [WG.x0 + i * WG.step, WG.y0 + j * WG.step]; }
 function canWalk(i, j){ return i >= 0 && j >= 0 && i < WG.n && j < WG.n && walkCells[j * WG.n + i] === 1; }
 function walkableAt(gx, gy){
+  if (farBridgeDist(gx, gy) < .24 || onFarIsland(gx, gy)) return true;          // 跨海大橋與對面小島
   var a = Math.atan2(gy - C[1], gx - C[0]);
   if (Math.hypot(gx - C[0], gy - C[1]) > islandR(a) - .35) return false;
   if (riverDist(gx, gy) < .62 && minDist(BRIDGE_S, gx, gy) > .45) return false;
@@ -1730,6 +1805,13 @@ function straighten(pos, path){                // 能直走就直走，不要一
   return out;
 }
 var walker = {gx:11.7, gy:9.1, elev:0, path:[], phase:0, face:1, goal:null, pending:null, lastPlan:0, zone:null, follow:true};
+// 從另一座島走橋過來的人：從這邊橋頭出發
+(function(){
+  var q = /[?&]from=(creator|startup)\b/.exec(location.search); if (!q || q[1] === FAR.self) return;
+  var a = FAR.bridge[0], b = FAR.bridge[1], l = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  walker.gx = a[0] - (b[0] - a[0]) / l * .7; walker.gy = a[1] - (b[1] - a[1]) / l * .7; walker.face = -1;
+  try { var u = new URL(location.href); u.searchParams.delete('from'); u.searchParams.delete('me'); history.replaceState(null, '', u.pathname + u.search + u.hash); } catch(e){}
+})();
 function walkTo(gx, gy){
   var goal = nearestCell(gx, gy); if (!goal) return;
   if (walker.goal && walker.goal[0] === goal[0] && walker.goal[1] === goal[1]) return;
@@ -2448,7 +2530,7 @@ svg.addEventListener('click', function(e){
   var g = e.target.closest && e.target.closest('.bld');
   if (g) openTool(g.getAttribute('data-id'));
   else if (e.target.closest && e.target.closest('.board')) openBoard();
-  else if (e.target.closest && e.target.closest('.farland')) goFar();
+  else if (e.target.closest && e.target.closest('.farland')) farGoClick();
   else { var pid = peerAtClient(e.clientX, e.clientY); if (pid){ openTalk(pid); return; } var q = clientToGrid(e.clientX, e.clientY); walker.goal = null; walkTo(q[0], q[1]); }
 });
 svg.addEventListener('keydown', function(e){
