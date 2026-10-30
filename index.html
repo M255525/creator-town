@@ -2020,7 +2020,7 @@ var net = {ws:null, open:false, retry:1500, lastSent:0, lastPing:0, sentGx:null,
 var PEERS = {};
 function netSend(o){ if (net.open) try { net.ws.send(JSON.stringify(o)); } catch(e){} }
 function netConnect(){
-  if (!PRESENCE_URL || !window.WebSocket) return;
+  if (!PRESENCE_URL || !window.WebSocket || net.paused) return;
   var ws;
   var url = PRESENCE_URL + (PRESENCE_URL.indexOf('?') >= 0 ? '&' : '?') + 'room=' + netRoom();
   try { ws = new WebSocket(url); } catch(e){ return; }
@@ -2034,6 +2034,7 @@ function netConnect(){
   ws.onclose = function(){
     if (net.ws !== ws) return;                                     // 換房間時關掉的舊連線
     net.open = false; clearPeers();
+    if (net.paused){ net.ws = null; renderOnline(); return; }        // 角色交給別的分頁了：不重連
     setTimeout(netConnect, net.retry); net.retry = Math.min(net.retry * 2, 30000);
   };
   ws.onerror = function(){ try { ws.close(); } catch(e){} };
@@ -2056,7 +2057,7 @@ function renderOnline(){
   var n = Object.keys(PEERS).length + 1;
   if ($('onlineN')) $('onlineN').textContent = n;
   if ($('roomTag')) $('roomTag').textContent = ROOM ? '・房間 ' + ROOM : '';
-  $('chatRoom').innerHTML = (ROOM ? '房間 <b>' + ROOM + '</b>' : '公開小鎮') + ' · ' + n + ' 人' + (net.open ? '' : '（連線中…）');
+  $('chatRoom').innerHTML = (ROOM ? '房間 <b>' + ROOM + '</b>' : '公開小鎮') + ' · ' + n + ' 人' + (net.open ? '' : net.paused ? '（已暫停：角色在另一個分頁）' : '（連線中…）');
 }
 function netHandle(m){
   if (m.t === 'snapshot'){
@@ -2852,6 +2853,38 @@ placeAvatarDepth();
 if (firstVisit) addLog(me.name + ' 來到了創作者小鎮');
 blockArea(BOARD_AT[0], BOARD_AT[1], .75);
 loadBoard(); setInterval(loadBoard, 10 * 60 * 1000);
+/* ---------- 一個瀏覽器只有一個角色在線上 ----------
+ * 創業島與創作者小鎮同網域（m255525.github.io），角色資料互通；為了不讓同一個角色同時出現兩次，
+ * 最新開啟（或按「在這裡繼續」）的分頁擁有角色，其他分頁收到 localStorage 的 storage 事件就斷線暫停。 */
+var KEY_CLAIM = 'm255525IslandClaim', TAB_ID = Math.random().toString(36).slice(2, 10);
+function claimAvatar(){
+  net.paused = false; hideDupCard();
+  lsSet(KEY_CLAIM, {tab:TAB_ID, site:FAR.self, t:Date.now()});
+  if (!net.ws) netConnect();
+}
+function pauseAvatar(site){
+  if (net.paused) return;
+  net.paused = true;
+  if (typeof bot !== 'undefined' && bot) try { dismissBot(true); } catch(e){}
+  net.open = false; clearPeers();                                  // 先標成離線，關閉中的連線就不會再送位置
+  if (net.ws) try { net.ws.close(); } catch(e){}
+  walker.path = []; walker.goal = null;
+  var c = $('dupCard');
+  if (!c){ c = document.createElement('section'); c.id = 'dupCard'; c.className = 'card talk-card'; c.setAttribute('aria-live', 'polite'); $('app').appendChild(c);
+    c.addEventListener('click', function(e){ if (e.target.closest('[data-dup]')) claimAvatar(); }); }
+  c.innerHTML = '<span class="msg">你的角色正在另一個分頁' + (site && site !== FAR.self ? '（' + FAR.name + '）' : '') + '上，這裡先暫停，其他人不會看到兩個你。</span><button type="button" class="main" data-dup="1">在這裡繼續</button>';
+  c.hidden = false; renderOnline();
+}
+function hideDupCard(){ var c = $('dupCard'); if (c) c.hidden = true; }
+window.addEventListener('storage', function(e){
+  if (e.key !== KEY_CLAIM || !e.newValue) return;
+  var v; try { v = JSON.parse(e.newValue); } catch(err){ return; }
+  if (v && v.tab !== TAB_ID) pauseAvatar(v.site);
+});
+// 離開頁面（走橋換島、關分頁）時立刻斷線，舊地圖上的角色馬上消失；從上一頁回來時重新接手
+window.addEventListener('pagehide', function(){ net.paused = true; net.open = false; if (net.ws) try { net.ws.close(); } catch(e){} });
+window.addEventListener('pageshow', function(e){ if (e.persisted){ net.ws = null; claimAvatar(); } });
+lsSet(KEY_CLAIM, {tab:TAB_ID, site:FAR.self, t:Date.now()});
 netConnect(); renderChat(); renderOnline(); if (chatPrefs.open) setChatOpen(true);
 renderRelList();
 setTags(state.tags);
