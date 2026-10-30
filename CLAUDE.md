@@ -9,14 +9,14 @@
 
 | id | 小鎮名稱 | 建築 `STYLE` | 工具 | 立體地標 `MARKS` |
 |---|---|---|---|---|
-| idea | 靈感公園 | pavilion | 曼陀羅、SCAMPER、六頂思考帽、創意打版台● | 大燈泡（沿用） |
-| strategy | 提示詞山丘 | office（顧問團 observatory） | AI 提示詞●、CRISPE 控制台、AI 技能●、AI 顧問團 | 對話泡泡（新） |
-| school | 創作學院 | school | CRISPE 卡牌、CO-STAR 卡牌、課堂練習存摺 | 鉛筆＋鞦韆（沿用） |
-| calc | 影音片場 | warehouse | 短影片提示詞●、AI 影音工坊、影片先生（`url` 指 `video-editor/mrvideo_s/`） | 創作看板（沿用看板機制） |
-| fund | 聲音廣場 | civic | AI 快速語音、音樂提示詞● | 音符＋喇叭（新） |
+| idea | 靈感草坪 | container | 曼陀羅、SCAMPER、六頂思考帽、創意打版台● | 大燈泡（沿用） |
+| strategy | 提示詞看台 | brick（顧問團 observatory） | AI 提示詞●、CRISPE 控制台、AI 技能●、AI 顧問團 | 對話泡泡（新） |
+| school | 創作學院 | brick | CRISPE 卡牌、CO-STAR 卡牌、課堂練習存摺 | 鉛筆＋鞦韆（沿用） |
+| calc | 影音片場 | warehouse | 短影片提示詞●、AI 影音工坊、影片先生（`url` 指 `video-editor/mrvideo_s/`） | 公布欄（沿用看板機制） |
+| fund | 聲音廣場 | brick | AI 快速語音、音樂提示詞● | 音符＋喇叭（新） |
 | brand | 社群大街 | shop | 社群規劃、內容行事曆、社群貼文、貼文健診 | 愛心氣球（沿用） |
-| ecom | 插畫港 | house | 繪圖提示詞●、漫畫分鏡、LINE 貼圖 | 畫架＋調色盤（新） |
-| ops | 寫作巷 | house | 文字整理、簡報風格 | 攤開的書＋鋼筆（新） |
+| ecom | 插畫碼頭 | container | 繪圖提示詞●、漫畫分鏡、LINE 貼圖 | 畫架＋調色盤（新） |
+| ops | 寫作巷 | brick | 文字整理、簡報風格 | 攤開的書＋鋼筆（新） |
 | hub | 發布塔 | office（spire／warehouse） | 內容工作流●、節點補充包●（Cloudflare 網址） | 光環（沿用） |
 
 ●＝`lic:true`（8 個；2026-10-30 掃線上首頁 `LICENSE_CHECK_URL`，skill-prompt-studio 與 CF 兩個是登入閘門）。AI 影音工坊、影片先生只有部分功能要序號，標 `lic:false` 並寫在 `role` 裡（同創業島慣例）。`ai-course-hub` 的 Pages 網址 404，沒收。
@@ -29,12 +29,21 @@
 - `netRoom()`：公開小鎮＝房間 `CREATORTOWN`；使用者代碼前面加 `CT`（所以代碼上限 3～10 字，Worker 的 `cleanRoom` 上限 12）。創業島的公開島是 `main`，同名代碼也不會互通。連線與 🤖 小幫手的 `botUrl()` 都走 `netRoom()`。
 - 轉播站改協定時（例如動物白名單）兩個專案都要看。
 
-## 看板
-`BOARD_SHEET = ''` → `loadBoard()` 直接 return，顯示 `BOARD_DEFAULT`（「今日題目」短內容練習）。要改成管理者可編輯：建一份「知道連結的人可檢視」試算表（格式同創業島 `docs/board-template.csv`），把 ID 填進 `BOARD_SHEET`。
+## 公布欄（2026-10-30 使用者要求「與創業島使用同一份表單資料」）
+`BOARD_SHEET` 與創業島相同：試算表「board-template」`1reL32KcSUL-YNh4ICVxm-fROcjBzRiKVLjy05t7q_bs`（A 欄欄位名稱、B 欄內容，格式見創業島 CLAUDE.md），**改一次兩邊一起換**；`BOARD_DEFAULT` 也是從創業島複製的同一份。介面名稱叫「📋 公布欄」（創業島叫看板）。localStorage 快取 `creatorTownBoard` 與創業島分開。創業島若改 `BOARD_FIELDS`／`cleanBoard()`，這邊要一起改。
+
+## 港邊倉庫外觀（2026-10-30 改版）
+使用者看了初版說「架構/UI 可以類似，但畫面太接近創業島」，要求**以高雄駁二藝術特區的景緻為主題，並注意智財權**。只借「港邊舊倉庫群改建藝術區」的一般性氛圍：
+- **智財權界線**：不用「駁二」名稱當品牌、不放官方標誌／照片、不仿任何真實公共藝術作品、輕軌不照搬真實塗裝、倉庫只用自己的流水號（工具序號 01–27），不用真實倉庫名稱或編號；頁尾警語與 manual 都有非官方聲明。**日後加景物也照這個原則**，地標一律原創。
+- **地形**：`islandR()` 改成圓角方形（superellipse n=8、半寬 11.6）＋前方 `gx+gy=32.6` 的筆直岸壁；`onQuay()` 判斷前方岸壁畫繫船柱；`inLand()` 把運河截在岸邊（2D 與小地圖）。立體 `landY()` 岸壁是直牆、運河石砌直壁、看台每一階是直角；`terrainColor()` 岸邊混凝土、道床色。
+- **新外型**：`brick`（紅磚倉庫：灰藍浪板山牆屋頂＋場地色飾條、場地色大鐵門、側牆原創抽象彩繪 `muralTex()`、山牆流水號）、`container`（兩個錯開疊起的貨櫃，`drawContainer()`）、`warehouse` 改鐵皮浪板；`shop` 牆面改紅磚。立體材質 `patternTex('brick'|'steel')`。
+- **港區景物**：`TRACK`／`TRACK_SUM=31.2` 輕軌鐵道（在畫面上是水平線；`trackDist()`），`tram` 兩節輕軌來回開（狀態在 index.html，立體只讀）；`CRANES` 三座碼頭起重機（吊臂收起朝天，`walkableAt` 擋路）；`boats` 改成沿岸壁外側航道 `lane` 直線航行的貨櫃輪＋拖船（立體讀同一份狀態）；鐵道過運河處有鋼梁橋；運河上的橋改白色鋼拱橋；學院操場改露天舞台；樹 `isPalm()` 3/4 是棕櫚樹。
+- **海邊生物**（使用者要求「海邊要有活力，有魚類、鳥類」）：`FISH` 8 個點不定時跳出水面＋水花（`stepFish`，立體 `buildFish3`），`GULLS` 9 隻海鷗在港口上空盤旋（立體 12 隻），起重機與繫船柱上停著會啄一下的海鷗（`perchBird`／`perch3`）。
+- 場地改名：靈感草坪、提示詞看台、插畫碼頭；運河草坪、觀景台、倉庫運河、港邊輕軌。配色 CSS 變數與立體 `PAL` 都換成港區色。
 
 ## 配套
 - localStorage 全部 `creatorTown*`（與創業島分開）；測試 hook `window.__creatorTown`。
-- 跑馬燈（共用端點）、PWA（`creator-town-shell-v1`，圖示 PIL 自畫：紫粉漸層＋等角小島＋播放鍵泡泡）、`manual.html`（PART 2 創作者實用資訊：創作路線圖六階段、提示詞基本功、常用尺寸、版權與 AI 注意、常見的坑、一週練習）、使用警語、創作者資訊、訪客計數器 `page_id=m255525.creatortown`。
+- 跑馬燈（共用端點）、PWA（`creator-town-shell-v2`，圖示 PIL 自畫：紫粉漸層＋等角小島＋播放鍵泡泡）、`manual.html`（PART 2 創作者實用資訊：創作路線圖六階段、提示詞基本功、常用尺寸、版權與 AI 注意、常見的坑、一週練習）、使用警語、創作者資訊、訪客計數器 `page_id=m255525.creatortown`。
 - 手冊「常用尺寸」是一般通用規格，已註明以平台官方為準；版權段落註明非法律意見。
 
 ## Port／測試

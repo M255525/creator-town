@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>創作者小鎮 · 從一個靈感出發，逛完整座小鎮</title>
-<meta name="description" content="把 27 個 AI 內容創作工具放進一座可以探索的小鎮：靈感公園、提示詞山丘、影音片場、插畫港等九個地點、作品接力線、創作者的一天與兩年創作之路時間軸。">
-<meta name="theme-color" content="#5b3f8c">
+<title>創作者小鎮 · 走進港邊倉庫，把靈感做成作品</title>
+<meta name="description" content="把 27 個 AI 內容創作工具放進一座港邊倉庫小鎮：紅磚倉庫、貨櫃屋、運河、鐵道與碼頭，靈感草坪、提示詞看台、影音片場、插畫碼頭等九個地點、作品接力線、創作者的一天與兩年創作之路時間軸。">
+<meta name="theme-color" content="#16566f">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -15,13 +15,13 @@
 <style>
 :root{
   --ink:#14303d; --ink-dim:#4d6672; --ink-faint:#8aa0aa;
-  --sea:#3d9ab5; --sea-deep:#1c6e8c; --foam:#bfe8ef;
-  --sand:#f3d798; --grass:#c4dd9c; --cliff:#b98a4e;
+  --sea:#2b7f9e; --sea-deep:#16566f; --foam:#cfe7ec;
+  --sand:#d9d3c5; --grass:#bcd88f; --cliff:#7d776c;
   --panel:#fbfdfd; --panel-2:#eef6f8; --line:#d4e3e8;
   --coral:#ff6f59; --coral-ink:#c8412d;
   --lic:#e11d2e;
-  --park:#8fcf6e; --lawn:#bfe09c; --yard:#efdfb2; --paving:#e6e2d8; --wood:#d8b588; --road:#eef0ea;
-  --river:#5fb8d4; --river-rim:#3a8fae; --hillside:#86b85f; --hilltop:#b3d98a;
+  --park:#93cf6c; --lawn:#c3e19a; --yard:#e8dcc4; --paving:#e2ddd3; --wood:#c9b49a; --road:#efece4;
+  --river:#3d97b3; --river-rim:#9b9384; --hillside:#c4b49b; --hilltop:#e6dccb;
   --shadow:0 10px 30px rgba(12,48,64,.18);
   --mq:0px;
   --f-display:"Huninn","Noto Sans TC",system-ui,sans-serif;
@@ -31,13 +31,13 @@
 @media (prefers-color-scheme: dark){
   :root{
     --ink:#e4f0f3; --ink-dim:#a4bcc5; --ink-faint:#6f8b96;
-    --sea:#145069; --sea-deep:#0b2c3c; --foam:#2c6f86;
-    --sand:#b89a62; --grass:#7d9b5c; --cliff:#6e5230;
+    --sea:#103f55; --sea-deep:#0a2433; --foam:#2c6070;
+    --sand:#7c776c; --grass:#6e8d4f; --cliff:#4a463f;
     --panel:#11242e; --panel-2:#183340; --line:#264552;
     --coral:#ff8470; --coral-ink:#ffb3a5;
     --lic:#ff4d5a;
     --park:#4f7a3c; --lawn:#5f8445; --yard:#8a7a52; --paving:#56616a; --wood:#7a5e3c; --road:#6d7780;
-    --river:#2a7a96; --river-rim:#174f63; --hillside:#56773a; --hilltop:#6f9550;
+    --river:#22708a; --river-rim:#575247; --hillside:#6e624f; --hilltop:#8a7f6b;
     --shadow:0 10px 30px rgba(0,0,0,.45);
   }
 }
@@ -309,6 +309,8 @@ footer{background:var(--panel);padding:30px 16px 40px}
 .creator-box p{margin:2px 0}
 .foot-links{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
 
+.perch .peck{animation:peck 4s ease-in-out infinite;transform-box:fill-box;transform-origin:left bottom}
+@keyframes peck{0%,80%,100%{transform:none}86%{transform:rotate(28deg) translate(0,1px)}92%{transform:none}}
 /* 島上聊天＋房間 */
 .toolbar .badge{min-width:17px;height:17px;padding:0 5px;border-radius:999px;background:var(--lic);color:#fff;font:700 10.5px/17px var(--f-mono);text-align:center}
 .toolbar .badge[hidden]{display:none}
@@ -421,7 +423,7 @@ body.view-time .talk-card{bottom:216px}
 
 <div class="loader" id="loader" role="status">
   <div class="tiles"><i style="background:#f4b942"></i><i style="background:#2ec4b6"></i><i style="background:#ef6b8a"></i><i style="background:#4f9dff"></i></div>
-  <p>小鎮開門中，工作室正在亮燈…</p>
+  <p>倉庫鐵門拉開中，工作室正在亮燈…</p>
 </div>
 
 <main class="app" id="app">
@@ -461,7 +463,7 @@ body.view-time .talk-card{bottom:216px}
 
   <section class="card title-card" id="titleCard" aria-label="關於創作者小鎮">
     <div class="tc-head"><span class="eyebrow">Creator Town Map</span><button type="button" class="tc-toggle" id="tcToggle" aria-expanded="true">收合</button></div>
-    <h1>從一個靈感出發，<br>逛完整座小鎮</h1>
+    <h1>走進港邊倉庫，<br>把靈感做成作品</h1>
     <div class="stats"><span><b id="stZones">9</b> 地點</span><span><b id="stTools">0</b> 工具</span><span><b id="stLinks">0</b> 接力線</span><span><i class="lic-dot"></i><b id="stLic">0</b> 需序號</span></div>
     <div class="clock"><span>鎮上時間</span><b id="clockNow">--:--</b><span id="clockNote"></span></div>
     <div class="clock"><span>你已探索</span><b id="seenCount">0</b><span>棟建築</span></div>
@@ -573,6 +575,7 @@ body.view-time .talk-card{bottom:216px}
         <li>接力線與時間軸是課程整理的建議使用順序，工具之間沒有自動傳資料。</li>
         <li>探索足跡只存在你這台裝置的瀏覽器，不會上傳。為了讓同時在鎮上的人互相看見，系統只會即時交換你的角色名字、選的動物、衣服顏色與位置，不會記錄或保存。</li>
         <li>聊天訊息只即時轉給同一個房間裡的人；轉播站只在記憶體暫留最近 20 則讓剛進來的人看得到，不寫入任何儲存，房間沒人後就消失。訊息會自動拿掉網址、把不雅字詞遮成 *，但無法擋下所有不當內容，請勿在聊天中留下電話、地址等個人資料。</li>
+        <li>場景靈感來自高雄港邊舊倉庫群改建藝術區的氛圍；所有建築、地標、彩繪、車輛與船隻都是程式自繪的虛構場景，沒有使用任何官方標誌、照片或藝術作品。本站與高雄市政府文化局、駁二藝術特區無任何關係。</li>
         <li>僅供教學、課程及個人使用，禁止未經授權公開發布、販售或商業化使用。</li>
       </ul>
     </div>
@@ -592,15 +595,15 @@ body.view-time .talk-card{bottom:216px}
 <script>
 /* ================= 創作者小鎮：資料 ================= */
 var ZONES = [
-  {id:'idea',     name:'靈感公園', en:'INSPIRATION PARK', color:'#f4b942', ground:'var(--park)', label:[-1.6,12.9,0], desc:'在湖邊散步找題材：把一個念頭展開成很多種內容角度。'},
-  {id:'strategy', name:'提示詞山丘', en:'PROMPT HILL',    color:'#9d8cf2', ground:null, label:[6.4,4.3,13],          desc:'爬上山頂把話說清楚：寫出 AI 聽得懂的提示詞，再整理成可以重複用的技能。'},
-  {id:'school',   name:'創作學院', en:'CREATOR ACADEMY',  color:'#6672e0', ground:'var(--yard)', extra:[7.15,-.35,11.85,2.95], desc:'用卡牌遊戲練提示詞框架，課堂練習也在這裡查。'},
-  {id:'calc',     name:'影音片場', en:'STUDIO LOT',       color:'#2ec4b6', ground:'var(--paving)', extra:[12.45,1.75,17.15,5.15], desc:'攝影棚一字排開：影片提示詞、配音合成、剪輯上字幕。'},
-  {id:'fund',     name:'聲音廣場', en:'SOUND PLAZA',      color:'#f08a4b', ground:'var(--paving)', extra:[15.4,10.7,16.6,11.9], desc:'噴水池旁的露天舞台：旁白配音和配樂都在這裡做。'},
-  {id:'brand',    name:'社群大街', en:'SOCIAL AVENUE',    color:'#ef6b8a', ground:'var(--paving)', desc:'規劃方向、排內容檔期、寫貼文、發文前健診。'},
-  {id:'ecom',     name:'插畫港',   en:'ART HARBOR',       color:'#4f9dff', ground:'var(--wood)', desc:'港邊的畫室：生圖提示詞、漫畫分鏡、LINE 貼圖。'},
-  {id:'ops',      name:'寫作巷',   en:'WRITERS LANE',     color:'#6bbf59', ground:'var(--lawn)', extra:[1.15,12.65,4.15,15.55], desc:'安靜的小巷：把草稿整理成文件，替簡報換上風格。'},
-  {id:'hub',      name:'發布塔',   en:'PUBLISH TOWER',    color:'#e05a47', ground:'var(--paving)', desc:'河邊的高塔與工作坊：把每天重複的創作流程串成會自己跑的工作流。'}
+  {id:'idea',     name:'靈感草坪', en:'INSPIRATION LAWN', color:'#f4b942', ground:'var(--park)', label:[-1.6,12.9,0], desc:'倉庫之間的大草坪與貨櫃咖啡屋：躺在草地上，把一個念頭展開成很多種內容角度。'},
+  {id:'strategy', name:'提示詞看台', en:'PROMPT STEPS',   color:'#9d8cf2', ground:null, label:[6.4,4.3,13],          desc:'坐上階梯看台把話說清楚：寫出 AI 聽得懂的提示詞，再整理成可以重複用的技能。'},
+  {id:'school',   name:'創作學院', en:'CREATOR ACADEMY',  color:'#6672e0', ground:'var(--yard)', extra:[7.15,-.35,11.85,2.95], desc:'舊倉庫改建的教室與露天舞台：用卡牌遊戲練提示詞框架，課堂練習也在這裡查。'},
+  {id:'calc',     name:'影音片場', en:'STUDIO LOT',       color:'#2ec4b6', ground:'var(--paving)', extra:[12.45,1.75,17.15,5.15], desc:'挑高的鐵皮倉庫改成攝影棚：影片提示詞、配音合成、剪輯上字幕。'},
+  {id:'fund',     name:'聲音廣場', en:'SOUND PLAZA',      color:'#f08a4b', ground:'var(--paving)', extra:[15.4,10.7,16.6,11.9], desc:'紅磚倉庫圍起的廣場：旁白配音和配樂都在這裡做。'},
+  {id:'brand',    name:'社群大街', en:'SOCIAL AVENUE',    color:'#ef6b8a', ground:'var(--paving)', desc:'紅磚店面一字排開：規劃方向、排內容檔期、寫貼文、發文前健診。'},
+  {id:'ecom',     name:'插畫碼頭',   en:'ART PIER',         color:'#4f9dff', ground:'var(--wood)', desc:'貨櫃改建的畫室，窗外就是港口：生圖提示詞、漫畫分鏡、LINE 貼圖。'},
+  {id:'ops',      name:'寫作巷',   en:'WRITERS LANE',     color:'#6bbf59', ground:'var(--lawn)', extra:[1.15,12.65,4.15,15.55], desc:'倉庫後巷的小工作室：把草稿整理成文件，替簡報換上風格。'},
+  {id:'hub',      name:'發布塔',   en:'PUBLISH TOWER',    color:'#e05a47', ground:'var(--paving)', desc:'運河邊的號誌塔與工作坊：把每天重複的創作流程串成會自己跑的工作流。'}
 ];
 
 // hour：創作者的一天最常用的時段 [起, 迄)；month：兩年創作之路中最常用的月份 [起, 迄]；lic：需序號或登入
@@ -696,10 +699,10 @@ var LINKS = [
 
 var DAY_SCRIPT = [
   {t:0,  text:'小鎮睡了。靈感也要充電。'},
-  {t:7,  text:'靈感公園先醒：散步時想到的題材，用曼陀羅九宮格一次展開。'},
-  {t:9,  text:'爬上提示詞山丘把想法寫清楚；社群大街順便排好這週的檔期。'},
+  {t:7,  text:'靈感草坪先醒：散步時想到的題材，用曼陀羅九宮格一次展開。'},
+  {t:9,  text:'爬上提示詞看台把想法寫清楚；社群大街順便排好這週的檔期。'},
   {t:10, text:'創作學院開課練框架，寫作巷把草稿整理成腳本。'},
-  {t:12, text:'午後到插畫港：生圖提示詞、漫畫分鏡、LINE 貼圖。'},
+  {t:12, text:'午後到插畫碼頭：生圖提示詞、漫畫分鏡、LINE 貼圖。'},
   {t:14, text:'聲音廣場錄旁白，影音片場開拍：配音、合成、剪輯。'},
   {t:16, text:'替影片做配樂和片頭曲。'},
   {t:18, text:'晚上社群大街最熱鬧：寫貼文，發文前先健診。'},
@@ -722,14 +725,14 @@ var MONTH_SCRIPT = [
 var STORY = [
   {chap:'01 創作者的一天', eb:'Welcome to Town', title:'歡迎來到創作者小鎮',
    body:'你是「{name}」（可以在說明卡或「足跡」裡改名字）。滑鼠移到哪，你就走到哪；鎮上每一棟建築都是一個真的線上工具，分在九個地點，點建築看它做什麼，再一鍵打開。', act:function(){ setView('map'); birdview(); }},
-  {chap:'01 創作者的一天', eb:'09:00', title:'早上從靈感公園出發',
-   body:'先把題材展開，再到提示詞山丘把想法寫成 AI 聽得懂的話。沒亮的建築，是這個時段用不太到的工具。', act:function(){ setView('time'); setTimeMode('day'); setT(9); focusZones(['idea','strategy']); }},
+  {chap:'01 創作者的一天', eb:'09:00', title:'早上從靈感草坪出發',
+   body:'先把題材展開，再到提示詞看台把想法寫成 AI 聽得懂的話。沒亮的建築，是這個時段用不太到的工具。', act:function(){ setView('time'); setTimeMode('day'); setT(9); focusZones(['idea','strategy']); }},
   {chap:'01 創作者的一天', eb:'14:00', title:'下午畫圖、配音、拍片',
-   body:'插畫港畫角色和漫畫，聲音廣場錄旁白，影音片場合成和剪輯。', act:function(){ setView('time'); setTimeMode('day'); setT(14); focusZones(['ecom','fund','calc']); }},
+   body:'插畫碼頭畫角色和漫畫，聲音廣場錄旁白，影音片場合成和剪輯。', act:function(){ setView('time'); setTimeMode('day'); setT(14); focusZones(['ecom','fund','calc']); }},
   {chap:'01 創作者的一天', eb:'19:00', title:'晚上社群大街亮燈',
    body:'作品做好就發出去：寫貼文、先健診，再交給發布塔的工作流。夜裡亮著窗的建築，就是這個時段最常用的工具。', act:function(){ setView('time'); setTimeMode('day'); setT(19); focusZones(['brand','hub']); }},
   {chap:'02 兩年創作之路', eb:'Month 0–3', title:'先練基本功',
-   body:'前幾個月待在創作學院、提示詞山丘和靈感公園：框架練熟，題材想清楚。', act:function(){ setView('time'); setTimeMode('month'); setT(2); focusZones(['school','strategy','idea']); }},
+   body:'前幾個月待在創作學院、提示詞看台和靈感草坪：框架練熟，題材想清楚。', act:function(){ setView('time'); setTimeMode('month'); setT(2); focusZones(['school','strategy','idea']); }},
   {chap:'02 兩年創作之路', eb:'Month 4–8', title:'固定產出',
    body:'定好社群方向，開始畫圖、做圖文，每週固定發文。', act:function(){ setView('time'); setTimeMode('month'); setT(6); focusZones(['brand','ecom']); }},
   {chap:'02 兩年創作之路', eb:'Month 8–15', title:'升級成影音',
@@ -785,18 +788,18 @@ var C = [9, 9];
 var RIVER = [[5.8,5.2],[8.1,6.9],[9.7,9.3],[10.8,11.8],[12.2,13.8],[14.7,15.3],[16.6,17.8],[19.4,20.6]];
 var HILLS = [
   {id:'strategy', at:[3.8,3.8], layers:[[3.1,13],[2.5,26]]},            // [半徑, 高度 px]
-  {id:'lookout', at:[15.3,6.9], layers:[[1.4,10],[.85,20]], name:'觀景小山', en:'LOOKOUT HILL', label:[16.9,5.9]}
+  {id:'lookout', at:[15.3,6.9], layers:[[1.4,10],[.85,20]], name:'觀景台', en:'LOOKOUT DECK', label:[16.9,5.9]}
 ];
-// 創作看板：影音片場旁的大看板。BOARD_SHEET 填入「知道連結的人可檢視」的 Google 試算表 ID 就改讀試算表（A 欄欄位名稱、B 欄內容），空白就用 BOARD_DEFAULT
-var BOARD_SHEET = '', KEY_BOARD = 'creatorTownBoard';
+// 公布欄：影音片場旁的大看板，和創業島讀同一份 Google 試算表「board-template」（A 欄欄位名稱、B 欄內容），改一次兩邊一起更新；讀不到時用 BOARD_DEFAULT（與創業島相同）
+var BOARD_SHEET = '1reL32KcSUL-YNh4ICVxm-fROcjBzRiKVLjy05t7q_bs', KEY_BOARD = 'creatorTownBoard';
 var BOARD_AT = [18.55, 5.6];
 var BOARD_FIELDS = [   // [程式用 key, 試算表 A 欄名稱, 字數上限]
   ['title', '標題', 8], ['sub', '副標', 16], ['l1', '內容1', 14], ['l2', '內容2', 14], ['l3', '內容3', 14],
   ['foot', '底部', 20], ['detail', '詳細說明', 300], ['link', '連結', 300], ['linkText', '連結文字', 10], ['color', '主色', 7]
 ];
-var BOARD_DEFAULT = {title:'今日題目', sub:'今天就做一則短內容', l1:'一個痛點 × 一個解法', l2:'30 秒說完一件事', l3:'結尾留一個問題', foot:'點看板看完整說明',
-  detail:'不知道今天要做什麼？挑一個觀眾最常問你的問題，照「痛點 → 解法 → 一個例子」寫成 30 秒腳本，結尾丟一個問題讓大家留言。腳本寫好後，可以到影音片場做成短影片，或到插畫港畫成四格漫畫。',
-  link:'https://m255525.github.io/comic-prompt-studio/', linkText:'畫成漫畫', color:'#2ec4b6'};
+var BOARD_DEFAULT = {title:'損益兩平', sub:'開店前，先把數字算清楚', l1:'固定成本 ÷ 毛利率', l2:'＝每月至少要賣的營業額', l3:'不夠？先調價格或成本', foot:'點看板看完整說明',
+  detail:'損益兩平營業額＝每月固定成本（租金、薪資、水電、貸款利息）÷ 毛利率。算出來的數字就是每個月至少要做到的營業額；如果覺得做不到，先回頭調整價格、成本或店面大小，再決定要不要開店。',
+  link:'https://m255525.github.io/restaurant-feasibility-calculator/', linkText:'去試算看看', color:'#2ec4b6'};
 var board = Object.assign({}, BOARD_DEFAULT, lsGet(KEY_BOARD, {}), {src:'default'});
 function cleanBoard(raw){
   var out = {};
@@ -829,7 +832,6 @@ function applyBoard(data, src){
   if (state.boardOpen) openBoard(true);
 }
 function loadBoard(){
-  if (!BOARD_SHEET) return;
   var cb = '__islandBoard' + Date.now(), sc = document.createElement('script'), done = false;
   function cleanup(){ try { delete window[cb]; } catch(e){ window[cb] = undefined; } sc.remove(); }
   window[cb] = function(res){ done = true; cleanup(); if (res && res.status === 'ok') applyBoard(boardFromSheet(res), 'sheet'); };
@@ -839,7 +841,7 @@ function loadBoard(){
   setTimeout(function(){ if (!done) cleanup(); }, 15000);
 }
 function escHtml(v){ return String(v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]; }); }
-var GREENS = [{at:[6.5,9.5], r:1.25, name:'河畔綠地', en:'RIVERSIDE GREEN', label:[5.4,10.6]}];
+var GREENS = [{at:[6.5,9.5], r:1.25, name:'運河草坪', en:'CANAL LAWN', label:[5.4,10.6]}];
 var WATERS = [{at:[.9,9.9], r:.75}, {at:[16.0,11.3], r:.5}];          // 公園池塘、廣場噴水池
 // 每個工具在島上的位置（格子座標）
 var POS = {
@@ -854,13 +856,18 @@ var POS = {
   'text-organizer-studio':[1.9,13.4], 'slide-style-yaml-studio':[3.4,13.4]
 };
 var FREE = {};
-var STYLE = {idea:'pavilion', strategy:'office', school:'school', calc:'warehouse', fund:'civic', brand:'shop', ecom:'house', ops:'house', hub:'office'};
+var STYLE = {idea:'container', strategy:'brick', school:'brick', calc:'warehouse', fund:'brick', brand:'shop', ecom:'container', ops:'brick', hub:'office'};
 var SPECIAL = {'mentors-panel':'observatory', 'content-workflow-studio-cf':'spire', 'node-pack-designer-cf':'warehouse'};
 var SHAPE = {   // s 足跡半寬、h 牆高、roof 屋頂高（px）
   pavilion:{s:.36, h:14, roof:14}, house:{s:.4, h:16, roof:12}, warehouse:{s:.55, h:20, roof:12}, school:{s:.55, h:30, roof:0},
   civic:{s:.55, h:30, roof:0}, shop:{s:.42, h:22, roof:0}, tower:{s:.42, h:46, roof:0}, office:{s:.46, h:28, roof:0},
-  lighthouse:{s:.26, h:60, roof:10}, observatory:{s:.46, h:26, roof:18}, spire:{s:.46, h:96, roof:0}
+  lighthouse:{s:.26, h:60, roof:10}, observatory:{s:.46, h:26, roof:18}, spire:{s:.46, h:96, roof:0},
+  brick:{s:.5, h:22, roof:11}, container:{s:.42, h:24, roof:0}
 };
+// 港區：輕軌鐵道（和前方岸壁平行，在畫面上是一條水平線）、碼頭起重機
+var TRACK = [[20.0, 11.2], [11.2, 20.0]], TRACK_SUM = 31.2;
+var CRANES = [[12.9, 19.6], [18.1, 14.4], [19.7, 12.8]];
+function trackDist(gx, gy){ var u = Math.max(11.2, Math.min(20.0, (gx - gy + 31.2) / 2)); return Math.hypot(gx - u, gy - (31.2 - u)); }
 function groundAt(gx, gy){
   var e = 0;
   HILLS.forEach(function(H){ var d = Math.hypot(gx - H.at[0], gy - H.at[1]); H.layers.forEach(function(Ly){ if (d <= Ly[0] && Ly[1] > e) e = Ly[1]; }); });
@@ -916,7 +923,14 @@ function savePrefs(){ lsSet(KEY_PREF, {rels:state.rels, tags:state.tags}); }
 
 /* ---------- 繪製地圖 ---------- */
 var svg = $('map'), L = {};
-function islandR(a){ return 12.4 + .35 * Math.sin(3*a + .6) + .25 * Math.cos(5*a + 1.3) + .12 * Math.sin(9*a); }
+// 港區陸地：圓角方形（superellipse），前方（畫面下方）被一道筆直的岸壁切平
+function islandR(a){
+  var c = Math.cos(a), sn = Math.sin(a), r = 11.6 / Math.pow(Math.pow(Math.abs(c), 8) + Math.pow(Math.abs(sn), 8), 1 / 8);
+  if (c + sn > 0) r = Math.min(r, 14.6 / (c + sn));
+  return r;
+}
+function inLand(q){ return Math.hypot(q[0] - C[0], q[1] - C[1]) < islandR(Math.atan2(q[1] - C[1], q[0] - C[0])) + .25; }
+function onQuay(a){ var c = Math.cos(a), sn = Math.sin(a); return c + sn > 0 && 14.6 / (c + sn) < 11.6 / Math.pow(Math.pow(Math.abs(c), 8) + Math.pow(Math.abs(sn), 8), 1 / 8) - .05; }
 function circlePts(cx, cy, r, n, elev){
   var o = [];
   for (var i = 0; i < n; i++){ var a = i / n * Math.PI * 2; o.push(up(iso(cx + Math.cos(a)*r, cy + Math.sin(a)*r), elev || 0)); }
@@ -939,12 +953,19 @@ function buildMap(){
   for (var i = 0; i < 96; i++){
     var a = i / 96 * Math.PI * 2, r = islandR(a);
     outline.push(iso(C[0] + Math.cos(a) * r, C[1] + Math.sin(a) * r));
-    beach.push(iso(C[0] + Math.cos(a) * (r + .6), C[1] + Math.sin(a) * (r + .6)));
+    beach.push(iso(C[0] + Math.cos(a) * (r + .3), C[1] + Math.sin(a) * (r + .3)));
   }
-  el('polygon', {points:pts(beach.map(function(p){ return [p[0], p[1] + 8]; })), fill:'var(--foam)', opacity:.55}, ground);
-  el('polygon', {points:pts(beach.map(function(p){ return [p[0], p[1] + 18]; })), fill:'var(--cliff)'}, ground);
-  el('polygon', {points:pts(beach), fill:'var(--sand)'}, ground);
+  // 岸壁：混凝土收邊＋垂直的堤岸牆，不是沙灘
+  el('polygon', {points:pts(beach.map(function(p){ return [p[0], p[1] + 10]; })), fill:'var(--foam)', opacity:.45}, ground);
+  el('polygon', {points:pts(beach.map(function(p){ return [p[0], p[1] + 22]; })), fill:'var(--cliff)'}, ground);
+  el('polygon', {points:pts(beach), fill:'var(--sand)', stroke:'rgba(0,0,0,.18)', 'stroke-width':1}, ground);
   el('polygon', {points:pts(outline), fill:'var(--grass)'}, ground);
+  for (var bq = 0; bq < 240; bq++){                              // 前方岸壁的繫船柱
+    var ab = bq / 240 * Math.PI * 2; if (!onQuay(ab) || bq % 4) continue;
+    var rb = islandR(ab) + .15, bp = iso(C[0] + Math.cos(ab) * rb, C[1] + Math.sin(ab) * rb);
+    el('rect', {x:bp[0] - 2.5, y:bp[1] - 6, width:5, height:6, rx:1.5, fill:'#3c4248'}, ground);
+    if (bq % 36 === 0) perchBird(ground, bp[0], bp[1] - 6, bq);
+  }
 
   // 綠地
   GREENS.forEach(function(G){ el('polygon', {points:pts(circlePts(G.at[0], G.at[1], G.r, 36)), fill:'var(--park)'}, ground); });
@@ -970,17 +991,22 @@ function buildMap(){
   });
 
   // 河流
-  var rs = RIVER_S.map(function(q){ return iso(q[0], q[1]); });
+  var rs = RIVER_S.filter(inLand).map(function(q){ return iso(q[0], q[1]); });
   el('path', {d:polyD(rs), stroke:'var(--river-rim)', 'stroke-width':34, fill:'none', 'stroke-linecap':'round', 'stroke-linejoin':'round'}, ground);
   el('path', {d:polyD(rs), stroke:'var(--river)', 'stroke-width':27, fill:'none', 'stroke-linecap':'round', 'stroke-linejoin':'round'}, ground);
   el('path', {d:polyD(rs), stroke:'rgba(255,255,255,.35)', 'stroke-width':2, 'stroke-dasharray':'10 18', fill:'none', class:'link-path'}, ground);
   bridges.forEach(function(run){
     var ext = run.slice(); BRIDGE_S = BRIDGE_S.concat(run);
     var sp = ext.map(function(q){ return iso(q[0], q[1]); });
-    el('path', {d:polyD(sp), stroke:'#8a5f37', 'stroke-width':15, fill:'none', 'stroke-linecap':'butt'}, ground);
-    el('path', {d:polyD(sp), stroke:'#d9b07a', 'stroke-width':10, fill:'none', 'stroke-linecap':'butt'}, ground);
-    el('path', {d:polyD(sp), stroke:'#8a5f37', 'stroke-width':1, 'stroke-dasharray':'2 4', fill:'none'}, ground);
+    el('path', {d:polyD(sp), stroke:'#5b7c99', 'stroke-width':15, fill:'none', 'stroke-linecap':'butt'}, ground);
+    el('path', {d:polyD(sp), stroke:'#f4f6f7', 'stroke-width':10, fill:'none', 'stroke-linecap':'butt'}, ground);
+    el('path', {d:polyD(sp), stroke:'#5b7c99', 'stroke-width':1, 'stroke-dasharray':'2 4', fill:'none'}, ground);
   });
+  // 輕軌鐵道：碎石道床＋枕木＋兩條鋼軌（等 gx+gy 的線在畫面上是水平線）
+  var ta = iso(TRACK[0][0], TRACK[0][1]), tb = iso(TRACK[1][0], TRACK[1][1]);
+  el('line', {x1:ta[0], y1:ta[1], x2:tb[0], y2:tb[1], stroke:'#b9ad9a', 'stroke-width':14}, ground);
+  el('line', {x1:ta[0], y1:ta[1], x2:tb[0], y2:tb[1], stroke:'#6b5a48', 'stroke-width':10, 'stroke-dasharray':'2.5 4.5'}, ground);
+  [-3, 3].forEach(function(o){ el('line', {x1:ta[0], y1:ta[1] + o, x2:tb[0], y2:tb[1] + o, stroke:'#5d646b', 'stroke-width':1.6}, ground); });
 
   // 場地地塊與場地裝飾
   ZONES.forEach(function(z){
@@ -1009,7 +1035,8 @@ function buildMap(){
   function treeOK(gx, gy){
     var a = Math.atan2(gy - C[1], gx - C[0]);
     if (Math.hypot(gx - C[0], gy - C[1]) > islandR(a) - .7) return false;
-    if (riverDist(gx, gy) < .95 || minDist(ROAD_S, gx, gy) < .45) return false;
+    if (riverDist(gx, gy) < .95 || minDist(ROAD_S, gx, gy) < .45 || trackDist(gx, gy) < .7) return false;
+    if (CRANES.some(function(q){ return Math.hypot(gx - q[0], gy - q[1]) < 1; })) return false;
     if (TOOLS.some(function(t){ return Math.abs(gx - t.gx) < t.s + .4 && Math.abs(gy - t.gy) < t.s + .4; })) return false;
     if (WATERS.some(function(w){ return Math.hypot(gx - w.at[0], gy - w.at[1]) < w.r + .45; })) return false;
     if (ZONES.some(function(z){ return z.id !== 'idea' && gx > z.box[0]-.15 && gx < z.box[2]+.15 && gy > z.box[1]-.15 && gy < z.box[3]+.15; })) return false;
@@ -1026,9 +1053,11 @@ function buildMap(){
   var things = [];
   trees.forEach(function(t){ things.push({kind:'tree', t:t, d:t.gx + t.gy}); });
   TOOLS.forEach(function(t){ things.push({kind:'bld', t:t, d:t.gx + t.gy}); });
+  CRANES.forEach(function(q){ things.push({kind:'crane', t:{gx:q[0], gy:q[1]}, d:q[0] + q[1]}); });
   things.sort(function(a, b){ return a.d - b.d; });
   L.blds = el('g', {}, svg);
-  things.forEach(function(o){ if (o.kind === 'tree') drawTree(o.t); else drawBuilding(o.t); });
+  things.forEach(function(o){ if (o.kind === 'tree') drawTree(o.t); else if (o.kind === 'crane') drawCrane(o.t); else drawBuilding(o.t); });
+  L.tram = el('g', {'pointer-events':'none', class:'tram'}, L.blds); L.tram._d = TRACK_SUM; drawTram(L.tram);
 
   // 地點名稱：放在地塊朝外（遠離島中心）的那一側；指揮塔放前方
   L.zoneTags = el('g', {'pointer-events':'none'}, svg);
@@ -1048,7 +1077,9 @@ function buildMap(){
     zoneTag(p[0], p[1] + 14, G.name, '', null, 'zone-tag decor-tag');
   });
   var rp = iso(RIVER[4][0] + .2, RIVER[4][1] - .9);
-  zoneTag(rp[0], rp[1], '靈感河', 'IDEA RIVER', '#3a8fae', 'zone-tag decor-tag');
+  zoneTag(rp[0], rp[1], '倉庫運河', 'WAREHOUSE CANAL', '#3a8fae', 'zone-tag decor-tag');
+  var tp = iso(14.2, TRACK_SUM - 14.2);
+  zoneTag(tp[0], tp[1] + 22, '港邊輕軌', 'HARBOR TRAM', '#6b5a48', 'zone-tag decor-tag');
 
   // 夜色、窗燈、接力線、標籤、吉祥物、雲
   L.night = el('rect', {x:-5000, y:-4000, width:10000, height:9000, fill:'#071a35', opacity:0, 'pointer-events':'none'}, svg);
@@ -1091,6 +1122,7 @@ function buildMap(){
   L.ptags = el('g', {'pointer-events':'none'}, svg);   // 人物名牌永遠在最上層，走到建築後面也看得到名字
   buildAvatar();
   L.clouds = el('g', {'pointer-events':'none', opacity:.4}, svg);
+  L.gulls = el('g', {'pointer-events':'none'}, svg); buildGulls();
   for (var c2 = 0; c2 < 4; c2++){
     var cg = el('g', {}, L.clouds), w0 = 50 + c2 * 14;
     el('ellipse', {cx:0, cy:0, rx:w0, ry:w0*.32, fill:'#fff', opacity:.75}, cg);
@@ -1100,12 +1132,12 @@ function buildMap(){
   drawLinks();
 }
 
-// 創作看板（平面）：兩根柱子＋看板，上方有醒目的「📋 看板」標籤；內容換了就重畫
+// 公布欄（平面）：兩根柱子＋看板，上方有醒目的「📋 公布欄」標籤；內容換了就重畫
 function drawBoard2D(){
   if (!L.blds) return;
   if (L.board) L.board.remove();
   var p = up(iso(BOARD_AT[0], BOARD_AT[1]), groundAt(BOARD_AT[0], BOARD_AT[1])), c = board.color || '#2ec4b6';
-  var g = el('g', {class:'board', tabindex:0, role:'button', 'aria-label':'創作看板：' + board.title, transform:'translate(' + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ')'}, L.blds);
+  var g = el('g', {class:'board', tabindex:0, role:'button', 'aria-label':'公布欄：' + board.title, transform:'translate(' + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ')'}, L.blds);
   g._d = BOARD_AT[0] + BOARD_AT[1];
   el('ellipse', {class:'ring', cx:0, cy:0, rx:34, ry:16, fill:'none', stroke:'#ffd23f', 'stroke-width':3}, g);
   el('ellipse', {cx:4, cy:2, rx:26, ry:7, fill:'rgba(0,0,0,.15)'}, g);
@@ -1118,7 +1150,7 @@ function drawBoard2D(){
   var tg = el('g', {class:'board-flag', transform:'translate(0,-74)'}, g);
   el('rect', {x:-30, y:-11, width:60, height:20, rx:10, fill:'#ffd23f', stroke:'#3b2f3a', 'stroke-width':1.4}, tg);
   el('path', {d:'M-4 9 L0 14 L4 9 Z', fill:'#ffd23f', stroke:'#3b2f3a', 'stroke-width':1.2}, tg);
-  el('text', {x:0, y:4, 'text-anchor':'middle', 'font-size':12, 'font-weight':700, fill:'#3b2f3a', 'font-family':'var(--f-body)'}, tg).textContent = '📋 看板';
+  el('text', {x:0, y:4, 'text-anchor':'middle', 'font-size':12, 'font-weight':700, fill:'#3b2f3a', 'font-family':'var(--f-body)'}, tg).textContent = '📋 公布欄';
   el('polygon', {class:'hit', points:'-34,4 34,4 34,-88 -34,-88'}, g);
   L.board = g;
   placeDepth(g, g._d);
@@ -1134,11 +1166,10 @@ function decorate(z, g){
     var lp = iso(w.at[0] - .2, w.at[1] + .1);
     el('ellipse', {cx:lp[0], cy:lp[1], rx:6, ry:3, fill:'#7cc36a'}, g);   // 荷葉
   }
-  if (z.id === 'school'){
+  if (z.id === 'school'){                                       // 露天舞台：木甲板＋三排階梯座位
     var tc = [11.0, 1.3];
-    el('polygon', {points:pts(circlePts(tc[0], tc[1], .85, 40)), fill:'#d0745a'}, g);
-    el('polygon', {points:pts(circlePts(tc[0], tc[1], .72, 40)), fill:'none', stroke:'#fff', 'stroke-width':1, opacity:.8}, g);
-    el('polygon', {points:pts(circlePts(tc[0], tc[1], .56, 40)), fill:'#7fc46b'}, g);
+    [.95, .78, .61].forEach(function(r, i){ el('polygon', {points:pts(circlePts(tc[0], tc[1], r, 40).filter(function(q, k){ return k <= 20; })), fill:i % 2 ? '#d8cbb3' : '#c4b393', stroke:'#8c7a5c', 'stroke-width':.8}, g); });
+    el('polygon', {points:pts(circlePts(tc[0], tc[1], .42, 40)), fill:'#b07a4a', stroke:'#6b4a2c', 'stroke-width':1}, g);
   }
   if (z.id === 'fund'){
     var f = WATERS[1];
@@ -1152,20 +1183,68 @@ function decorate(z, g){
     el('polygon', {points:pts(st), fill:'var(--road)'}, g);
     el('line', {x1:iso(7.3, z.box[1] + .2)[0], y1:iso(7.3, z.box[1] + .2)[1], x2:iso(7.3, z.box[3] - .2)[0], y2:iso(7.3, z.box[3] - .2)[1], stroke:'#f4b942', 'stroke-width':1.5, 'stroke-dasharray':'6 6'}, g);
   }
-  if (z.id === 'ecom'){
-    var pier = [[13.3, 16.2], [14.85, 16.2], [14.85, 16.85], [13.3, 16.85]].map(function(q){ return iso(q[0], q[1]); });
-    el('polygon', {points:pts(pier.map(function(p){ return [p[0], p[1] + 5]; })), fill:'#8a5f37'}, g);
-    el('polygon', {points:pts(pier), fill:'#d9b07a', stroke:'#8a5f37', 'stroke-width':1}, g);
+
+}
+
+function isPalm(t){ return hash(t.gx.toFixed(2) + t.gy.toFixed(2)) % 4 !== 0; }
+function drawTree(t){
+  var p = up(iso(t.gx, t.gy), t.elev), k = t.big ? 1.25 : 1;
+  var g = el('g', {'pointer-events':'none'}, L.blds); g._d = t.gx + t.gy;
+  el('ellipse', {cx:p[0], cy:p[1], rx:7*k, ry:3.5*k, fill:'rgba(0,0,0,.12)'}, g);
+  if (isPalm(t)){
+    var lean = (hash(t.gx.toFixed(1) + 'l') % 7 - 3) * 1.2, top = [p[0] + lean, p[1] - 34*k];
+    el('path', {d:'M'+p[0]+' '+p[1]+' Q'+(p[0] + lean*.2)+' '+(p[1] - 18*k)+' '+top[0]+' '+top[1], stroke:'#8a6a48', 'stroke-width':3, fill:'none', 'stroke-linecap':'round'}, g);
+    [[-15, 4], [-9, -6], [0, -9], [9, -6], [15, 4], [-4, 9], [5, 8]].forEach(function(f, i){
+      var e = [top[0] + f[0]*k, top[1] + f[1]*k + 6], c = [top[0] + f[0]*.5*k, top[1] - 6*k + f[1]*.3];
+      el('path', {d:'M'+top[0]+' '+top[1]+' Q'+c[0]+' '+c[1]+' '+e[0]+' '+e[1], stroke:i % 2 ? '#3f8a4a' : '#56a654', 'stroke-width':3.2, fill:'none', 'stroke-linecap':'round'}, g);
+    });
+    el('circle', {cx:top[0], cy:top[1] + 1, r:2.2, fill:'#7a5a32'}, g);
+  } else {
+    el('rect', {x:p[0]-1.5, y:p[1]-10, width:3, height:10, fill:'#8a6239'}, g);
+    el('ellipse', {cx:p[0], cy:p[1]-15*k, rx:12*k, ry:7*k, fill:'#4f9a5a'}, g);
+    el('ellipse', {cx:p[0]+3*k, cy:p[1]-17*k, rx:7*k, ry:4*k, fill:'#68b062'}, g);
   }
 }
 
-function drawTree(t){
-  var p = up(iso(t.gx, t.gy), t.elev), k = t.big ? 1.3 : 1;
-  var g = el('g', {'pointer-events':'none'}, L.blds); g._d = t.gx + t.gy;
-  el('ellipse', {cx:p[0], cy:p[1], rx:7*k, ry:3.5*k, fill:'rgba(0,0,0,.12)'}, g);
-  el('rect', {x:p[0]-1.5, y:p[1]-8, width:3, height:8, fill:'#8a6239'}, g);
-  el('polygon', {points:pts([[p[0], p[1]-28*k], [p[0]+8*k, p[1]-6], [p[0]-8*k, p[1]-6]]), fill:'#4f9a5a'}, g);
-  el('polygon', {points:pts([[p[0], p[1]-28*k], [p[0]+8*k, p[1]-6], [p[0], p[1]-6]]), fill:'#3f8550'}, g);
+// 碼頭起重機：兩組門型腳架跨在岸壁上，吊臂收起朝天（港口起重機休息時的樣子）
+function drawCrane(q){
+  var g = el('g', {'pointer-events':'none'}, L.blds); g._d = q.gx + q.gy;
+  var A = iso(q.gx - .38, q.gy + .38), B = iso(q.gx + .38, q.gy - .38), H = 64, RED = '#d9533b', DK = '#8f2f22';
+  el('ellipse', {cx:(A[0] + B[0]) / 2, cy:A[1] + 2, rx:34, ry:6, fill:'rgba(0,0,0,.14)'}, g);
+  [A, B].forEach(function(P){
+    el('line', {x1:P[0] - 6, y1:P[1], x2:P[0], y2:P[1] - H, stroke:DK, 'stroke-width':3}, g);
+    el('line', {x1:P[0] + 6, y1:P[1] + 3, x2:P[0], y2:P[1] - H, stroke:RED, 'stroke-width':3}, g);
+    el('line', {x1:P[0] - 4, y1:P[1] - H * .45, x2:P[0] + 4, y2:P[1] - H * .45, stroke:RED, 'stroke-width':2}, g);
+  });
+  el('line', {x1:A[0], y1:A[1] - H, x2:B[0], y2:B[1] - H, stroke:RED, 'stroke-width':4}, g);
+  var m = [(A[0] + B[0]) / 2, A[1] - H];
+  el('rect', {x:m[0] - 9, y:m[1] - 12, width:18, height:12, fill:'#f2f2ee', stroke:DK, 'stroke-width':1}, g);
+  el('line', {x1:m[0] - 4, y1:m[1] - 4, x2:m[0] + 18, y2:m[1] - 62, stroke:RED, 'stroke-width':3.5}, g);
+  el('line', {x1:m[0] + 4, y1:m[1] - 12, x2:m[0] + 18, y2:m[1] - 62, stroke:DK, 'stroke-width':1}, g);
+  el('circle', {class:'pulse', cx:m[0] + 18, cy:m[1] - 64, r:2.5, fill:'#ff5a4a'}, g);
+  [[A[0] + 8, A[1] - H - 2], [B[0] - 6, B[1] - H - 2]].forEach(function(b, i){ perchBird(g, b[0], b[1], i); });
+}
+function perchBird(g, x, y, i){                                  // 停著的海鷗：會低頭啄一下
+  var b = el('g', {class:'perch', transform:'translate('+x.toFixed(1)+','+y.toFixed(1)+')'}, g);
+  el('ellipse', {cx:0, cy:-3, rx:4, ry:2.6, fill:'#fbfbf8', stroke:'#4a4f55', 'stroke-width':.6}, b);
+  el('path', {d:'M-4 -3 L-7 -1', stroke:'#4a4f55', 'stroke-width':1.2}, b);
+  var hd = el('g', {class:'peck', style:'animation-delay:' + (i * 1.7) + 's'}, b);
+  el('circle', {cx:3, cy:-6, r:1.8, fill:'#fbfbf8', stroke:'#4a4f55', 'stroke-width':.6}, hd);
+  el('path', {d:'M4.6 -6 L6.6 -5.6', stroke:'#f4a73b', 'stroke-width':1}, hd);
+}
+
+// 港邊輕軌：兩節車廂，在鐵道上來回開
+function drawTram(g){
+  var body = el('g', {}, g);
+  [[-30, 0], [2, 0]].forEach(function(o){
+    el('rect', {x:o[0], y:-17, width:28, height:14, rx:5, fill:'#fbfaf6', stroke:'#3c4248', 'stroke-width':1}, body);
+    el('rect', {x:o[0] + 3, y:-14, width:22, height:5, rx:1.5, fill:'#8fb6c8'}, body);
+    el('rect', {x:o[0], y:-7, width:28, height:2.5, fill:'#e05a47'}, body);
+    el('rect', {x:o[0] + 6, y:-21, width:16, height:4, fill:'#3c4248'}, body);
+  });
+  el('line', {x1:-2, y1:-12, x2:2, y2:-12, stroke:'#3c4248', 'stroke-width':2}, body);
+  el('path', {d:'M-10 -21 L-4 -29 L4 -29', stroke:'#3c4248', 'stroke-width':1, fill:'none'}, body);
+  L.tramBody = body;
 }
 
 function footprint(t, s){
@@ -1174,6 +1253,24 @@ function footprint(t, s){
 function up(p, h){ return [p[0], p[1] - h]; }
 
 var CREAM = {house:1, pavilion:1, school:1, civic:1, lighthouse:1};
+var BRICK = {brick:1, shop:1};
+var BOX_C = ['#e05a47', '#f4b942', '#4f9dff', '#2ec4b6', '#9d8cf2', '#ef6b8a', '#6bbf59'];
+function drawContainer(t, g, z){                                   // 兩個錯開疊起來的貨櫃
+  var e = t.elev, hv = hash(t.id);
+  function box(gx, gy, sx, sy, z0, z1, color){
+    var T = iso(gx - sx, gy - sy), Rr = iso(gx + sx, gy - sy), B = iso(gx + sx, gy + sy), Lp = iso(gx - sx, gy + sy);
+    function F(p, k){ return [p[0], p[1] - e - k]; }
+    el('polygon', {points:pts([F(Lp, z0), F(B, z0), F(B, z1), F(Lp, z1)]), fill:mix(color, '#14303d', .25)}, g);
+    el('polygon', {points:pts([F(B, z0), F(Rr, z0), F(Rr, z1), F(B, z1)]), fill:color}, g);
+    el('polygon', {class:'roof', points:pts([F(T, z1), F(Rr, z1), F(B, z1), F(Lp, z1)]), fill:mix(color, '#ffffff', .3)}, g);
+    for (var i = 1; i < 6; i++){ var a = i / 6;
+      [[Lp, B], [B, Rr]].forEach(function(fc){ var P1 = [fc[0][0] + (fc[1][0]-fc[0][0])*a, fc[0][1] + (fc[1][1]-fc[0][1])*a]; el('line', {x1:P1[0], y1:P1[1] - e - z0 - 1, x2:P1[0], y2:P1[1] - e - z1 + 1, stroke:'rgba(0,0,0,.16)', 'stroke-width':1}, g); });
+    }
+  }
+  var s = t.s, c1 = z.color, c2 = BOX_C[hv % BOX_C.length] === c1 ? BOX_C[(hv + 1) % BOX_C.length] : BOX_C[hv % BOX_C.length];
+  box(t.gx, t.gy, s, s * .72, 0, 12, c1);
+  box(t.gx + (hv % 2 ? .12 : -.12), t.gy + .08, s * .9, s * .6, 12, 24, c2);
+}
 function drawBuilding(t){
   var z = zoneById[t.zone], s = t.s, h = t.h, e = t.elev, st = t.style, f = footprint(t, s), top = h + t.roof;
   function F(p, k){ return up(p, e + (k || 0)); }
@@ -1182,24 +1279,48 @@ function drawBuilding(t){
   var c = iso(t.gx, t.gy);
   el('ellipse', {class:'ring', cx:c[0], cy:c[1] - e, rx:HW*(s*2 + .15), ry:HH*(s*2 + .15), fill:'none', stroke:'var(--coral)', 'stroke-width':3}, g);
   el('polygon', {points:pts([f.T, f.R, f.B, f.Lp].map(function(p){ return [p[0]+5, p[1]+3 - e]; })), fill:'rgba(0,0,0,.14)'}, g);
-  var wallL = CREAM[st] ? '#e3d6c0' : mix(z.color, '#4a5d68', .45), wallR = CREAM[st] ? '#faf4e8' : mix(z.color, '#ffffff', .55);
-  el('polygon', {points:pts([F(f.Lp), F(f.B), F(f.B, h), F(f.Lp, h)]), fill:wallL}, g);
-  el('polygon', {points:pts([F(f.B), F(f.R), F(f.R, h), F(f.B, h)]), fill:wallR}, g);
+  var wallL = CREAM[st] ? '#e3d6c0' : BRICK[st] ? '#9c4a36' : st === 'warehouse' ? '#7f898f' : mix(z.color, '#4a5d68', .45);
+  var wallR = CREAM[st] ? '#faf4e8' : BRICK[st] ? '#bd6247' : st === 'warehouse' ? '#aab3b8' : mix(z.color, '#ffffff', .55);
   function onFace(A, B, a1, a2, z1, z2){ var u = [B[0]-A[0], B[1]-A[1]]; var P = function(a, zz){ return [A[0] + u[0]*a, A[1] + u[1]*a - e - zz]; }; return [P(a1, z1), P(a2, z1), P(a2, z2), P(a1, z2)]; }
   var faces = [[f.Lp, f.B], [f.B, f.R]];
+  if (st === 'container'){
+    drawContainer(t, g, z);
+    drawWindows(t, g, 'rgba(255,255,255,.6)', 'rgba(20,48,61,.35)');
+    t.flagG = el('g', {opacity:0}, g);
+    var fc0 = F(c, h + 2);
+    el('line', {x1:fc0[0]+10, y1:fc0[1], x2:fc0[0]+10, y2:fc0[1]-24, stroke:'#14303d', 'stroke-width':1.6}, t.flagG);
+    el('polygon', {points:pts([[fc0[0]+10, fc0[1]-24], [fc0[0]+24, fc0[1]-19], [fc0[0]+10, fc0[1]-14]]), fill:'var(--coral)'}, t.flagG);
+    el('polygon', {class:'hit', points:pts([F(f.Lp), F(f.B), F(f.R), F(f.R, h + 8), F(f.T, h + 8), F(f.Lp, h + 8)])}, g);
+    t.g = g; return;
+  }
+  el('polygon', {points:pts([F(f.Lp), F(f.B), F(f.B, h), F(f.Lp, h)]), fill:wallL}, g);
+  el('polygon', {points:pts([F(f.B), F(f.R), F(f.R, h), F(f.B, h)]), fill:wallR}, g);
+  if (BRICK[st]) faces.forEach(function(fc){ for (var zz = 3; zz < h - 1; zz += 3.2) el('polygon', {points:pts(onFace(fc[0], fc[1], 0, 1, zz, zz + .5)), fill:'rgba(60,20,10,.22)'}, g); });
+  if (st === 'warehouse') faces.forEach(function(fc){ for (var a = .1; a < 1; a += .1) el('polygon', {points:pts(onFace(fc[0], fc[1], a, a + .012, 0, h)), fill:'rgba(0,0,0,.14)'}, g); });
+  if (st === 'brick'){
+    el('polygon', {points:pts(onFace(f.Lp, f.B, .32, .68, 0, 13)), fill:z.color, stroke:'#fff', 'stroke-width':1}, g);   // 大鐵門漆場地色
+    var hv2 = hash(t.id), MC = ['#ffd23f', '#4f9dff', '#ef6b8a', '#2ec4b6', '#9d8cf2'];             // 側牆的抽象彩繪
+    el('polygon', {points:pts(onFace(f.B, f.R, .08, .92, 3, h - 3)), fill:'#f4efe6', opacity:.9}, g);
+    el('polygon', {points:pts(onFace(f.B, f.R, .1, .45 + (hv2 % 3) * .1, 4, h * .55)), fill:MC[hv2 % 5]}, g);
+    el('polygon', {points:pts(onFace(f.B, f.R, .5, .9, h * .35, h - 4)), fill:MC[(hv2 + 2) % 5]}, g);
+    var num = String(TOOLS.indexOf(t) + 1); num = num.length < 2 ? '0' + num : num;
+    var np = F(iso(t.gx + s, t.gy), h * .5);
+    el('text', {x:np[0] + 2, y:np[1] + 3, 'text-anchor':'middle', 'font-size':9, 'font-weight':700, fill:'#3b2f3a', 'font-family':'var(--f-mono)'}, g).textContent = num;
+  }
   if (st === 'lighthouse') faces.forEach(function(fc){ [[14, 22], [36, 44]].forEach(function(b){ el('polygon', {points:pts(onFace(fc[0], fc[1], 0, 1, b[0], b[1])), fill:'#e05a47'}, g); }); });
   if (st === 'civic') faces.forEach(function(fc){ [.14, .38, .62, .86].forEach(function(a){ el('polygon', {points:pts(onFace(fc[0], fc[1], a - .04, a + .04, 3, h - 5)), fill:'#ffffff', opacity:.85}, g); }); el('polygon', {points:pts(onFace(fc[0], fc[1], 0, 1, h - 5, h)), fill:mix(z.color, '#14303d', .2)}, g); });
-  if (st === 'warehouse') el('polygon', {points:pts(onFace(f.B, f.R, .3, .7, 0, 12)), fill:'#5a4632'}, g);
+  if (st === 'warehouse') el('polygon', {points:pts(onFace(f.Lp, f.B, .25, .75, 0, 14)), fill:mix(z.color, '#14303d', .15), stroke:'#fff', 'stroke-width':1}, g);
   if (st === 'shop') faces.forEach(function(fc){
     el('polygon', {points:pts(onFace(fc[0], fc[1], .08, .92, 0, 10)), fill:'rgba(255,255,255,.75)'}, g);
     [0,1,2,3,4,5].forEach(function(i){ el('polygon', {points:pts(onFace(fc[0], fc[1], i/6, (i+1)/6, 10, 15)), fill:i % 2 ? '#fff' : z.color}, g); });
   });
   drawWindows(t, g, 'rgba(255,255,255,.55)', 'rgba(20,48,61,.28)');
-  if (t.roof && (st === 'house' || st === 'warehouse')){
-    var P1 = iso(t.gx - s, t.gy), P2 = iso(t.gx + s, t.gy);
-    el('polygon', {points:pts([F(f.T, h), F(f.R, h), F(P2, top), F(P1, top)]), fill:mix(z.color, '#14303d', .25)}, g);
+  if (t.roof && (st === 'house' || st === 'warehouse' || st === 'brick')){
+    var P1 = iso(t.gx - s, t.gy), P2 = iso(t.gx + s, t.gy), roofC = st === 'house' ? z.color : mix('#66737c', z.color, .3);
+    el('polygon', {points:pts([F(f.T, h), F(f.R, h), F(P2, top), F(P1, top)]), fill:mix(roofC, '#14303d', .25)}, g);
     el('polygon', {points:pts([F(f.R, h), F(f.B, h), F(P2, top)]), fill:wallR}, g);
-    el('polygon', {class:'roof', points:pts([F(P1, top), F(P2, top), F(f.B, h), F(f.Lp, h)]), fill:z.color}, g);
+    el('polygon', {class:'roof', points:pts([F(P1, top), F(P2, top), F(f.B, h), F(f.Lp, h)]), fill:roofC}, g);
+    if (st !== 'house') el('polygon', {points:pts([F(P1, top), F(P2, top), F(P2, top - 2), F(P1, top - 2)]), fill:z.color}, g);
   } else if (t.roof){
     var A = F(c, top);
     el('polygon', {points:pts([F(f.Lp, h), F(f.T, h), A]), fill:mix(z.color, '#14303d', .3)}, g);
@@ -1237,14 +1358,14 @@ function drawWindows(t, g, lit, frame){
   var st = t.style;
   if (st === 'civic' || st === 'lighthouse') return;
   var f = footprint(t, t.s), e = t.elev;
-  var rows = st === 'house' || st === 'pavilion' || st === 'warehouse' ? 1 : Math.max(1, Math.floor((t.h - 8) / 13));
-  var z0 = st === 'shop' ? 16 : st === 'warehouse' ? 13 : st === 'pavilion' ? 4 : 7;
+  var rows = st === 'house' || st === 'pavilion' || st === 'warehouse' || st === 'brick' ? 1 : st === 'container' ? 2 : Math.max(1, Math.floor((t.h - 8) / 13));
+  var z0 = st === 'shop' ? 16 : st === 'warehouse' || st === 'brick' ? 15 : st === 'pavilion' ? 4 : st === 'container' ? 3 : 7;
   if (st === 'shop') rows = Math.max(1, Math.floor((t.h - 16) / 10));
-  var cols = st === 'school' ? [[.1,.28],[.38,.56],[.68,.86]] : [[.18,.42],[.58,.82]];
+  var cols = st === 'school' ? [[.1,.28],[.38,.56],[.68,.86]] : st === 'brick' ? [[.08,.24],[.76,.92]] : st === 'container' ? [[.3,.7]] : [[.18,.42],[.58,.82]];
   [[f.Lp, f.B], [f.B, f.R]].forEach(function(face, fi){
     var A = face[0], B = face[1], u = [B[0]-A[0], B[1]-A[1]];
     cols.forEach(function(col){
-      if (st === 'warehouse' && fi === 1) return;
+      if ((st === 'warehouse' || st === 'brick' || st === 'container') && fi === 1) return;
       for (var r = 0; r < rows; r++){
         var z1 = z0 + r * 13, z2 = z1 + (st === 'pavilion' ? 5 : 7);
         if (z2 > t.h - 2) break;
@@ -1278,29 +1399,97 @@ function drawLinks(){
 }
 
 /* ---------- 船、雲 ---------- */
-var boats = [{a:0, r:14.4, s:.03}, {a:2.3, r:15.2, s:-.022}, {a:4.4, r:14.8, s:.026}];
+// 船沿著和岸壁平行的航道（gx+gy＝lane）來回開；u 是航道上的 gx
+var boats = [{u:9, lane:35.6, s:.32, kind:'ship'}, {u:21, lane:37.4, s:-.22, kind:'ship'}, {u:15, lane:34.4, s:.6, kind:'tug'}];
+var tram = {u:12, s:.55};
+// 港裡的魚：不定時跳出水面畫一道弧線，入水時濺起水花
+var FISH = [{u:9.5, lane:34.2}, {u:13, lane:36.2}, {u:17.5, lane:34.8}, {u:21, lane:35.4}, {u:24, lane:33.8}, {u:6.5, lane:36.8}, {u:-3, lane:2.5}, {u:22.5, lane:24.5}];
+var FISH_C = ['#c9d6de', '#f4a259', '#9fc4d6', '#e8e1c7'];
+function buildFish(){
+  FISH.forEach(function(f, i){
+    f.t = -(i * .9 + 1); f.dir = i % 2 ? -1 : 1;
+    f.g = el('g', {opacity:0}, L.boats);
+    f.splash = el('ellipse', {rx:0, ry:0, fill:'none', stroke:'#ffffff', 'stroke-width':1.4, opacity:0}, L.boats);
+    f.body = el('g', {}, f.g);
+    el('ellipse', {cx:0, cy:0, rx:7, ry:3.2, fill:FISH_C[i % 4], stroke:'rgba(20,48,61,.5)', 'stroke-width':.6}, f.body);
+    el('path', {d:'M-6 0 L-11 -4 L-11 4 Z', fill:FISH_C[i % 4], stroke:'rgba(20,48,61,.5)', 'stroke-width':.6}, f.body);
+    el('circle', {cx:3.8, cy:-.8, r:.9, fill:'#14303d'}, f.body);
+  });
+}
+function stepFish(dt){
+  FISH.forEach(function(f){
+    f.t += dt;
+    var p = iso(f.u, f.lane - f.u), D = 1.1;
+    if (f.t < 0){ f.g.setAttribute('opacity', 0); return; }
+    if (f.t > D + .6){ f.t = -(2 + Math.random() * 5); f.dir = Math.random() < .5 ? -1 : 1; return; }
+    var k = Math.min(1, f.t / D), x = (k - .5) * 34 * f.dir, y = -4 * 26 * k * (1 - k);
+    f.g.setAttribute('opacity', f.t < D ? 1 : 0);
+    var ang = Math.atan2(-4 * 26 * (1 - 2 * k), 34 * f.dir) * 180 / Math.PI;
+    f.g.setAttribute('transform', 'translate('+(p[0] + x).toFixed(1)+','+(p[1] + y).toFixed(1)+') rotate('+ang.toFixed(0)+')' + (f.dir < 0 ? ' scale(1,-1)' : ''));
+    var sp = f.t < .35 ? f.t / .35 : f.t > D ? (f.t - D) / .6 : -1, sx = f.t < .35 ? -17 * f.dir : 17 * f.dir;
+    if (sp >= 0 && sp <= 1){ f.splash.setAttribute('cx', p[0] + sx); f.splash.setAttribute('cy', p[1]); f.splash.setAttribute('rx', 3 + sp * 10); f.splash.setAttribute('ry', 1.2 + sp * 3.5); f.splash.setAttribute('opacity', (1 - sp) * .9); }
+    else f.splash.setAttribute('opacity', 0);
+  });
+}
+// 海鷗群：在港口上空繞圈，翅膀會拍
+var GULLS = [];
+function buildGulls(){
+  L.gulls.innerHTML = ''; GULLS = [];
+  for (var i = 0; i < 9; i++){
+    var g = el('g', {}, L.gulls), w = el('path', {fill:'none', stroke:'#ffffff', 'stroke-width':2.2, 'stroke-linecap':'round', 'stroke-linejoin':'round'}, g);
+    el('path', {d:'M0 0 L0 0', stroke:'#4a4f55', 'stroke-width':1}, g);
+    GULLS.push({g:g, w:w, a:i * .7, r:.75 + (i % 3) * .18, h:90 + (i % 4) * 22, sp:.16 + (i % 3) * .04, ph:i * 1.3});
+  }
+}
+function stepGulls(){
+  var c = iso(17.2, 17.2);
+  GULLS.forEach(function(b){
+    if (!state.paused) b.a += b.sp * .016;
+    var x = c[0] + Math.cos(b.a) * 300 * b.r, y = c[1] - b.h + Math.sin(b.a) * 80 * b.r + Math.sin(elapsed * 1.3 + b.ph) * 6;
+    var fl = Math.sin(elapsed * 7 + b.ph) * 4;
+    b.w.setAttribute('d', 'M-8 ' + (fl * .6).toFixed(1) + ' Q-4 ' + (-4 - fl).toFixed(1) + ' 0 0 Q4 ' + (-4 - fl).toFixed(1) + ' 8 ' + (fl * .6).toFixed(1));
+    b.w.setAttribute('stroke', state.view === 'map' && darknessNow() > .6 ? '#c8d2da' : '#ffffff');
+    b.g.setAttribute('transform', 'translate('+x.toFixed(1)+','+y.toFixed(1)+') scale(1.5)');
+  });
+}
+function darknessNow(){ try { return +L.night.getAttribute('opacity') || 0; } catch(e){ return 0; } }
 function buildBoats(){
   L.boats.innerHTML = '';
-  boats.forEach(function(b){
+  boats.forEach(function(b, i){
     b.g = el('g', {}, L.boats);
-    el('path', {d:'M-12 0 L12 0 L7 6 L-7 6 Z', fill:'#fff'}, b.g);
-    el('path', {d:'M0 -1 L0 -20 L10 -4 Z', fill:'var(--coral)'}, b.g);
+    if (b.kind === 'tug'){
+      el('path', {d:'M-14 0 L12 0 L8 7 L-12 7 Z', fill:'#d9533b'}, b.g);
+      el('rect', {x:-6, y:-9, width:10, height:9, fill:'#fbfaf6', stroke:'#3c4248', 'stroke-width':.8}, b.g);
+      el('rect', {x:-3, y:-14, width:3, height:5, fill:'#3c4248'}, b.g);
+      return;
+    }
+    el('path', {d:'M-62 0 L58 0 L48 13 L-58 13 Z', fill:'#2f3e4c'}, b.g);
+    el('path', {d:'M-60 9 L52 9 L48 13 L-58 13 Z', fill:'#b8402f'}, b.g);
+    for (var k = 0; k < 9; k++) for (var r = 0; r < 2; r++)
+      el('rect', {x:-40 + k * 9.5, y:-8 - r * 7, width:9, height:7, fill:BOX_C[(k * 3 + r + i) % BOX_C.length], stroke:'rgba(0,0,0,.25)', 'stroke-width':.6}, b.g);
+    el('rect', {x:-58, y:-20, width:14, height:20, fill:'#fbfaf6', stroke:'#3c4248', 'stroke-width':.8}, b.g);
+    el('rect', {x:-56, y:-17, width:10, height:3, fill:'#8fb6c8'}, b.g);
   });
+  buildFish();
 }
 var lastFrame = 0, elapsed = 0;
 function tick(ts){
   var dt = Math.min(.05, (ts - lastFrame) / 1000 || 0); lastFrame = ts;
   if (!state.paused){
     elapsed += dt;
-    boats.forEach(function(b){ b.a += b.s * dt; });
+    boats.forEach(function(b){ b.u += b.s * dt; if (b.u > 27) b.u = 5; if (b.u < 5) b.u = 27; });
+    tram.u += tram.s * dt; if (tram.u > 19.6 || tram.u < 11.6){ tram.s = -tram.s; tram.u = Math.max(11.6, Math.min(19.6, tram.u)); }
   }
   stepWalker(dt, ts);
   stepPeers(dt);
   netTick(ts);
   boats.forEach(function(b){
-    var p = iso(C[0] + Math.cos(b.a)*b.r, C[1] + Math.sin(b.a)*b.r), bob = Math.sin(elapsed*2 + b.a*5) * 1.5;
+    var p = iso(b.u, b.lane - b.u), bob = Math.sin(elapsed*1.6 + b.lane) * (b.kind === 'tug' ? 1.4 : .7);
     b.g.setAttribute('transform', 'translate('+p[0].toFixed(1)+','+(p[1]+bob).toFixed(1)+')' + (b.s < 0 ? ' scale(-1,1)' : ''));
   });
+  if (!state.paused) stepFish(dt);
+  stepGulls();
+  if (L.tramBody){ var tq = iso(tram.u, TRACK_SUM - tram.u); L.tramBody.setAttribute('transform', 'translate('+tq[0].toFixed(1)+','+tq[1].toFixed(1)+')' + (tram.s < 0 ? ' scale(-1,1)' : '')); }
   Array.prototype.forEach.call(L.clouds.children, function(cg, i){
     var x = ((elapsed * (10 + i*3) + i * 300) % 1400) - 700, y = -40 + i * 110;
     cg.setAttribute('transform', 'translate('+x.toFixed(1)+','+y+')');
@@ -1396,6 +1585,7 @@ function walkableAt(gx, gy){
   if (Math.hypot(gx - C[0], gy - C[1]) > islandR(a) - .35) return false;
   if (riverDist(gx, gy) < .62 && minDist(BRIDGE_S, gx, gy) > .45) return false;
   for (var i = 0; i < TOOLS.length; i++){ var t = TOOLS[i]; if (Math.abs(gx - t.gx) < t.s + BODY && Math.abs(gy - t.gy) < t.s + BODY) return false; }
+  if (CRANES.some(function(q){ return Math.hypot(gx - q[0], gy - q[1]) < .55; })) return false;
   return !WATERS.some(function(w){ return Math.hypot(gx - w.at[0], gy - w.at[1]) < w.r + .1; });
 }
 function fineOK(gx, gy){
@@ -2105,7 +2295,7 @@ var vb = {x:0, y:0, w:100, h:100}, home = null, anim = null;
 function setVB(){ svg.setAttribute('viewBox', vb.x.toFixed(1)+' '+vb.y.toFixed(1)+' '+vb.w.toFixed(1)+' '+vb.h.toFixed(1)); }
 function islandBox(){
   var xs = [], ys = [];
-  for (var a = 0; a < Math.PI*2; a += .2){ var p = iso(C[0] + Math.cos(a)*13.2, C[1] + Math.sin(a)*13.2); xs.push(p[0]); ys.push(p[1]); }
+  for (var a = 0; a < Math.PI*2; a += .1){ var rr = islandR(a) + .8, p = iso(C[0] + Math.cos(a)*rr, C[1] + Math.sin(a)*rr); xs.push(p[0]); ys.push(p[1]); }
   return {x:Math.min.apply(null, xs), y:Math.min.apply(null, ys) - 40, w:Math.max.apply(null, xs) - Math.min.apply(null, xs), h:Math.max.apply(null, ys) - Math.min.apply(null, ys) + 50};
 }
 function padBox(b){
@@ -2208,7 +2398,7 @@ function hoverTip(e){
   showTip(toolById[g.getAttribute('data-id')], e.clientX, e.clientY - 12);
 }
 function showBoardTip(x, y){
-  var tip = $('tip'); tip.textContent = '📋 創作看板：' + board.title;
+  var tip = $('tip'); tip.textContent = '📋 公布欄：' + board.title;
   tip.style.left = Math.min(window.innerWidth - tip.offsetWidth - 8, Math.max(8, x - tip.offsetWidth/2)) + 'px';
   tip.style.top = Math.max(8, y - 34) + 'px';
   tip.classList.add('show');
@@ -2362,13 +2552,13 @@ function openBoard(refresh){
     if (state.sel && toolById[state.sel]) toolById[state.sel].g.classList.remove('sel');
     state.sel = null; drawLinks(); closeDrawer('logDrawer');
     walker.goal = null; walkTo(BOARD_AT[0] - .9, BOARD_AT[1] + .6);
-    addLog('看了創作看板：' + board.title);
+    addLog('看了公布欄：' + board.title);
     if (state.view === 'map' || state.view === 'time'){ var bp = iso(BOARD_AT[0], BOARD_AT[1]); var box = padBox({x:bp[0] - 420, y:bp[1] - 340, w:840, h:560}); if (svg.getBoundingClientRect().width > 820) box.x += (200 * box.w / svg.getBoundingClientRect().width); animateTo(box); }
   }
   state.boardOpen = true;
   $('dEyebrow').textContent = 'NOTICE BOARD';
   $('dBody').innerHTML =
-    '<span class="zone-chip" style="background:#ffd23f">📋 創作看板・影音片場</span>' +
+    '<span class="zone-chip" style="background:#ffd23f">📋 公布欄・影音片場</span>' +
     '<h2 class="d-name" style="color:' + c + '">' + escHtml(board.title) + '</h2>' +
     '<p class="d-role">' + escHtml(board.sub) + '</p>' +
     '<ul class="board-lines">' + ['l1', 'l2', 'l3'].filter(function(k){ return board[k]; }).map(function(k){ return '<li>' + escHtml(board[k]) + '</li>'; }).join('') + '</ul>' +
