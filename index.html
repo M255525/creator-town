@@ -1031,7 +1031,7 @@ function drawFarBridge(g){
 }
 // 點對面的島：角色走過橋過去；走不過去（例如關掉人物）就直接切換
 function farGoClick(){
-  if (onFarIsland(walker.gx, walker.gy, FAR.r * .35)){ showFarCard('arrive'); return; }   // 已經站在島上
+  if (onFarIsland(walker.gx, walker.gy, FAR.r * .35)){ showFarCard('arrive'); goFar(); return; }   // 已經站在島上
   var before = walker.goal; walker.goal = null; walkTo(FAR.at[0], FAR.at[1]);
   if (!walker.path.length && !onFarIsland(walker.gx, walker.gy)) { walker.goal = before; goFar(); return; }
   far.walking = true;
@@ -1045,9 +1045,7 @@ function showFarCard(kind){
   if (kind === 'walk'){
     c.innerHTML = '<span class="msg">' + FAR.emoji + ' 正在走過橋去<b>' + FAR.name + '</b>…</span><button type="button" class="main" data-far="go">直接前往</button><button type="button" class="x2" data-far="no" aria-label="取消">×</button>';
   } else {
-    far.left = 3;
-    c.innerHTML = '<span class="msg">' + FAR.emoji + ' 到了<b>' + FAR.name + '</b>！<b id="farLeft">3</b> 秒後切換過去</span><button type="button" class="main" data-far="go">立即前往</button><button type="button" data-far="stay">留在這裡</button>';
-    far.timer = setInterval(function(){ far.left--; var e = $('farLeft'); if (e) e.textContent = far.left; if (far.left <= 0){ clearInterval(far.timer); goFar(); } }, 1000);
+    c.innerHTML = '<span class="msg">' + FAR.emoji + ' 到了<b>' + FAR.name + '</b>，切換中…</span>';
   }
   c.hidden = false;
   c.onclick = function(e){
@@ -1060,8 +1058,8 @@ function showFarCard(kind){
 function hideFarCard(){ clearInterval(far.timer); var c = $('farCard'); if (c) c.hidden = true; }
 function farTick(){
   var inside = onFarIsland(walker.gx, walker.gy, FAR.r * .35);
-  if (inside && !far.inside && !far.dismissed){ addLog('走過橋，到了' + FAR.name); showFarCard('arrive'); }
-  if (!inside && far.inside){ far.dismissed = false; hideFarCard(); }
+  if (inside && !far.inside){ addLog('走過橋，到了' + FAR.name); showFarCard('arrive'); goFar(); }   // 一踏上對面的島就切換網址
+  if (!inside && far.inside) hideFarCard();
   if (!inside && far.walking && !walker.path.length){ far.walking = false; hideFarCard(); }
   far.inside = inside;
 }
