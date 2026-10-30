@@ -38,8 +38,10 @@
 - 手冊「常用尺寸」是一般通用規格，已註明以平台官方為準；版權段落註明非法律意見。
 
 ## Port／測試
-- port **8842**（`.claude/launch.json` 的 `creator-town`；程式牆 `LOCAL_APPS` 有一筆 static，`--launchtest` 通過）。
+- port **8842**（`.claude/launch.json` 的 `creator-town`；上線前程式牆 `LOCAL_APPS` 有一筆 static 並通過 `--launchtest`，上線後已移除）。
 - 驗證（2026-10-30，Playwright）：1366×800 平面、立體鳥瞰截圖正常；除了刻意連不上的 presence 外無 console 錯誤；375px 清單、抽屜、manual 無橫向溢出；27 個 `toolUrl` 全部 HTTP 200。
 
-## 部署
-尚未上線（依使用者偏好，新的實驗性工具上線前先問）。上線時比照創業島：公開 repo `M255525/creator-town`、`.github/workflows/deploy-pages.yml` 已複製好（先 push 再開 Pages、注意 master 分支的環境規則）；上線後程式牆改成 `REPO_META`（github-dashboard 同步）並從 `LOCAL_APPS` 移除。
+## 部署（2026-10-30 使用者同意上線）
+- 網頁：公開 repo <https://github.com/M255525/creator-town>，GitHub Pages <https://m255525.github.io/creator-town/>（`master`、`.github/workflows/deploy-pages.yml`）。建公開 repo 被權限擋下，由使用者自己執行 `gh repo create ... --push` 加 `gh api .../pages -X POST -f build_type=workflow`；第一次 push 觸發的 Actions run 成功。
+- 已用正式網址驗證：兩個小鎮分頁進房間 `ZZCT7Q` 互相看到（2 人）、聊天互通；同一時間創業島用同代碼進房只有 1 人（隔離正確）。
+- 程式牆：從 `LOCAL_APPS` 移除、改加 `REPO_META`；github-dashboard `REPO_META` 同步補一行。
