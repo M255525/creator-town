@@ -16,9 +16,14 @@ var cam = {yaw:Math.PI / 4, pitch:.55, dist:8.5, tx:0, ty:0, tz:0, overview:fals
 var O = {blds:{}, pick:[], tags:[], zoneTags:[], avs:{}, lamps:[], anim:[]};
 var keys = {}, lastT = 0, rafId = 0, sky = {dk:-1}, lastZone = null, bannerT = 0;
 
-var PAL = {grass:'#a6d47a', grass2:'#98ca6a', sand:'#d6cfc0', wet:'#8b8578', deep:'#1f6f8f', shallow:'#5fb8c8',
-  park:'#86cf62', lawn:'#b8e58f', yard:'#eadcc0', paving:'#e2ddd3', wood:'#cdb79a', road:'#f1ede4',
+var PAL = {grass:'#b7c87c', grass2:'#a7bb6e', sand:'#d6cfc0', wet:'#8b8578', deep:'#1f6f8f', shallow:'#5fb8c8',
+  park:'#9cc468', lawn:'#c6d498', yard:'#eadcc0', paving:'#e2ddd3', wood:'#cdb79a', road:'#f1ede4',
   hilltop:'#e6dccb', hillside:'#c9b9a0', rim:'#b3ab9b', ballast:'#b9ad9a'};
+// 景色主題（兩座島共用景色程式，只有這裡不同）：港邊倉庫的黃金時刻——暖色薄霧、深青港灣、橄欖色草地
+var THEME = {id:'harbor', top:'#4a7fb0', hor:'#ffd6a8', topN:'#130c2c', horN:'#4b2a4c', topD:'#3d3478', horD:'#ff7e4a', fog:[20, 78],
+  sun:'#ffd29a', sunD:'#ff9a55', sunN:'#b39cff', hemi:'#ffe6cc', ground:'#7d6a4c', hemiN:'#3d2f5c', groundN:'#1e1626',
+  shallow:'#3a9c9a', mid:'#1f6f86', deep:'#123b58', lagoon:1.6, waterOp:.9, waterNight:'#3a3060', waterDusk:'#ff9f6a',
+  glint:'#ffe1a0', glintNight:'#ffcf8a', glints:420, glintK:1.3};
 var INK = '#3b2f3a';                                              // 描邊色：深褐紫，比純黑柔和
 var CREAM = {house:1, pavilion:1, school:1, civic:1, lighthouse:1};
 
@@ -157,7 +162,14 @@ function buildTerrain(){
 
 function buildWater(){
   var g = new T3.PlaneGeometry(120, 120, 90, 90); g.rotateX(-Math.PI / 2); g.translate(C[0], SEA, C[1]);
-  var m = new T3.Mesh(g, new T3.MeshToonMaterial({color:'#47c6e6', transparent:true, opacity:.82, gradientMap:toonGrad()}));
+  var wp = g.attributes.position, wc = new Float32Array(wp.count * 3), cS = col(THEME.shallow), cM = col(THEME.mid), cD = col(THEME.deep), cc = new T3.Color();
+  for (var wi = 0; wi < wp.count; wi++){
+    var ed = Math.min(edgeD(wp.getX(wi), wp.getZ(wi)), farEdge(wp.getX(wi), wp.getZ(wi)));
+    cc.copy(cS).lerp(cM, smooth(.2, THEME.lagoon, ed)).lerp(cD, smooth(THEME.lagoon, THEME.lagoon * 3.5, ed));
+    wc[wi * 3] = cc.r; wc[wi * 3 + 1] = cc.g; wc[wi * 3 + 2] = cc.b;
+  }
+  g.setAttribute('color', new T3.BufferAttribute(wc, 3));
+  var m = new T3.Mesh(g, new T3.MeshToonMaterial({color:'#ffffff', vertexColors:true, transparent:true, opacity:THEME.waterOp, gradientMap:toonGrad()}));
   m.receiveShadow = true; scene.add(m);
   O.water = m; O.waterBase = Float32Array.from(g.attributes.position.array);
   // 浪花：沿海岸一圈
@@ -722,22 +734,36 @@ function buildFarBridge(){                                        // 跨海大�
   scene.add(inkAll(shadowAll(g), .013));
 }
 function buildFar(){
-  buildFarBridge();                                              // 海的另一端：迷你創業島，點了切到創業島網站
-  var a = FAR.at, r = FAR.r, g = new T3.Group(); g.position.set(a[0], 0, a[1]);
-  var sand = mesh(new T3.CylinderGeometry(r + .38, r + .75, 2.2, 36), std('#f3d798'), 0, LAND - .08 - 1.1, 0, g);
-  mesh(new T3.CylinderGeometry(r, r + .1, .16, 36), std('#9edb6f'), 0, LAND, 0, g);
-  [[-.4, -.1, '#ff6f59'], [.3, .5, '#4f9dff']].forEach(function(h){
-    mesh(new T3.BoxGeometry(.5, .38, .5), std('#f3ead9'), h[0], LAND + .27, h[1], g);
-    var rf = pyramid(.62, .3, std(h[2])); rf.position.set(h[0], LAND + .46, h[1]); g.add(rf);
+  buildFarBridge();                                              // 海的另一端：照真實比例的鄰島（兩站共用；外觀依 FARB.style），點了或走過去就切到對面網站
+  var H = FARB.style === 'harbor', g = new T3.Group(), cx = FARB.c[0], cz = FARB.c[1];
+  function slab(off, depth, color, y){                            // 依輪廓擠出一塊地（頂面在 y）
+    var sh = new T3.Shape(); farOutline(off, 96).forEach(function(q, i){ var x = q[0] - cx, z = q[1] - cz; if (i) sh.lineTo(x, z); else sh.moveTo(x, z); });
+    var geo = new T3.ExtrudeGeometry(sh, {depth:depth, bevelEnabled:false, curveSegments:1}); geo.rotateX(Math.PI / 2);
+    var m = new T3.Mesh(geo, std(color)); m.position.set(cx, y, cz); g.add(m); return m;
+  }
+  slab(H ? .05 : .4, 2.4, H ? '#8b8578' : '#f3d798', LAND - .02);
+  slab(H ? -.3 : -.05, .1, H ? '#b7c87c' : '#9edb6f', LAND + .06);
+  var M = {}; function mat(c){ return M[c] || (M[c] = std(c)); }
+  FAR_THINGS.forEach(function(o){
+    var y = LAND + .06, s = o.s;
+    if (o.k === 'w'){ var h = o.h * HK * .8; mesh(new T3.BoxGeometry(s * 2, h, s * 2), mat('#b85c43'), o.x, y + h / 2, o.y, g); var gr = gable(s * 2.15, s * 2.15, .3, mat(o.c < .5 ? '#66737c' : '#7a5a4a')); gr.position.set(o.x, y + h, o.y); g.add(gr); mesh(new T3.BoxGeometry(s * .8, .26, .02), mat('#f4e3c4'), o.x, y + .14, o.y + s + .01, g); }
+    else if (o.k === 'c'){ var c1 = FAR_COL.box[Math.floor(o.c * 7)], c2 = FAR_COL.box[Math.floor(o.c * 7 + 3) % 7]; mesh(new T3.BoxGeometry(s * 2, .3, s * 1.5), mat(c1), o.x, y + .15, o.y, g); mesh(new T3.BoxGeometry(s * 1.8, .3, s * 1.4), mat(c2), o.x + .05, y + .45, o.y, g); }
+    else if (o.k === 'p'){ mesh(new T3.CylinderGeometry(.028, .045, .8, 6), mat('#8a6a48'), o.x, y + .4, o.y, g); for (var i = 0; i < 6; i++){ var f = mesh(new T3.ConeGeometry(.06, .5, 4), mat('#4fae55'), o.x, y + .82, o.y, g); f.rotation.set(0, i, -1.95); } }
+    else if (o.k === 'k'){ var cr = new T3.Group(); cr.position.set(o.x, y, o.y); g.add(cr);
+      [[-.22, -.22], [.22, -.22], [-.22, .22], [.22, .22]].forEach(function(p){ mesh(new T3.BoxGeometry(.05, 1.4, .05), mat('#d9533b'), p[0], .7, p[1], cr); });
+      mesh(new T3.BoxGeometry(.5, .06, .5), mat('#d9533b'), 0, 1.4, 0, cr); var bm = mesh(new T3.BoxGeometry(1.3, .05, .06), mat('#d9533b'), .35, 1.85, 0, cr); bm.rotation.z = 1.15; cr.rotation.y = Math.atan2(o.x - cx, o.y - cz); }
+    else if (o.k === 'h'){ var hh = o.h * HK; mesh(new T3.BoxGeometry(s * 2, hh, s * 2), mat('#f3ead9'), o.x, y + hh / 2, o.y, g); var rf = pyramid(s * 2.3, .5, mat(FAR_COL.roof[Math.floor(o.c * 6)])); rf.position.set(o.x, y + hh, o.y); g.add(rf); }
+    else if (o.k === 't'){ if (o.c > .5){ mesh(new T3.ConeGeometry(.24, .62, 9), mat('#4f9a5a'), o.x, y + .4, o.y, g); }
+      else { mesh(new T3.CylinderGeometry(.035, .05, .26, 7), mat('#9a6a3f'), o.x, y + .13, o.y, g); mesh(new T3.IcosahedronGeometry(.24, 1), mat(FAR_COL.leaf[o.c < .08 ? 3 : Math.floor(o.c * 3)]), o.x, y + .45, o.y, g); } }
+    else if (o.k === 'L'){ mesh(new T3.CylinderGeometry(.13, .19, 1.3, 14), mat('#faf4e8'), o.x, y + .65, o.y, g); mesh(new T3.CylinderGeometry(.15, .17, .16, 14), mat('#e05a47'), o.x, y + .5, o.y, g); mesh(new T3.ConeGeometry(.19, .3, 14), mat('#e05a47'), o.x, y + 1.5, o.y, g); mesh(new T3.SphereGeometry(.1, 12, 10), glow('#ffe08a', .5, 2), o.x, y + 1.32, o.y, g); }
+    else if (o.k === 'T'){
+      if (H){ mesh(new T3.BoxGeometry(1.4, 2.3, 1.4), mat('#b85c43'), o.x, y + 1.15, o.y, g); mesh(new T3.BoxGeometry(.9, 3.2, .9), mat('#55697a'), o.x, y + 1.6, o.y, g); mesh(new T3.CylinderGeometry(.02, .02, 1, 6), mat('#3b2f3a'), o.x, y + 3.7, o.y, g); mesh(new T3.SphereGeometry(.09, 10, 8), glow('#ff6f59', .6, 2.2), o.x, y + 4.2, o.y, g); }
+      else { mesh(new T3.BoxGeometry(1.2, 2.7, 1.2), mat('#f3ead9'), o.x, y + 1.35, o.y, g); var sp = pyramid(1.4, 1.2, mat('#ff6f59')); sp.position.set(o.x, y + 2.7, o.y); g.add(sp); mesh(new T3.SphereGeometry(.08, 10, 8), glow('#ffe08a', .5, 2.2), o.x, y + 4, o.y, g); }
+    }
   });
-  mesh(new T3.CylinderGeometry(.12, .17, 1.1, 14), std('#faf4e8'), .9, LAND + .6, -.2, g);
-  mesh(new T3.CylinderGeometry(.13, .15, .14, 14), std('#e05a47'), .9, LAND + .5, -.2, g);
-  mesh(new T3.ConeGeometry(.17, .28, 14), std('#e05a47'), .9, LAND + 1.3, -.2, g);
-  mesh(new T3.SphereGeometry(.09, 12, 10), glow('#ffe08a', .5, 2), .9, LAND + 1.12, -.2, g);
-  [[-.9, -.6], [.2, -1.1], [-.9, .7], [1.0, .8], [-.2, -.7]].forEach(function(t){ mesh(new T3.ConeGeometry(.2, .55, 9), std('#5cc45a'), t[0], LAND + .36, t[1], g); });
   g.traverse(function(m){ if (m.isMesh){ m.userData.id = '__far'; O.pick.push(m); } });
   scene.add(inkAll(shadowAll(g), .012));
-  farLabel('🏝️ 創業島 →', 1.9);
+  farLabel(FAR.sign, 2.1);
 }
 function farLabel(text, y){
   var d = document.createElement('button'); d.type = 'button'; d.className = 'tag3 board3'; d.textContent = text; d.title = '點一下前往' + FAR.name;
@@ -921,6 +947,229 @@ function buildSkyStuff(){
     bg.userData = {pl:pl, pr:pr, a:bi * .55, r:2.5 + (bi % 4) * 1.4, y:2.4 + (bi % 3) * .7, sp:.22 + (bi % 3) * .06};
     scene.add(bg); O.birds.push(bg);
   }
+}
+
+/* ---------- 景色主題：兩座島共用這段程式，外觀差異全部由檔案開頭的 THEME 決定 ----------
+ * tropic（創業島）：熱帶潟湖——淺水翠綠漸層、海底珊瑚、白沙灘陽傘、彩虹、熱氣球、蝴蝶。
+ * harbor（創作者小鎮）：港邊倉庫的黃金時刻——暖色薄霧、深青港灣與金色波光、街道串燈、煙囪炊煙、夜晚天燈與探照燈。 */
+function glowTex(inner, outer){
+  return canvasTex(128, 128, function(x, w, h){
+    var g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+    g.addColorStop(0, inner); g.addColorStop(.25, inner); g.addColorStop(1, outer);
+    x.fillStyle = g; x.fillRect(0, 0, w, h);
+  });
+}
+function sceneSprite(tex, size, add){
+  var s = new T3.Sprite(new T3.SpriteMaterial({map:tex, transparent:true, depthWrite:false, fog:false, blending:add ? T3.AdditiveBlending : T3.NormalBlending}));
+  s.scale.set(size, size, 1); s.raycast = noPick; scene.add(s); return s;
+}
+function freeLand(gx, gy, pad){                    // 空地：不在建築、道路、河、場地、地標、橋上
+  if (riverDist(gx, gy) < 1.1 || minDist(ROAD_S, gx, gy) < .55 + (pad || 0)) return false;
+  if (TOOLS.some(function(t){ return Math.abs(gx - t.gx) < t.s + .45 && Math.abs(gy - t.gy) < t.s + .45; })) return false;
+  if ((O.markSpots || []).some(function(m){ return Math.hypot(gx - m[0], gy - m[1]) < m[2] + .3; })) return false;
+  if (typeof farBridgeDist === 'function' && farBridgeDist(gx, gy) < .9) return false;
+  if (Math.hypot(gx - BOARD_AT[0], gy - BOARD_AT[1]) < 1) return false;
+  return true;
+}
+function buildScenery(){
+  var S = O.scene2 = {sun:null, halo:null, moon:null, items:[]}, r = rng(THEME.id === 'tropic' ? 11 : 23);
+  // 太陽、光暈、月亮（畫在天空上，不受霧影響）
+  S.halo = sceneSprite(glowTex('rgba(255,244,214,.55)', 'rgba(255,220,160,0)'), 46, true);
+  S.sun = sceneSprite(glowTex('rgba(255,252,236,1)', 'rgba(255,240,200,0)'), 11, true);
+  S.moon = sceneSprite(canvasTex(128, 128, function(x){
+    var g = x.createRadialGradient(64, 64, 18, 64, 64, 64); g.addColorStop(0, 'rgba(255,250,228,.35)'); g.addColorStop(1, 'rgba(255,250,228,0)');
+    x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+    x.fillStyle = '#fff8dc'; x.beginPath(); x.arc(64, 64, 20, 0, Math.PI * 2); x.fill();
+    x.fillStyle = 'rgba(214,204,170,.6)'; [[56, 58, 5], [71, 70, 4], [66, 52, 3]].forEach(function(c){ x.beginPath(); x.arc(c[0], c[1], c[2], 0, Math.PI * 2); x.fill(); });
+  }), 14, false);
+  // 水面波光：兩組點輪流閃爍
+  S.glints = [0, 1].map(function(k){
+    var N = THEME.glints, p = new Float32Array(N * 3), n = 0;
+    while (n < N){ var a = r() * 6.28, d = 13 + r() * 22, gx = C[0] + Math.cos(a) * d, gy = C[1] + Math.sin(a) * d; if (edgeD(gx, gy) < .8 || farEdge(gx, gy) < .8) continue; p[n * 3] = gx; p[n * 3 + 1] = SEA + .05; p[n * 3 + 2] = gy; n++; }
+    var g = new T3.BufferGeometry(); g.setAttribute('position', new T3.BufferAttribute(p, 3));
+    var pts = new T3.Points(g, new T3.PointsMaterial({color:THEME.glint, size:.16, transparent:true, opacity:.6, depthWrite:false, blending:T3.AdditiveBlending}));
+    pts.raycast = noPick; scene.add(pts); return pts;
+  });
+  if (THEME.id === 'tropic') buildTropicScene(S, r); else buildHarborScene(S, r);
+}
+// ---- 創業島：熱帶潟湖 ----
+function buildTropicScene(S, r){
+  // 海底珊瑚：在潟湖淺水裡，透過水面看得到
+  var cor = [], tries = 0;
+  while (cor.length < 260 && tries++ < 8000){
+    var a = r() * 6.28, rr = islandR(a) + .5 + r() * 2.6, gx = C[0] + Math.cos(a) * rr, gy = C[1] + Math.sin(a) * rr, y = landY(gx, gy);
+    if (y > SEA - .07 || y < SEA - .7) continue;
+    if (typeof farBridgeDist === 'function' && farBridgeDist(gx, gy) < .6) continue;
+    cor.push([gx, y, gy, r()]);
+  }
+  var cg = mergeGeo([blob(.09, 0, .04, 0), blob(.06, .07, .02, .03), blob(.05, -.05, .03, -.05)]);
+  var cm = new T3.InstancedMesh(cg, std('#ffffff'), cor.length), mm = new T3.Matrix4(), c = new T3.Color(), CC = ['#ff7f9e', '#ffb35c', '#b48cff', '#ffe066', '#5fe3c4', '#ff6f59'];
+  cor.forEach(function(q, i){ var s = .7 + q[3] * .9; mm.makeScale(s, s * (.6 + q[3] * .6), s); mm.setPosition(q[0], q[1] + .01, q[2]); cm.setMatrixAt(i, mm); cm.setColorAt(i, c.set(CC[i % CC.length])); });
+  cm.raycast = noPick; scene.add(cm);
+  // 白沙灘上的陽傘與浴巾
+  var spots = [], k = 0;
+  while (spots.length < 14 && k++ < 4000){
+    var a2 = r() * 6.28, gx2 = C[0] + Math.cos(a2) * (islandR(a2) - .22), gy2 = C[1] + Math.sin(a2) * (islandR(a2) - .22);
+    if (landY(gx2, gy2) < LAND - .08 || zoneOfPoint(gx2, gy2) || !freeLand(gx2, gy2, .2)) continue;
+    if (spots.some(function(s){ return Math.hypot(s[0] - gx2, s[1] - gy2) < 1.6; })) continue;
+    spots.push([gx2, gy2, a2]);
+  }
+  var UMB = [['#ff6f59', '#ffffff'], ['#2ec4b6', '#ffffff'], ['#f4b942', '#ff6f59'], ['#9d8cf2', '#ffffff'], ['#4f9dff', '#ffe066']];
+  spots.forEach(function(s, i){
+    var g = new T3.Group(), u = UMB[i % UMB.length], y = landY(s[0], s[1]);
+    mesh(new T3.CylinderGeometry(.012, .012, .5, 6), std('#f4f1ea'), 0, .25, 0, g);
+    for (var j = 0; j < 8; j++){ var seg = mesh(new T3.ConeGeometry(.3, .13, 3, 1, true, j / 8 * Math.PI * 2, Math.PI / 4), std(u[j % 2], {side:T3.DoubleSide}), 0, .5, 0, g); seg.userData.noInk = true; }
+    mesh(new T3.SphereGeometry(.025, 8, 6), std(u[0]), 0, .57, 0, g);
+    var towel = mesh(new T3.BoxGeometry(.18, .008, .34), std(u[1] === '#ffffff' ? u[0] : u[1]), .2, .005, .05, g); towel.rotation.y = .3;
+    g.position.set(s[0], y, s[1]); g.rotation.y = -s[2];
+    inkAll(shadowAll(g), .008); scene.add(g); blockWalk(s[0], s[1], .12);
+  });
+  // 彩虹：遠方天空的七色弧（白天才看得到）
+  var RB = ['#ff5a5a', '#ff9f43', '#ffe066', '#6bdc6b', '#4fb3ff', '#6a6cff', '#b06bff'];
+  S.rainbow = new T3.Group();
+  RB.forEach(function(cl, i){
+    var t = new T3.Mesh(new T3.TorusGeometry(34 - i * .9, .48, 6, 64, Math.PI), new T3.MeshBasicMaterial({color:cl, transparent:true, opacity:.3, depthWrite:false, fog:false}));
+    t.raycast = noPick; S.rainbow.add(t);
+  });
+  S.rainbow.position.set(C[0] - 34, -4, C[1] - 40); S.rainbow.lookAt(C[0], -4, C[1]); scene.add(S.rainbow);
+  // 熱氣球：慢慢繞著島飄
+  var BAL = [['#ff6f59', '#ffe066'], ['#4f9dff', '#ffffff'], ['#2ec4b6', '#f4b942'], ['#ef6b8a', '#ffffff'], ['#9d8cf2', '#ffe066']];
+  S.balloons = BAL.map(function(b, i){
+    var g = new T3.Group();
+    var tex = canvasTex(256, 64, function(x, w, h){ for (var j = 0; j < 8; j++){ x.fillStyle = b[j % 2]; x.fillRect(j * w / 8, 0, w / 8 + 1, h); } });
+    var env = mesh(new T3.SphereGeometry(.55, 24, 16), std('#ffffff', {map:tex}), 0, 1.05, 0, g); env.scale.set(1, 1.18, 1);
+    var neck = mesh(new T3.CylinderGeometry(.2, .12, .22, 16), std(b[0]), 0, .42, 0, g);
+    mesh(new T3.BoxGeometry(.2, .14, .2), std('#b07a45'), 0, .12, 0, g);
+    [-1, 1].forEach(function(sx){ [-1, 1].forEach(function(sz){ var rp = mesh(new T3.CylinderGeometry(.006, .006, .3, 4), std('#5a4030'), sx * .09, .3, sz * .09, g); rp.userData.noInk = true; }); });
+    inkAll(shadowAll(g), .012); scene.add(g);
+    return {g:g, a:i / BAL.length * 6.28, rad:9 + (i % 3) * 2.2, h:4.6 + (i % 2) * 1.6 + i * .3, sp:.018 + (i % 2) * .01};
+  });
+  // 蝴蝶：白天在公園、綠地附近飛
+  var spots2 = GREENS.map(function(G){ return [G.at[0], G.at[1]]; }).concat(ZONES.filter(function(z){ return z.id === 'idea'; }).map(function(z){ return [z.cx, z.cy]; }));
+  if (!spots2.length) spots2 = [[C[0], C[1]]];
+  var BF = ['#ffb3c6', '#ffe066', '#9fd8ff', '#ffffff', '#ffa94d'];
+  S.flies2 = [];
+  for (var bi = 0; bi < 18; bi++){
+    var home = spots2[bi % spots2.length], g2 = new T3.Group(), wm = new T3.MeshBasicMaterial({color:BF[bi % BF.length], side:T3.DoubleSide});
+    var wg = new T3.CircleGeometry(.05, 10); wg.scale(1, .75, 1); wg.translate(.05, 0, 0);
+    var L1 = new T3.Mesh(wg, wm), R1 = new T3.Mesh(wg, wm); L1.rotation.x = R1.rotation.x = -Math.PI / 2;
+    var pl = new T3.Group(), pr = new T3.Group(); pl.add(L1); pr.add(R1); pr.scale.x = -1; g2.add(pl); g2.add(pr);
+    g2.traverse(function(m){ m.raycast = noPick; }); scene.add(g2);
+    S.flies2.push({g:g2, pl:pl, pr:pr, hx:home[0] + (r() - .5) * 2, hz:home[1] + (r() - .5) * 2, ph:r() * 6.28, sp:.5 + r() * .5});
+  }
+  O.anim.push(function(tm){
+    S.balloons.forEach(function(b){ var a = b.a + tm * b.sp; b.g.position.set(C[0] + Math.cos(a) * b.rad, b.h + Math.sin(tm * .5 + b.a) * .35, C[1] + Math.sin(a) * b.rad); b.g.rotation.y = tm * .1 + b.a; });
+    S.flies2.forEach(function(f){
+      var t = tm * f.sp + f.ph, x = f.hx + Math.sin(t * .7) * 1.1 + Math.sin(t * 1.9) * .25, z = f.hz + Math.cos(t * .55) * 1.1;
+      f.g.position.set(x, landY(x, z) + .35 + Math.sin(t * 2.3) * .12, z); f.g.rotation.y = -t * .7;
+      var fl = Math.sin(tm * 18 + f.ph) * .9; f.pl.rotation.z = fl; f.pr.rotation.z = -fl;
+    });
+  });
+}
+// ---- 創作者小鎮：港邊倉庫的黃金時刻 ----
+function buildHarborScene(S, r){
+  // 街道串燈：沿著道路左右交錯立柱，燈串之字形跨過街道
+  var bulbs = [], cableG = [], poleG = [], n = Math.floor(ROAD_S.length / 49);
+  for (var k = 0; k < n; k++){
+    var road = ROAD_S.slice(k * 49, k * 49 + 49), side = 1, last = null;
+    for (var i = 2; i < road.length - 2; i += 3){
+      var p = road[i], q = road[Math.min(road.length - 1, i + 1)], dx = q[0] - p[0], dz = q[1] - p[1], l = Math.hypot(dx, dz) || 1;
+      if (riverDist(p[0], p[1]) < 1.1 || zoneOfPoint(p[0], p[1]) && zoneOfPoint(p[0], p[1]).id === 'publish'){ last = null; continue; }
+      var px = p[0] - dz / l * .42 * side, pz = p[1] + dx / l * .42 * side, py = landY(px, pz);
+      if (TOOLS.some(function(t){ return Math.abs(px - t.gx) < t.s + .15 && Math.abs(pz - t.gy) < t.s + .15; })){ last = null; continue; }
+      var top = new T3.Vector3(px, py + .62, pz);
+      var pg = new T3.CylinderGeometry(.012, .016, .64, 5); pg.translate(px, py + .32, pz); poleG.push(pg);
+      if (last && last.distanceTo(top) < 2.2){
+        var mid = last.clone().lerp(top, .5); mid.y -= .14;
+        var curve = new T3.QuadraticBezierCurve3(last, mid, top);
+        cableG.push(new T3.TubeGeometry(curve, 10, .004, 3, false));
+        for (var b = 1; b < 6; b++) bulbs.push(curve.getPoint(b / 6));
+      }
+      last = top; side = -side;
+    }
+  }
+  if (poleG.length){ var pm = new T3.Mesh(mergeGeo(poleG), std('#4a3f38')); pm.castShadow = true; scene.add(pm); inkMesh(pm, .008); }
+  if (cableG.length){ var cm = new T3.Mesh(mergeGeo(cableG), new T3.MeshBasicMaterial({color:'#3b2f3a'})); cm.raycast = noPick; scene.add(cm); }
+  var bm = new T3.InstancedMesh(new T3.SphereGeometry(.026, 8, 6), new T3.MeshBasicMaterial({color:'#ffffff'}), bulbs.length), m4 = new T3.Matrix4(), c = new T3.Color();
+  var BC = ['#ffd27a', '#ff9f6b', '#fff1c9', '#ffb3c6', '#9fe0ff'];
+  bulbs.forEach(function(v, i){ m4.makeTranslation(v.x, v.y, v.z); bm.setMatrixAt(i, m4); bm.setColorAt(i, c.set(BC[i % BC.length])); });
+  bm.raycast = noPick; scene.add(bm); S.bulbs = bm;
+  var hp = new Float32Array(bulbs.length * 3); bulbs.forEach(function(v, i){ hp[i * 3] = v.x; hp[i * 3 + 1] = v.y; hp[i * 3 + 2] = v.z; });
+  var hg = new T3.BufferGeometry(); hg.setAttribute('position', new T3.BufferAttribute(hp, 3));
+  S.bulbHalo = new T3.Points(hg, new T3.PointsMaterial({map:glowTex('rgba(255,214,140,.9)', 'rgba(255,180,90,0)'), size:.32, transparent:true, opacity:0, depthWrite:false, blending:T3.AdditiveBlending}));
+  S.bulbHalo.raycast = noPick; scene.add(S.bulbHalo);
+  // 倉庫煙囪＋炊煙
+  var smokeTex = glowTex('rgba(236,230,222,.75)', 'rgba(236,230,222,0)'), stacks = [];
+  TOOLS.filter(function(t){ return t.style === 'warehouse' || t.style === 'brick'; }).slice(0, 7).forEach(function(t, i){
+    var b = O.blds[t.id]; if (!b) return;
+    var x = t.gx + t.s * .45, z = t.gy - t.s * .35, h = b.top - b.base;
+    var ch = mesh(new T3.CylinderGeometry(.06, .07, .5, 10), std('#9c4a35'), x, b.base + h * .75 + .25, z, scene);
+    mesh(new T3.CylinderGeometry(.075, .075, .05, 10), std('#4a3f38'), x, b.base + h * .75 + .5, z, scene);
+    inkMesh(ch, .008); ch.castShadow = true;
+    var puffs = [];
+    for (var j = 0; j < 6; j++){ var s = new T3.Sprite(new T3.SpriteMaterial({map:smokeTex, transparent:true, depthWrite:false})); s.raycast = noPick; scene.add(s); puffs.push(s); }
+    stacks.push({x:x, y:b.base + h * .75 + .55, z:z, puffs:puffs, ph:i * .37});
+  });
+  // 夜晚的天燈：從小鎮緩緩升上天空
+  var lantTex = canvasTex(64, 80, function(x){
+    var g = x.createLinearGradient(0, 0, 0, 80); g.addColorStop(0, '#ffb35c'); g.addColorStop(1, '#ffe7a8');
+    x.fillStyle = g; x.beginPath(); x.moveTo(14, 6); x.lineTo(50, 6); x.lineTo(58, 70); x.lineTo(6, 70); x.closePath(); x.fill();
+    x.fillStyle = 'rgba(255,255,220,.95)'; x.beginPath(); x.ellipse(32, 66, 14, 6, 0, 0, Math.PI * 2); x.fill();
+  });
+  S.lanterns = [];
+  for (var li = 0; li < 34; li++){
+    var sp = new T3.Sprite(new T3.SpriteMaterial({map:lantTex, transparent:true, depthWrite:false, fog:false}));
+    sp.scale.set(.22, .28, 1); sp.raycast = noPick; scene.add(sp);
+    var la = r() * 6.28, ld = Math.sqrt(r()) * 12;
+    S.lanterns.push({s:sp, x:C[0] + Math.cos(la) * ld, z:C[1] + Math.sin(la) * ld, t:r() * 60, sp:.12 + r() * .1, w:r() * 6.28});
+  }
+  var lantHalo = glowTex('rgba(255,170,80,.7)', 'rgba(255,140,60,0)');
+  S.lanterns.forEach(function(L2){ var h = new T3.Sprite(new T3.SpriteMaterial({map:lantHalo, transparent:true, depthWrite:false, fog:false, blending:T3.AdditiveBlending})); h.scale.set(.8, .8, 1); h.raycast = noPick; scene.add(h); L2.h = h; });
+  // 夜晚的探照燈：從碼頭兩側往天空掃
+  S.beams = [[C[0] + 10, C[1] - 6], [C[0] - 8, C[1] + 10]].map(function(p, i){
+    var piv = new T3.Group(); piv.position.set(p[0], LAND, p[1]);
+    var cone = new T3.Mesh(new T3.CylinderGeometry(.7, .05, 22, 20, 1, true), new T3.MeshBasicMaterial({color:'#fff2c8', transparent:true, opacity:0, depthWrite:false, side:T3.DoubleSide, blending:T3.AdditiveBlending, fog:false}));
+    cone.position.y = 11; cone.raycast = noPick; piv.add(cone); scene.add(piv);
+    return {piv:piv, mat:cone.material, ph:i * 2.1};
+  });
+  O.anim.push(function(tm){
+    stacks.forEach(function(st){
+      st.puffs.forEach(function(p, j){
+        var u = (tm * .22 + j / st.puffs.length + st.ph) % 1;
+        p.position.set(st.x + u * .6 + Math.sin(tm + j) * .05, st.y + u * 1.6, st.z - u * .3);
+        var s = .18 + u * .7; p.scale.set(s, s, 1); p.material.opacity = (1 - u) * (u < .1 ? u * 10 : 1) * .8 * (1 - S.dk * .6);
+      });
+    });
+    var night = S.dk;
+    S.lanterns.forEach(function(L2){
+      var u = ((tm * L2.sp + L2.t) % 14) / 14, y = LAND + .5 + u * 13;
+      var x = L2.x + Math.sin(tm * .3 + L2.w) * .6 + u * 3, z = L2.z + Math.cos(tm * .25 + L2.w) * .6 - u * 2;
+      L2.s.position.set(x, y, z); L2.h.position.set(x, y, z);
+      var o = night > .35 ? Math.min(1, (night - .35) * 3) * (u < .06 ? u / .06 : u > .85 ? (1 - u) / .15 : 1) : 0;
+      L2.s.material.opacity = o; L2.h.material.opacity = o * .8; L2.s.visible = L2.h.visible = o > .01;
+    });
+    S.beams.forEach(function(b){ b.piv.rotation.set(Math.sin(tm * .35 + b.ph) * .45, 0, Math.cos(tm * .27 + b.ph) * .45); b.mat.opacity = night > .4 ? (night - .4) * .25 : 0; });
+  });
+}
+// 每次天色變化時呼叫：太陽／月亮位置、彩虹、波光、串燈亮度
+function skyScenery(dk, dusk){
+  var S = O.scene2; if (!S) return;
+  S.dk = dk;
+  var d = sun.position.clone().sub(sun.target.position).normalize();
+  var day = dk < .55;
+  S.sun.visible = S.halo.visible = day; S.moon.visible = !day;
+  var sp = new T3.Vector3(C[0], 0, C[1]).addScaledVector(d, 130);
+  S.sun.position.copy(sp); S.halo.position.copy(sp);
+  S.halo.material.color.set(dusk > .2 ? '#ffb27a' : '#fff4d8'); S.sun.material.color.set(dusk > .2 ? '#ffcf94' : '#ffffff');
+  S.moon.position.set(C[0] - 60, 70, C[1] - 90);
+  S.glints.forEach(function(g){ g.material.color.set(dusk > .2 ? '#ffc477' : dk > .6 ? THEME.glintNight : THEME.glint); });
+  if (S.rainbow) S.rainbow.visible = dk < .15 && dusk < .1;
+  if (S.bulbs){ S.bulbs.material.color.setScalar(.75 + dk * .6); S.bulbHalo.material.opacity = .25 + dk * .75; }
+}
+function frameScenery(tm){
+  var S = O.scene2; if (!S) return;
+  S.glints[0].material.opacity = (.25 + .5 * Math.max(0, Math.sin(tm * 2.1))) * THEME.glintK;
+  S.glints[1].material.opacity = (.25 + .5 * Math.max(0, Math.sin(tm * 2.1 + Math.PI))) * THEME.glintK;
 }
 
 /* ---------- 接力線 ---------- */
@@ -1225,8 +1474,8 @@ function updateSky(force){
   if (!force && Math.abs(dk - sky.dk) < .002 && sky.h === Math.floor(h * 4)) return;
   sky.dk = dk; sky.h = Math.floor(h * 4);
   var dusk = dk > 0 && dk < 1 ? 1 - Math.abs(dk - .5) * 2 : 0;
-  var topC = col('#2f86e0').lerp(col('#060c26'), dk).lerp(col('#5b5fb0'), dusk * .7);
-  var horC = col('#c6ecfa').lerp(col('#1b2c58'), dk).lerp(col('#ffb48a'), dusk * .8);
+  var topC = col(THEME.top).lerp(col(THEME.topN), dk).lerp(col(THEME.topD), dusk * .7);
+  var horC = col(THEME.hor).lerp(col(THEME.horN), dk).lerp(col(THEME.horD), dusk * .8);
   O.dome.material.uniforms.top.value.copy(topC); O.dome.material.uniforms.hor.value.copy(horC);
   scene.fog.color.copy(horC);
   var day = h >= 5 && h < 19.5, az = (h - 6) / 13.5 * Math.PI;
@@ -1234,12 +1483,13 @@ function updateSky(force){
   var dir = day ? Math.cos(Math.max(.05, Math.min(Math.PI - .05, az))) : -.4;
   sun.position.set(C[0] + dir * 18, 4 + elev * 20, C[1] - 10 + dir * 4);
   sun.target.position.set(C[0], 0, C[1]);
-  sun.color.copy(col('#fff4e0').lerp(col('#ffb06b'), dusk).lerp(col('#9db8ff'), dk * (1 - dusk)));
+  sun.color.copy(col(THEME.sun).lerp(col(THEME.sunD), dusk).lerp(col(THEME.sunN), dk * (1 - dusk)));
   sun.intensity = 1.9 * (1 - dk) + .75 * dk;
   hemi.intensity = 1.25 * (1 - dk) + .7 * dk;
-  hemi.color.copy(col('#dff3ff').lerp(col('#3a4f88'), dk)); hemi.groundColor.copy(col('#8a9a6a').lerp(col('#1a2238'), dk));
+  hemi.color.copy(col(THEME.hemi).lerp(col(THEME.hemiN), dk)); hemi.groundColor.copy(col(THEME.ground).lerp(col(THEME.groundN), dk));
   RIM_U.value = .24 * (1 - dk) + .1 * dk;                                             // 人物邊緣光：夜裡收斂
-  O.water.material.color.copy(col('#47c6e6').lerp(col('#1d4f86'), dk).lerp(col('#f0a58f'), dusk * .35));
+  O.water.material.color.copy(col('#ffffff').lerp(col(THEME.waterNight), dk).lerp(col(THEME.waterDusk), dusk * .35));
+  skyScenery(dk, dusk);
   O.stars.material.opacity = Math.max(0, dk - .25) * 1.2;
   O.flies.material.opacity = Math.max(0, dk - .4) * 1.4;
   O.bulbMat.emissiveIntensity = dk > .3 ? 2.2 * dk : 0;
@@ -1420,6 +1670,7 @@ function frame(ts){
     O.birds.forEach(function(bd){ var u = bd.userData; u.a += u.sp * dt; bd.position.set(17.4 + Math.cos(u.a) * u.r, u.y + Math.sin(u.a * 3) * .3, 17.4 + Math.sin(u.a) * u.r); bd.rotation.y = -u.a; var fl = Math.sin(tm * 9 + u.r) * .5; u.pl.rotation.z = fl; u.pr.rotation.z = -fl; bd.visible = sky.dk < .6; });
     if (O.beam) O.beam.pivot.rotation.y += dt * .9;
     O.anim.forEach(function(f){ f(tm, dt); });
+    frameScenery(tm);
   }
   O.boats.forEach(function(b){ b.g3.position.set(b.u, SEA + Math.sin(tm * 1.6 + b.lane) * .02, b.lane - b.u); b.g3.rotation.y = Math.PI / 4 + (b.s > 0 ? Math.PI : 0); b.g3.rotation.x = Math.sin(tm * 1.3 + b.lane) * .02; });
   if (O.tram){ O.tram.position.set(tram.u, LAND + .04, TRACK_SUM - tram.u); O.tram.rotation.y = Math.PI / 4 + (tram.s > 0 ? 0 : Math.PI); }
@@ -1491,7 +1742,7 @@ function build(){
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.5 : 2));
   renderer.outputColorSpace = T3.SRGBColorSpace; renderer.toneMapping = T3.NoToneMapping;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = T3.PCFSoftShadowMap;
-  scene = new T3.Scene(); scene.fog = new T3.Fog('#c6ecfa', 34, 95);
+  scene = new T3.Scene(); scene.fog = new T3.Fog(THEME.hor, THEME.fog[0], THEME.fog[1]);
   O.dome = new T3.Mesh(new T3.SphereGeometry(160, 32, 16), new T3.ShaderMaterial({
     side:T3.BackSide, depthWrite:false, fog:false,
     uniforms:{top:{value:new T3.Color('#2f86e0')}, hor:{value:new T3.Color('#c6ecfa')}},
@@ -1507,7 +1758,7 @@ function build(){
   var sc = sun.shadow.camera; sc.left = -16; sc.right = 16; sc.top = 16; sc.bottom = -16; sc.near = 1; sc.far = 70; sun.shadow.bias = -.0004; sun.shadow.normalBias = .02;
   scene.add(sun); scene.add(sun.target);
   raycaster = new T3.Raycaster(); ndc = new T3.Vector2(); V = new T3.Vector3();
-  buildTerrain(); buildWater(); buildRoads(); TOOLS.forEach(buildBuilding); buildDecor(); buildZoneMarks(); buildTrees(); buildFlowers(); buildSkyStuff(); buildLabels(); buildFar();
+  buildTerrain(); buildWater(); buildRoads(); TOOLS.forEach(buildBuilding); buildDecor(); buildZoneMarks(); buildTrees(); buildFlowers(); buildSkyStuff(); buildScenery(); buildLabels(); buildFar();
   O.ring = new T3.Mesh(new T3.RingGeometry(.42, .5, 40), new T3.MeshBasicMaterial({color:'#ff6f59', transparent:true, opacity:.9, side:T3.DoubleSide, depthWrite:false}));
   O.ring.rotation.x = -Math.PI / 2; scene.add(O.ring);
   built = true;

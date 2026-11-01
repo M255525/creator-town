@@ -986,25 +986,76 @@ function showFarTip(x, y){
   tip.style.top = Math.max(8, y - 34) + 'px';
   tip.classList.add('show');
 }
-function drawFar(g){                                            // 海的另一端：迷你創業島（沙灘、草地、小房子、燈塔、尖頂樹）
-  var a = FAR.at, r = FAR.r;
+// ---- 海的另一端：照真實比例的鄰島（兩站共用這段，依 FAR.self 決定對岸長什麼樣）----
+// 對岸是一整座跟自己差不多大的島，近岸剛好接在跨海大橋的另一端；地圖只取景到近岸，其餘延伸到畫面外。
+var FARB = (function(){
+  var a = FAR.bridge[0], b = FAR.bridge[1], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy), u = [dx / l, dy / l];
+  var style = FAR.self === 'startup' ? 'harbor' : 'tropic';
+  function R(ang){                                                // 對岸輪廓：創作者小鎮是圓角方形，創業島是略帶起伏的圓
+    if (style === 'harbor'){ var c = Math.cos(ang), s = Math.sin(ang); return 11.6 / Math.pow(Math.pow(Math.abs(c), 8) + Math.pow(Math.abs(s), 8), 1 / 8); }
+    return 12.4 + .35 * Math.sin(3 * ang + .6) + .25 * Math.cos(5 * ang + 1.3) + .12 * Math.sin(9 * ang);
+  }
+  var back = Math.atan2(-u[1], -u[0]), t = R(back) - .05;
+  var o = {style:style, R:R, u:u, c:[b[0] + u[0] * t, b[1] + u[1] * t]};
+  FAR.at = [b[0] + u[0] * 1.3, b[1] + u[1] * 1.3];              // 招牌、走路目的地：上岸後一點點
+  return o;
+})();
+function farEdge(gx, gy){ var dx = gx - FARB.c[0], dy = gy - FARB.c[1]; return Math.hypot(dx, dy) - FARB.R(Math.atan2(dy, dx)); }
+// 島上的東西（建築、樹、吊車…）跟自己島上的建築同比例；用固定亂數，每次載入都一樣、平面和立體共用
+var FAR_THINGS = (function(){
+  var r = rng(FARB.style === 'harbor' ? 4242 : 1717), list = [], C2 = FARB.c;
+  function free(x, y, d){ return farEdge(x, y) < -d && Math.hypot(x - FAR.at[0], y - FAR.at[1]) > 1.6 && list.every(function(q){ return Math.hypot(q.x - x, q.y - y) > q.s + .5; }); }
+  list.push({k:'T', x:C2[0], y:C2[1], s:.7});                     // 島中央的地標塔（指揮塔／發布塔）
+  if (FARB.style === 'harbor'){
+    for (var gx = -9; gx <= 9; gx += 1.7) for (var gy = -9; gy <= 9; gy += 1.7){   // 棋盤街廓：紅磚倉庫與貨櫃屋
+      var x = C2[0] + gx, y = C2[1] + gy; if (r() < .18 || !free(x, y, 1.3)) continue;
+      var k = r(); list.push(k < .6 ? {k:'w', x:x, y:y, s:.5 + r() * .15, h:22 + r() * 16, c:r()} : k < .85 ? {k:'c', x:x, y:y, s:.42, c:r()} : {k:'p', x:x, y:y, s:.2});
+    }
+    for (var i = 0; i < 9; i++){ var a = i / 9 * 6.28 + .3, rr = FARB.R(a) - .7, x2 = C2[0] + Math.cos(a) * rr, y2 = C2[1] + Math.sin(a) * rr; if (free(x2, y2, .3)) list.push({k:'k', x:x2, y:y2, s:.35}); }   // 岸邊的吊車
+  } else {
+    for (var n = 0; n < 240 && list.length < 70; n++){              // 散落的小屋、圓樹、尖頂樹
+      var a3 = r() * 6.28, d3 = Math.sqrt(r()) * (FARB.R(a3) - 1.2), x3 = C2[0] + Math.cos(a3) * d3, y3 = C2[1] + Math.sin(a3) * d3;
+      if (!free(x3, y3, 1.0)) continue;
+      var k3 = r(); list.push(k3 < .42 ? {k:'h', x:x3, y:y3, s:.42 + r() * .12, h:14 + r() * 12, c:r()} : {k:'t', x:x3, y:y3, s:.22, c:r()});
+    }
+    [1.2, 3.6].forEach(function(a4){ var x4 = C2[0] + Math.cos(a4) * (FARB.R(a4) - .9), y4 = C2[1] + Math.sin(a4) * (FARB.R(a4) - .9); if (free(x4, y4, .2)) list.push({k:'L', x:x4, y:y4, s:.3}); });   // 燈塔
+  }
+  return list.sort(function(p, q){ return (p.x + p.y) - (q.x + q.y); });
+})();
+var FAR_COL = {roof:['#ff6f59', '#4f9dff', '#f4b942', '#2ec4b6', '#ef6b8a', '#9d8cf2'], box:['#e05a47', '#f4b942', '#4f9dff', '#2ec4b6', '#9d8cf2', '#ef6b8a', '#6bbf59'], leaf:['#5cc45a', '#48b354', '#7ed35f', '#f2a7c3']};
+function farOutline(off, n){ var o = []; for (var i = 0; i < n; i++){ var a = i / n * Math.PI * 2, rr = FARB.R(a) + off; o.push([FARB.c[0] + Math.cos(a) * rr, FARB.c[1] + Math.sin(a) * rr]); } return o; }
+function drawFar(g){
   drawFarBridge(g);
-  el('polygon', {points:pts(circlePts(a[0], a[1], r + .5, 40).map(function(p){ return [p[0], p[1] + 7]; })), fill:'var(--foam)', opacity:.5}, g);
-  el('polygon', {points:pts(circlePts(a[0], a[1], r + .38, 40).map(function(p){ return [p[0], p[1] + 12]; })), fill:'#b98a4e'}, g);
-  el('polygon', {points:pts(circlePts(a[0], a[1], r + .38, 40)), fill:'#f3d798'}, g);
-  el('polygon', {points:pts(circlePts(a[0], a[1], r, 40)), fill:'#c4dd9c'}, g);
-  var things = [['t', a[0] - .9, a[1] - .6], ['t', a[0] + .2, a[1] - 1.1], ['h', a[0] - .4, a[1] - .1, '#ff6f59'], ['L', a[0] + .9, a[1] - .2], ['h', a[0] + .3, a[1] + .5, '#4f9dff'], ['t', a[0] - .9, a[1] + .7], ['t', a[0] + 1.0, a[1] + .8]];
-  things.sort(function(p, q){ return (p[1] + p[2]) - (q[1] + q[2]); }).forEach(function(o){
-    if (o[0] === 't'){ var p = iso(o[1], o[2]); el('polygon', {points:pts([[p[0], p[1] - 22], [p[0] + 7, p[1] - 3], [p[0] - 7, p[1] - 3]]), fill:'#4f9a5a'}, g); el('polygon', {points:pts([[p[0], p[1] - 22], [p[0] + 7, p[1] - 3], [p[0], p[1] - 3]]), fill:'#3f8550'}, g); }
-    else if (o[0] === 'h'){ farBox(g, o[1], o[2], .26, 12, '#e3d6c0', '#faf4e8', '#faf4e8'); var c = iso(o[1], o[2]), T = iso(o[1] - .26, o[2] - .26), Rr = iso(o[1] + .26, o[2] - .26), B = iso(o[1] + .26, o[2] + .26), Lp = iso(o[1] - .26, o[2] + .26), A = [c[0], c[1] - 24];
-      el('polygon', {points:pts([[Lp[0], Lp[1] - 12], [B[0], B[1] - 12], A]), fill:o[3]}, g); el('polygon', {points:pts([[B[0], B[1] - 12], [Rr[0], Rr[1] - 12], A]), fill:mix(o[3], '#ffffff', .25)}, g); }
-    else { var p2 = iso(o[1], o[2]); el('rect', {x:p2[0] - 4, y:p2[1] - 34, width:8, height:34, fill:'#faf4e8', stroke:'#3b2f3a', 'stroke-width':.8}, g); el('rect', {x:p2[0] - 4, y:p2[1] - 24, width:8, height:5, fill:'#e05a47'}, g);
-      el('polygon', {points:pts([[p2[0] - 6, p2[1] - 34], [p2[0] + 6, p2[1] - 34], [p2[0], p2[1] - 44]]), fill:'#e05a47'}, g); el('circle', {class:'pulse', cx:p2[0], cy:p2[1] - 37, r:2.5, fill:'#ffe08a'}, g); }
+  var H = FARB.style === 'harbor';
+  el('polygon', {points:pts(farOutline(.55, 120).map(function(q){ var p = iso(q[0], q[1]); return [p[0], p[1] + 8]; })), fill:'var(--foam)', opacity:.5}, g);
+  el('polygon', {points:pts(farOutline(H ? .05 : .4, 120).map(function(q){ var p = iso(q[0], q[1]); return [p[0], p[1] + 14]; })), fill:H ? '#7d776c' : '#b98a4e'}, g);
+  el('polygon', {points:pts(farOutline(H ? .05 : .4, 120).map(function(q){ return iso(q[0], q[1]); })), fill:H ? '#d9d3c5' : '#f3d798'}, g);
+  el('polygon', {points:pts(farOutline(H ? -.35 : -.05, 120).map(function(q){ return iso(q[0], q[1]); })), fill:H ? '#bcd88f' : '#b8e08a'}, g);
+  FAR_THINGS.forEach(function(o){
+    var p = iso(o.x, o.y);
+    if (o.k === 'w') farGable(g, o.x, o.y, o.s, o.h * .8, 9, '#9c4a36', '#bd6247', o.c < .5 ? '#66737c' : '#7a5a4a');
+    else if (o.k === 'c'){ farBox(g, o.x, o.y, o.s, 9, '#8d3a2c', FAR_COL.box[Math.floor(o.c * 7)], mix(FAR_COL.box[Math.floor(o.c * 7)], '#ffffff', .3)); farBox(g, o.x + .05, o.y, o.s * .9, 18, '#2a5f9a', FAR_COL.box[Math.floor(o.c * 7 + 3) % 7], mix(FAR_COL.box[Math.floor(o.c * 7 + 3) % 7], '#ffffff', .3)); }
+    else if (o.k === 'p'){ var tp = [p[0] + 2, p[1] - 30]; el('path', {d:'M' + p[0] + ' ' + p[1] + ' Q' + p[0] + ' ' + (p[1] - 15) + ' ' + tp[0] + ' ' + tp[1], stroke:'#8a6a48', 'stroke-width':2.6, fill:'none'}, g);
+      [[-12, 4], [-7, -5], [0, -7], [7, -5], [12, 4]].forEach(function(f){ el('path', {d:'M' + tp[0] + ' ' + tp[1] + ' Q' + (tp[0] + f[0] * .5) + ' ' + (tp[1] - 5) + ' ' + (tp[0] + f[0]) + ' ' + (tp[1] + f[1] + 5), stroke:'#4f9a5a', 'stroke-width':2.6, fill:'none', 'stroke-linecap':'round'}, g); }); }
+    else if (o.k === 'k'){ var A = iso(o.x - .25, o.y + .25), B = iso(o.x + .25, o.y - .25);
+      [A, B].forEach(function(P){ el('line', {x1:P[0], y1:P[1], x2:P[0], y2:P[1] - 44, stroke:'#d9533b', 'stroke-width':2.4}, g); });
+      el('line', {x1:A[0], y1:A[1] - 44, x2:B[0], y2:B[1] - 44, stroke:'#d9533b', 'stroke-width':3}, g);
+      var m = [(A[0] + B[0]) / 2, A[1] - 44]; el('line', {x1:m[0], y1:m[1], x2:m[0] + 14, y2:m[1] - 30, stroke:'#d9533b', 'stroke-width':2.4}, g); }
+    else if (o.k === 'h'){ var rc = FAR_COL.roof[Math.floor(o.c * 6)], s = o.s, h = o.h;
+      farBox(g, o.x, o.y, s, h, '#e3d6c0', '#faf4e8', '#faf4e8');
+      var T = iso(o.x - s, o.y - s), Rr = iso(o.x + s, o.y - s), Bq = iso(o.x + s, o.y + s), Lp = iso(o.x - s, o.y + s), Ap = [p[0], p[1] - h - 16];
+      el('polygon', {points:pts([[Lp[0], Lp[1] - h], [Bq[0], Bq[1] - h], Ap]), fill:rc}, g); el('polygon', {points:pts([[Bq[0], Bq[1] - h], [Rr[0], Rr[1] - h], Ap]), fill:mix(rc, '#ffffff', .25)}, g); }
+    else if (o.k === 't'){ var lc = FAR_COL.leaf[o.c < .08 ? 3 : Math.floor(o.c * 3)];
+      if (o.c > .5){ el('polygon', {points:pts([[p[0], p[1] - 24], [p[0] + 8, p[1] - 3], [p[0] - 8, p[1] - 3]]), fill:'#4f9a5a'}, g); el('polygon', {points:pts([[p[0], p[1] - 24], [p[0] + 8, p[1] - 3], [p[0], p[1] - 3]]), fill:'#3f8550'}, g); }
+      else { el('line', {x1:p[0], y1:p[1], x2:p[0], y2:p[1] - 8, stroke:'#9a6a3f', 'stroke-width':2.4}, g); el('circle', {cx:p[0], cy:p[1] - 15, r:9, fill:lc}, g); el('circle', {cx:p[0] - 3, cy:p[1] - 18, r:4, fill:mix(lc, '#ffffff', .25)}, g); } }
+    else if (o.k === 'L'){ el('rect', {x:p[0] - 4.5, y:p[1] - 40, width:9, height:40, fill:'#faf4e8', stroke:'#3b2f3a', 'stroke-width':.8}, g); el('rect', {x:p[0] - 4.5, y:p[1] - 28, width:9, height:6, fill:'#e05a47'}, g);
+      el('polygon', {points:pts([[p[0] - 7, p[1] - 40], [p[0] + 7, p[1] - 40], [p[0], p[1] - 51]]), fill:'#e05a47'}, g); el('circle', {class:'pulse', cx:p[0], cy:p[1] - 43, r:2.6, fill:'#ffe08a'}, g); }
+    else if (o.k === 'T'){
+      if (H){ farBox(g, o.x, o.y, .7, 70, '#9c4a36', '#bd6247', '#d27a5c'); farBox(g, o.x, o.y, .45, 96, '#3d4f5c', '#55697a', '#9fb3c0'); el('line', {x1:p[0], y1:p[1] - 96 - 8, x2:p[0], y2:p[1] - 128, stroke:'#3b2f3a', 'stroke-width':1.6}, g); el('circle', {class:'pulse', cx:p[0], cy:p[1] - 128, r:3, fill:'#ff6f59'}, g); }
+      else { farBox(g, o.x, o.y, .6, 80, '#c8b8a0', '#efe4d0', '#f7efe0'); var t1 = [p[0], p[1] - 80 - 34]; el('polygon', {points:pts([iso(o.x - .6, o.y + .6).map(function(v, i){ return i ? v - 80 : v; }), iso(o.x + .6, o.y + .6).map(function(v, i){ return i ? v - 80 : v; }), t1]), fill:'#ff6f59'}, g); el('polygon', {points:pts([iso(o.x + .6, o.y + .6).map(function(v, i){ return i ? v - 80 : v; }), iso(o.x + .6, o.y - .6).map(function(v, i){ return i ? v - 80 : v; }), t1]), fill:'#ff9a87'}, g); }
+    }
   });
-  var bt = iso(a[0] - r - .2, a[1] + .9);                         // 停在岸邊的小帆船
-  el('path', {d:'M' + (bt[0] - 10) + ' ' + bt[1] + ' L' + (bt[0] + 10) + ' ' + bt[1] + ' L' + (bt[0] + 6) + ' ' + (bt[1] + 5) + ' L' + (bt[0] - 6) + ' ' + (bt[1] + 5) + ' Z', fill:'#fff'}, g);
-  el('path', {d:'M' + bt[0] + ' ' + (bt[1] - 1) + ' L' + bt[0] + ' ' + (bt[1] - 17) + ' L' + (bt[0] + 9) + ' ' + (bt[1] - 4) + ' Z', fill:'#ff6f59'}, g);
-  el('polygon', {class:'hit', points:pts(circlePts(a[0], a[1], r + .6, 24).map(function(p){ return [p[0], p[1] - 10]; }))}, g);
+  el('polygon', {class:'hit', points:pts(farOutline(.6, 60).map(function(q){ var p = iso(q[0], q[1]); return [p[0], p[1] - 10]; }))}, g);
 }
 
 // ---- 跨海大橋：走過去才會到另一座島 ----
@@ -1013,10 +1064,7 @@ function farBridgeDist(gx, gy){
   var t = Math.max(0, Math.min(1, ((gx - a[0]) * dx + (gy - a[1]) * dy) / L2));
   return Math.hypot(gx - a[0] - dx * t, gy - a[1] - dy * t);
 }
-function onFarIsland(gx, gy, m){
-  var dx = gx - FAR.at[0], dy = gy - FAR.at[1], r = FAR.r - (m == null ? .2 : m);
-  return FAR.shape === 'square' ? Math.abs(dx) < r && Math.abs(dy) < r : Math.hypot(dx, dy) < r;
-}
+function onFarIsland(gx, gy, m){ return farEdge(gx, gy) < -(m == null ? .2 : m); }   // 踏上對岸（整座鄰島）
 function drawFarBridge(g){
   var a = FAR.bridge[0], b = FAR.bridge[1], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy), nx = -dy / l * .26, ny = dx / l * .26;
   var P = [[a[0] + nx, a[1] + ny], [b[0] + nx, b[1] + ny], [b[0] - nx, b[1] - ny], [a[0] - nx, a[1] - ny]].map(function(q){ return iso(q[0], q[1]); });
@@ -1031,7 +1079,7 @@ function drawFarBridge(g){
 }
 // 點對面的島：角色走過橋過去；走不過去（例如關掉人物）就直接切換
 function farGoClick(){
-  if (onFarIsland(walker.gx, walker.gy, FAR.r * .35)){ showFarCard('arrive'); goFar(); return; }   // 已經站在島上
+  if (onFarIsland(walker.gx, walker.gy, .6)){ showFarCard('arrive'); goFar(); return; }   // 已經站在島上
   var before = walker.goal; walker.goal = null; walkTo(FAR.at[0], FAR.at[1]);
   if (!walker.path.length && !onFarIsland(walker.gx, walker.gy)) { walker.goal = before; goFar(); return; }
   far.walking = true;
@@ -1057,7 +1105,7 @@ function showFarCard(kind){
 }
 function hideFarCard(){ clearInterval(far.timer); var c = $('farCard'); if (c) c.hidden = true; }
 function farTick(){
-  var inside = onFarIsland(walker.gx, walker.gy, FAR.r * .35);
+  var inside = onFarIsland(walker.gx, walker.gy, .6);
   if (inside && !far.inside){ addLog('走過橋，到了' + FAR.name); showFarCard('arrive'); goFar(); }   // 一踏上對面的島就切換網址
   if (!inside && far.inside) hideFarCard();
   if (!inside && far.walking && !walker.path.length){ far.walking = false; hideFarCard(); }
@@ -1531,7 +1579,7 @@ function drawLinks(){
 var boats = [{u:9, lane:35.6, s:.32, kind:'ship'}, {u:21, lane:37.4, s:-.22, kind:'ship'}, {u:15, lane:34.4, s:.6, kind:'tug'}];
 var tram = {u:12, s:.55};
 // 港裡的魚：不定時跳出水面畫一道弧線，入水時濺起水花
-var FISH = [{u:9.5, lane:34.2}, {u:13, lane:36.2}, {u:17.5, lane:34.8}, {u:21, lane:35.4}, {u:24, lane:33.8}, {u:6.5, lane:36.8}, {u:-3, lane:2.5}, {u:22.5, lane:24.5}];
+var FISH = [{u:9.5, lane:34.2}, {u:13, lane:36.2}, {u:17.5, lane:34.8}, {u:21, lane:35.4}, {u:19.5, lane:33.8}, {u:6.5, lane:36.8}, {u:-3, lane:2.5}, {u:22.5, lane:24.5}];
 var FISH_C = ['#c9d6de', '#f4a259', '#9fc4d6', '#e8e1c7'];
 function buildFish(){
   FISH.forEach(function(f, i){
@@ -1605,7 +1653,7 @@ function tick(ts){
   var dt = Math.min(.05, (ts - lastFrame) / 1000 || 0); lastFrame = ts;
   if (!state.paused){
     elapsed += dt;
-    boats.forEach(function(b){ b.u += b.s * dt; if (b.u > 27) b.u = 5; if (b.u < 5) b.u = 27; });
+    boats.forEach(function(b){ b.u += b.s * dt; if (b.u > 21) b.u = 5; if (b.u < 5) b.u = 21; });
     tram.u += tram.s * dt; if (tram.u > 19.6 || tram.u < 11.6){ tram.s = -tram.s; tram.u = Math.max(11.6, Math.min(19.6, tram.u)); }
   }
   stepWalker(dt, ts);
