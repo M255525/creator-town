@@ -1066,7 +1066,7 @@ function farTick(){
 
 function buildMap(){
   svg.innerHTML = '';
-  var defs = el('defs', {}, svg);
+  var defs = el('defs', {}, svg); L.defs = defs;
   var pat = el('pattern', {id:'waves', width:60, height:30, patternUnits:'userSpaceOnUse'}, defs);
   el('path', {d:'M4 18 q8 -6 16 0 M34 8 q8 -6 16 0', stroke:'rgba(255,255,255,.18)', 'stroke-width':1.6, fill:'none', 'stroke-linecap':'round'}, pat);
   el('rect', {x:-5000, y:-4000, width:10000, height:9000, fill:'url(#waves)'}, svg);
@@ -1819,17 +1819,49 @@ function walkTo(gx, gy){
   walker.path = straighten([walker.gx, walker.gy], p.length ? p : [cellPos(goal[0], goal[1])]);
 }
 function clientToGrid(cx, cy){ var p = clientToSvg(cx, cy); return [(p.x / HW + p.y / HH) / 2, (p.y / HH - p.x / HW) / 2]; }
+// 立體感上色：左上亮、右下暗的放射漸層（同一顏色共用一個 gradient）
+function shadeFill(hex){
+  var id = 'avs' + hex.slice(1);
+  if (!document.getElementById(id) && L.defs){
+    var gr = el('radialGradient', {id:id, cx:'.36', cy:'.3', r:'.78', fx:'.32', fy:'.24'}, L.defs);
+    el('stop', {offset:'0', 'stop-color':mix(hex, '#ffffff', .5)}, gr);
+    el('stop', {offset:'.45', 'stop-color':hex}, gr);
+    el('stop', {offset:'1', 'stop-color':mix(hex, '#3b2f3a', .32)}, gr);
+  }
+  return 'url(#' + id + ')';
+}
 // 一個「會走路的人」：自己和其他訪客共用
 function makeAvatar(data, mine){
   var g = el('g', {'pointer-events':'none', class:'avatar'}, L.blds), av = {g:g, mine:!!mine};
-  el('ellipse', {cx:0, cy:0, rx:8, ry:3.5, fill:'rgba(0,0,0,.2)'}, g);
+  el('ellipse', {cx:0, cy:0, rx:8.5, ry:3.6, fill:'rgba(30,20,40,.16)'}, g);
+  el('ellipse', {cx:0, cy:0, rx:5, ry:2.1, fill:'rgba(30,20,40,.22)'}, g);
   av.body = el('g', {}, g);
-  av.legL = el('line', {x1:-2.5, y1:-10, x2:-2.5, y2:0, stroke:'#2b3a44', 'stroke-width':3, 'stroke-linecap':'round'}, av.body);
-  av.legR = el('line', {x1:2.5, y1:-10, x2:2.5, y2:0, stroke:'#2b3a44', 'stroke-width':3, 'stroke-linecap':'round'}, av.body);
+  function leg(x){                                   // 褲管＋球鞋（白鞋底）
+    var lg = el('g', {}, av.body);
+    el('line', {x1:x, y1:-10, x2:x, y2:-1.5, stroke:'#3f5f8f', 'stroke-width':3.2, 'stroke-linecap':'round'}, lg);
+    el('ellipse', {cx:x + .9, cy:-.4, rx:2.6, ry:1.5, fill:'#fbf8f2', stroke:INK2, 'stroke-width':.5}, lg);
+    lg._shoe = el('ellipse', {cx:x + .9, cy:-1.2, rx:2.4, ry:1.4, stroke:INK2, 'stroke-width':.5}, lg);
+    return lg;
+  }
+  av.legL = leg(-2.5); av.legR = leg(2.5);
+  av.shorts = el('path', {d:'M-5.4 -12.5 L5.4 -12.5 L5.8 -8.6 L-5.8 -8.6 Z', fill:'#3f5f8f', stroke:INK2, 'stroke-width':.6, 'stroke-linejoin':'round'}, av.body);
   av.tail = el('g', {}, av.body);
-  av.armB = el('line', {x1:0, y1:-19, x2:0, y2:-11, 'stroke-width':2.8, 'stroke-linecap':'round'}, av.body);
+  av.bag = el('rect', {x:-8.6, y:-20.5, width:4.4, height:8.5, rx:1.8, fill:'#c98a4b', stroke:INK2, 'stroke-width':.6}, av.body);   // 背後的小背包
+  el('rect', {x:-8.8, y:-20.6, width:4.8, height:3, rx:1.4, fill:'#8f5a2c'}, av.body);
+  function arm(){                                    // 袖子＋毛色小手
+    var a = el('g', {}, av.body);
+    a._sl = el('line', {x1:0, y1:-19, x2:0, y2:-14.5, 'stroke-width':3.4, 'stroke-linecap':'round'}, a);
+    a._fur = el('line', {x1:0, y1:-14.5, x2:0, y2:-12, 'stroke-width':2.4, 'stroke-linecap':'round'}, a);
+    a._hand = el('circle', {cx:0, cy:-11.2, r:1.7, stroke:INK2, 'stroke-width':.5}, a);
+    return a;
+  }
+  av.armB = arm();
   av.shirt = el('rect', {x:-5.5, y:-21, width:11, height:12, rx:4, stroke:'#3b2f3a', 'stroke-width':.7}, av.body);
-  av.armF = el('line', {x1:0, y1:-19, x2:0, y2:-11, 'stroke-width':2.8, 'stroke-linecap':'round'}, av.body);
+  av.hem = el('rect', {x:-5.4, y:-10.6, width:10.8, height:1.6, rx:.8}, av.body);
+  el('path', {d:'M-2.6 -20.8 Q0 -18.6 2.6 -20.8', fill:'none', stroke:'#fbf8f2', 'stroke-width':1.3, 'stroke-linecap':'round'}, av.body);   // 白領口
+  av.pocket = el('rect', {x:1.2, y:-17.4, width:2.8, height:2.6, rx:.6}, av.body);
+  el('path', {d:'M-4.2 -19.4 Q-4.6 -15 -3.6 -11.6', fill:'none', stroke:'rgba(255,255,255,.45)', 'stroke-width':1, 'stroke-linecap':'round'}, av.body);   // 衣服亮面
+  av.armF = arm();
   av.head = el('g', {}, av.body);                                                                    // Q 版動物大頭（依動物重畫）
   av.tagWrap = el('g', {}, L.ptags);
   av.tagWrap.style.pointerEvents = 'auto'; av.tagWrap.style.cursor = 'pointer';   // 點自己的名牌改名字，點別人的名牌開始對話
@@ -1867,7 +1899,8 @@ function drawAnimalHead(g, A){
   } else if (ear === 'frog'){
     [-3.6, 3.6].forEach(function(x){ el('circle', o({cx:x, cy:-36, r:3.4, fill:A.fur}), g); });
   }
-  el('circle', o({cx:0, cy:-29, r:8.4, fill:A.fur}), g);
+  el('circle', o({cx:0, cy:-29, r:8.4, fill:shadeFill(A.fur)}), g);
+  el('path', {d:'M-6.2 -32.6 A7.2 7.2 0 0 1 -1.4 -36.4', fill:'none', stroke:'rgba(255,255,255,.7)', 'stroke-width':1.3, 'stroke-linecap':'round'}, g);   // 頭頂亮邊
   if (ear === 'tuft') el('path', {d:'M-1 -37.2 Q0 -40.8 1.4 -37.6 Q2.6 -40.4 3.4 -37.2', fill:'none', stroke:INK2, 'stroke-width':.9, 'stroke-linecap':'round'}, g);
   if (A.mark === 'face') el('ellipse', {cx:2.6, cy:-27.4, rx:5.6, ry:5.6, fill:A.light}, g);
   if (A.mark === 'panda') [1.3, 5.3].forEach(function(x){ el('ellipse', {cx:x, cy:-27.4, rx:2.2, ry:2.8, fill:A.dark, transform:'rotate(' + (x < 3 ? -20 : 20) + ' ' + x + ' -27.4)'}, g); });
@@ -1885,7 +1918,9 @@ function drawAnimalHead(g, A){
     var ex = ear === 'frog' ? (x < 3 ? -2.6 : 4.4) : x;
     el('ellipse', {cx:ex, cy:ey, rx:1.35, ry:1.9, fill:A.mark === 'panda' ? '#fff' : '#2b2140'}, g);
     if (A.mark === 'panda') el('ellipse', {cx:ex + .2, cy:ey, rx:.95, ry:1.4, fill:'#2b2140'}, g);
-    el('circle', {cx:ex + .45, cy:ey - .8, r:.55, fill:'#fff'}, g);
+    if (A.mark !== 'panda') el('ellipse', {cx:ex, cy:ey + .6, rx:.95, ry:.85, fill:mix(A.fur === '#fbf7f2' || A.fur === '#fbfbf7' ? '#6a5acd' : A.fur, '#2b2140', .35)}, g);
+    el('circle', {cx:ex + .45, cy:ey - .8, r:.6, fill:'#fff'}, g);
+    el('circle', {cx:ex - .45, cy:ey + .9, r:.28, fill:'#fff'}, g);
   });
   if (A.snout === 'beak') el('path', o({d:'M6.4 -26.6 L10.6 -25 L6.4 -23.4 Z', fill:A.nose, 'stroke-width':.7}), g);
   else if (A.snout === 'pig'){ el('ellipse', o({cx:6.2, cy:-25, rx:2.4, ry:1.9, fill:A.nose, 'stroke-width':.7}), g); [5.4, 7].forEach(function(x){ el('circle', {cx:x, cy:-25, r:.45, fill:INK2}, g); }); }
@@ -1909,8 +1944,17 @@ function drawAnimalTail(g, A){
 function setAvatarLook(av, data){
   av.data = data;
   var A = animalOf(data, data.id);
-  if (av.animal !== A.id){ av.animal = A.id; drawAnimalHead(av.head, A); drawAnimalTail(av.tail, A); av.armB.setAttribute('stroke', mix(A.fur, '#3b2f3a', .2)); av.armF.setAttribute('stroke', A.fur); av.legL.setAttribute('stroke', mix(A.fur, '#3b2f3a', .35)); av.legR.setAttribute('stroke', mix(A.fur, '#3b2f3a', .35)); }
-  av.shirt.setAttribute('fill', data.shirt);
+  if (av.animal !== A.id){
+    av.animal = A.id; drawAnimalHead(av.head, A); drawAnimalTail(av.tail, A);
+    [[av.armB, mix(A.fur, '#3b2f3a', .2)], [av.armF, A.fur]].forEach(function(q){ q[0]._fur.setAttribute('stroke', q[1]); q[0]._hand.setAttribute('fill', shadeFill(q[1])); });
+  }
+  if (av.shirtHex !== data.shirt){
+    av.shirtHex = data.shirt;
+    var trim = mix(data.shirt, '#3b2f3a', .3), shoe = mix(data.shirt, '#3b2f3a', .45);
+    av.shirt.setAttribute('fill', shadeFill(data.shirt)); av.hem.setAttribute('fill', trim); av.pocket.setAttribute('fill', trim);
+    av.armB._sl.setAttribute('stroke', mix(data.shirt, '#3b2f3a', .2)); av.armF._sl.setAttribute('stroke', data.shirt);
+    av.legL._shoe.setAttribute('fill', shoe); av.legR._shoe.setAttribute('fill', shoe);
+  }
   var tag = av.tag; tag.innerHTML = '';
   var shown = hasBadWord(data.name) ? '旅人' : data.name;
   var label = av.mine ? shown + '（你）✎' : shown + ' 💬';

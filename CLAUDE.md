@@ -77,3 +77,6 @@
 - 多分頁（同一島或兩座島各開一個）：兩站同網域，共用 localStorage `m255525IslandClaim`；每個分頁載入時寫入 `{tab, site, t}` 宣告「角色在我這」，其他分頁收到 `storage` 事件 → `pauseAvatar()`：`net.paused=true`、`net.open=false`、清掉其他人、關連線（`onclose` 見 `net.paused` 不重連）、請小幫手離開，畫面下方 `#dupCard`「你的角色正在另一個分頁（某島）上，這裡先暫停…［在這裡繼續］」；按下 `claimAvatar()` 搶回來，換對方暫停。`renderOnline()` 顯示「（已暫停：角色在另一個分頁）」。
 - 驗證：本機兩分頁（小鎮＋創業島）互相暫停／接手；正式轉播站兩個小鎮分頁進房間 ZZDUP7，後開的分頁連上且人數 1、先開的自動斷線，無 console 錯誤（先前暫停時還在送位置，報「WebSocket is already in CLOSING」，已改成暫停當下先 `net.open=false`）。
 - 範圍：只管同一個瀏覽器。不同裝置／瀏覽器的人剛好抽到同名同動物不在此限（轉播站各房間是獨立 Durable Object，跨島做不到全域唯一）。
+
+## 角色更立體、更細緻（2026-11-02，與創業島同步）
+使用者要求創業島「人物更立體化、更細緻」，並要求「創作者小鎮也一併修改」。角色程式和創業島**逐字相同**（移植前已 diff 確認兩邊原本一致），細節見 `startup-island/CLAUDE.md`「角色更立體、更細緻」：`index.html` 的 `shadeFill()`＋`makeAvatar`～`poseAvatar`（含 `L.defs = defs`），`island3d.js` 的 `avStd()`／`RIM_U`／`makeAv`／`poseAv`（含 `updateSky()` 調邊緣光那行）。**日後改角色要兩邊一起改**（可直接整段複製）。SW 快取 v5→v6。驗證：平面近拍、立體老虎近拍、走路動畫，無 console 錯誤。

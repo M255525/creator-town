@@ -946,88 +946,174 @@ function buildLinks(){
 }
 
 /* ---------- 人物 ---------- */
+// 人物專用材質：四段色階＋邊緣光（rim light），比建築的三段色階更有體積感
+var AV_GRAD = null, RIM_U = {value:.24};
+function avGrad(){
+  if (AV_GRAD) return AV_GRAD;
+  AV_GRAD = new T3.DataTexture(new Uint8Array([105, 168, 222, 255]), 4, 1, T3.RedFormat);
+  AV_GRAD.minFilter = AV_GRAD.magFilter = T3.NearestFilter; AV_GRAD.generateMipmaps = false; AV_GRAD.needsUpdate = true;
+  return AV_GRAD;
+}
+function avStd(c){
+  var m = new T3.MeshToonMaterial({color:c, gradientMap:avGrad()});
+  m.onBeforeCompile = function(sh){
+    sh.uniforms.rimK = RIM_U;
+    sh.fragmentShader = 'uniform float rimK;\n' + sh.fragmentShader.replace(/#include <(opaque|output)_fragment>/, function(s){
+      return 'float rimF = 1.0 - clamp(dot(normalize(vViewPosition), normal), 0.0, 1.0);\n' +
+             'outgoingLight += vec3(1.0, .97, .9) * smoothstep(.68, .88, rimF) * rimK;\n' + s;
+    });
+  };
+  m.customProgramCacheKey = function(){ return 'avrim'; };
+  return m;
+}
+var SHADOW_TEX = null;
+function blobTex(){
+  if (SHADOW_TEX) return SHADOW_TEX;
+  var c = document.createElement('canvas'); c.width = c.height = 64;
+  var x = c.getContext('2d'), gr = x.createRadialGradient(32, 32, 2, 32, 32, 31);
+  gr.addColorStop(0, 'rgba(30,20,40,.55)'); gr.addColorStop(.6, 'rgba(30,20,40,.22)'); gr.addColorStop(1, 'rgba(30,20,40,0)');
+  x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
+  return (SHADOW_TEX = new T3.CanvasTexture(c));
+}
 function makeAv(A, shirt, mine){
-  var g = new T3.Group(), furM = std(A.fur), lightM = std(A.light), innerM = std(A.inner), darkM = std(A.dark || INK), noseM = std(A.nose);
-  var shirtM = std(shirt || '#ff6f59'), footM = std(hexMix(A.fur, '#3b2f3a', .3));
-  function M(geo, mat, x, y, z, parent){ var m = new T3.Mesh(geo, mat); m.position.set(x, y, z); (parent || g).add(m); return m; }
-  function limb(len, r, mat, x, y, end){
-    var p = new T3.Group(); p.position.set(x, y, 0);
-    M(new T3.CapsuleGeometry(r, len, 4, 10), mat, 0, -len / 2 - r * .3, 0, p);
-    if (end){ var e = M(new T3.SphereGeometry(end[0], 12, 10), end[1], 0, -len - r * .6, end[2] || 0, p); e.scale.set(1, .8, end[2] ? 1.35 : 1); }
+  shirt = shirt || '#ff6f59';
+  var g = new T3.Group(), body = new T3.Group(); g.add(body);
+  var furM = avStd(A.fur), lightM = avStd(A.light), innerM = avStd(A.inner), darkM = avStd(A.dark || INK), noseM = avStd(A.nose);
+  var shirtM = avStd(shirt), trimM = avStd(hexMix(shirt, '#3b2f3a', .3)), whiteM = avStd('#fbf8f2');
+  var pantsM = avStd('#3f5f8f'), shoeM = avStd(hexMix(shirt, '#3b2f3a', .45)), bagM = avStd('#c98a4b'), bagDarkM = avStd('#8f5a2c');
+  var noInk = [];
+  function M(geo, mat, x, y, z, parent){ var m = new T3.Mesh(geo, mat); m.position.set(x, y, z); (parent || body).add(m); return m; }
+  function S(r, a, b){ return new T3.SphereGeometry(r, a || 20, b || 16); }
+  // 腳：短褲管＋球鞋（鞋面＋白色鞋底＋鞋帶）
+  function leg(x){
+    var p = new T3.Group(); p.position.set(x, .125, 0); body.add(p);
+    M(new T3.CapsuleGeometry(.034, .045, 6, 14), pantsM, 0, -.03, 0, p);
+    var shoe = M(S(.042), shoeM, 0, -.083, .016, p); shoe.scale.set(1, .72, 1.4);
+    var sole = M(S(.044), whiteM, 0, -.1, .016, p); sole.scale.set(1.02, .3, 1.45);
+    var lace = M(new T3.BoxGeometry(.03, .006, .012), whiteM, 0, -.06, .05, p); lace.rotation.x = -.5; noInk.push(lace);
     return p;
   }
-  var legL = limb(.05, .033, furM, -.045, .12, [.04, footM, .015]), legR = limb(.05, .033, furM, .045, .12, [.04, footM, .015]);
-  g.add(legL); g.add(legR);
-  var torso = M(new T3.CapsuleGeometry(.075, .05, 6, 14), shirtM, 0, .19, 0); torso.scale.set(1, 1, .9);
-  var armL = limb(.06, .022, shirtM, -.095, .245, [.03, furM]), armR = limb(.06, .022, shirtM, .095, .245, [.03, furM]);
-  armL.rotation.z = -.25; armR.rotation.z = .25; g.add(armL); g.add(armR);
-  // 尾巴
-  if (A.tail === 'long'){ var tl = M(new T3.CapsuleGeometry(.018, .16, 4, 8), furM, 0, .2, -.1); tl.rotation.x = -.9; }
-  else if (A.tail === 'fluffy'){ var tf = M(new T3.SphereGeometry(.06, 14, 10), furM, 0, .2, -.13); tf.scale.set(.8, 1.5, .8); tf.rotation.x = -.8; M(new T3.SphereGeometry(.03, 10, 8), lightM, 0, .29, -.19); }
-  else if (A.tail === 'puff') M(new T3.SphereGeometry(.035, 12, 10), lightM, 0, .14, -.08);
-  else if (A.tail === 'short'){ var ts = M(new T3.CapsuleGeometry(.016, .06, 4, 8), furM, 0, .2, -.09); ts.rotation.x = -1.1; }
-  else if (A.tail === 'curl'){ var tc = M(new T3.TorusGeometry(.022, .008, 6, 14, Math.PI * 1.6), noseM, 0, .17, -.085); tc.rotation.y = Math.PI / 2; }
+  var legL = leg(-.045), legR = leg(.045);
+  // 身體：T 恤＋白領口＋下擺滾邊＋口袋，下面是短褲
+  var pants = M(new T3.CylinderGeometry(.074, .08, .05, 24), pantsM, 0, .115, 0); pants.scale.z = .9;
+  var torso = M(new T3.CapsuleGeometry(.075, .05, 8, 24), shirtM, 0, .19, 0); torso.scale.set(1, 1, .9);
+  var hem = M(new T3.TorusGeometry(.073, .01, 8, 28), trimM, 0, .128, 0); hem.rotation.x = Math.PI / 2; hem.scale.y = .9; noInk.push(hem);
+  var collar = M(new T3.TorusGeometry(.052, .013, 8, 28), whiteM, 0, .272, .004); collar.rotation.x = Math.PI / 2 - .25; noInk.push(collar);
+  var pocket = M(new T3.BoxGeometry(.034, .03, .008), trimM, -.03, .2, .066); pocket.rotation.y = -.35; noInk.push(pocket);
+  [.215, .175].forEach(function(y){ noInk.push(M(S(.007, 8, 6), whiteM, .02, y, .069)); });
+  // 背包：創業者的小背包＋肩帶
+  var bag = M(new T3.CapsuleGeometry(.045, .03, 6, 16), bagM, 0, .21, -.082); bag.scale.set(1.05, 1, .55);
+  var flap = M(S(.047, 16, 10), bagDarkM, 0, .245, -.084); flap.scale.set(1.02, .45, .6);
+  var bpk = M(new T3.BoxGeometry(.04, .026, .012), bagDarkM, 0, .185, -.112); noInk.push(bpk);
+  [-1, 1].forEach(function(s){
+    var st = M(new T3.TorusGeometry(.06, .007, 6, 18, Math.PI * .9), bagDarkM, s * .045, .215, -.01); st.rotation.set(0, Math.PI / 2, Math.PI * .55); noInk.push(st);
+  });
+  // 手：袖口＋毛色小手（含大拇指）
+  function arm(s){
+    var p = new T3.Group(); p.position.set(s * .088, .25, 0); body.add(p);
+    M(new T3.CapsuleGeometry(.027, .025, 6, 14), shirtM, 0, -.018, 0, p);
+    var cuff = M(new T3.TorusGeometry(.024, .006, 6, 16), trimM, 0, -.042, 0, p); cuff.rotation.x = Math.PI / 2; noInk.push(cuff);
+    M(new T3.CapsuleGeometry(.018, .03, 4, 10), furM, 0, -.06, 0, p);
+    var hand = M(S(.029, 16, 12), furM, 0, -.088, .004, p); hand.scale.set(1, .92, .95);
+    var th = M(S(.011, 10, 8), furM, -s * .004, -.078, .026, p); noInk.push(th);
+    p.rotation.z = s * .26;
+    return p;
+  }
+  var armL = arm(-1), armR = arm(1);
+  // 尾巴（從短褲後面長出來）
+  if (A.tail === 'long'){ var tl = M(new T3.CapsuleGeometry(.018, .16, 6, 10), furM, 0, .15, -.1); tl.rotation.x = -.9; M(S(.022, 12, 10), A.mark === 'tiger' ? darkM : lightM, 0, .21, -.165); }
+  else if (A.tail === 'fluffy'){ var tf = M(S(.06), furM, 0, .16, -.125); tf.scale.set(.8, 1.5, .8); tf.rotation.x = -.8; M(S(.032, 12, 10), lightM, 0, .245, -.19); }
+  else if (A.tail === 'puff'){ M(S(.036, 14, 12), lightM, 0, .12, -.078); }
+  else if (A.tail === 'short'){ var ts = M(new T3.CapsuleGeometry(.016, .06, 4, 8), furM, 0, .15, -.085); ts.rotation.x = -1.1; }
+  else if (A.tail === 'curl'){ var tc = M(new T3.TorusGeometry(.022, .008, 8, 18, Math.PI * 1.6), noseM, 0, .13, -.085); tc.rotation.y = Math.PI / 2; }
   // 頭
-  var head = new T3.Group(); head.position.y = .39; g.add(head);
-  var face = M(new T3.SphereGeometry(.14, 24, 18), furM, 0, 0, 0, head); face.scale.set(1, .94, .96);
+  var head = new T3.Group(); head.position.y = .39; body.add(head);
+  var face = M(S(.14, 40, 30), furM, 0, 0, 0, head); face.scale.set(1, .94, .96);
   var e = A.ear;
   if (e === 'cat' || e === 'fox' || e === 'pig'){
     var eh = e === 'fox' ? .12 : e === 'pig' ? .06 : .09;
     [-1, 1].forEach(function(s){
-      var ear = M(new T3.ConeGeometry(.05, eh, 4), furM, s * .085, .12 + eh / 3, 0, head); ear.rotation.set(e === 'pig' ? .5 : 0, Math.PI / 4, -s * .35);
-      if (e !== 'pig'){ var inn = M(new T3.ConeGeometry(.028, eh * .65, 4), innerM, s * .085, .115 + eh / 3, .022, head); inn.rotation.set(0, Math.PI / 4, -s * .35); }
+      var ear = M(new T3.ConeGeometry(.05, eh, 12), furM, s * .085, .12 + eh / 3, 0, head); ear.rotation.set(e === 'pig' ? .5 : 0, 0, -s * .35); ear.scale.z = .6;
+      if (e !== 'pig'){ var inn = M(new T3.ConeGeometry(.03, eh * .7, 12), innerM, s * .083, .113 + eh / 3, .018, head); inn.rotation.set(0, 0, -s * .35); inn.scale.z = .35; noInk.push(inn); }
+      if (e === 'fox'){ var tip = M(new T3.ConeGeometry(.022, eh * .32, 12), darkM, s * (.085 + .028), .12 + eh * .78, 0, head); tip.rotation.z = -s * .35; tip.scale.z = .6; noInk.push(tip); }
     });
   } else if (e === 'long'){
     [-1, 1].forEach(function(s){
-      var ear = M(new T3.CapsuleGeometry(.03, .17, 4, 10), furM, s * .05, .24, -.02, head); ear.rotation.z = -s * .15; ear.scale.z = .6;
-      var inn = M(new T3.CapsuleGeometry(.014, .13, 4, 8), innerM, s * .05, .24, .002, head); inn.rotation.z = -s * .15; inn.scale.z = .4;
+      var ear = M(new T3.CapsuleGeometry(.032, .17, 6, 14), furM, s * .05, .24, -.02, head); ear.rotation.z = -s * .15; ear.scale.z = .6;
+      var inn = M(new T3.CapsuleGeometry(.016, .13, 6, 10), innerM, s * .05, .235, .002, head); inn.rotation.z = -s * .15; inn.scale.z = .4; noInk.push(inn);
     });
   } else if (e === 'round' || e === 'koala'){
     var er = e === 'koala' ? .065 : .045, ex = e === 'koala' ? .13 : .1, ey = e === 'koala' ? .08 : .115;
     [-1, 1].forEach(function(s){
-      var ear = M(new T3.SphereGeometry(er, 14, 10), A.mark === 'panda' ? darkM : furM, s * ex, ey, -.01, head); ear.scale.z = .6;
-      var inn = M(new T3.SphereGeometry(er * .55, 10, 8), innerM, s * ex, ey, er * .32, head); inn.scale.z = .3;
+      var ear = M(S(er), A.mark === 'panda' ? darkM : furM, s * ex, ey, -.01, head); ear.scale.z = .6;
+      var inn = M(S(er * .58, 14, 10), innerM, s * ex, ey, er * .32, head); inn.scale.z = .3; noInk.push(inn);
+      if (e === 'koala') [0, 1, 2].forEach(function(k){ noInk.push(M(S(.018, 8, 6), lightM, s * (ex + .05), ey + .03 - k * .03, 0, head)); });
     });
   } else if (e === 'floppy'){
-    [-1, 1].forEach(function(s){ var ear = M(new T3.CapsuleGeometry(.035, .09, 4, 10), innerM, s * .135, .0, -.01, head); ear.rotation.z = s * .3; ear.scale.z = .55; });
+    [-1, 1].forEach(function(s){ var ear = M(new T3.CapsuleGeometry(.038, .09, 6, 14), innerM, s * .135, 0, -.01, head); ear.rotation.z = s * .3; ear.scale.z = .55; });
   } else if (e === 'tuft'){
-    [-.025, 0, .025].forEach(function(x, i){ var f = M(new T3.SphereGeometry(.022, 8, 8), furM, x, .15 + (i === 1 ? .015 : 0), .01, head); f.scale.y = 1.6; f.rotation.z = -x * 12; });
+    [-.025, 0, .025].forEach(function(x, i){ var f = M(S(.022, 10, 8), furM, x, .15 + (i === 1 ? .015 : 0), .01, head); f.scale.y = 1.6; f.rotation.z = -x * 12; });
   } else if (e === 'frog'){
-    [-1, 1].forEach(function(s){ M(new T3.SphereGeometry(.055, 14, 10), furM, s * .062, .105, .05, head); });
+    [-1, 1].forEach(function(s){ M(S(.055), furM, s * .062, .105, .05, head); });
   }
-  var noInk = [], eyes = [];
-  if (A.mark === 'face'){ var fc = M(new T3.SphereGeometry(.11, 20, 14), lightM, 0, -.015, .045, head); fc.scale.set(1.05, .95, .9); }
-  if (A.mark === 'panda') [-1, 1].forEach(function(s){ var pt = M(new T3.SphereGeometry(.038, 12, 10), darkM, s * .055, -.008, .112, head); pt.scale.set(.85, 1.15, .4); pt.rotation.z = s * .4; noInk.push(pt); });
-  if (A.mark === 'tiger') [-.05, 0, .05].forEach(function(x){ var st = M(new T3.BoxGeometry(.012, .05, .02), darkM, x, .1, .085, head); st.rotation.x = -.6; noInk.push(st); });
-  if (A.snout === 'muzzle'){ var mz = M(new T3.SphereGeometry(.06, 16, 12), lightM, 0, -.05, .1, head); mz.scale.set(1.15, .75, .7); }
-  // 眼睛
+  // 瀏海毛（有毛的動物額頭多一撮）
+  if (['cat', 'dog', 'bear', 'fox', 'tiger', 'koala', 'rabbit', 'panda'].indexOf(A.id) >= 0){
+    [[-.03, .118, .055, .03], [.012, .126, .05, .034], [.045, .112, .05, .026]].forEach(function(q){ var f = M(S(q[3], 12, 10), furM, q[0], q[1], q[2], head); f.scale.set(1, .8, .9); noInk.push(f); });
+  }
+  // 臉頰兩側的毛
+  if (A.id === 'cat' || A.id === 'fox' || A.id === 'tiger'){
+    [-1, 1].forEach(function(s){ [0, 1].forEach(function(k){ var c = M(new T3.ConeGeometry(.022, .05, 8), furM, s * (.132 + k * .004), -.03 - k * .028, .01, head); c.rotation.z = s * (Math.PI / 2 + .25 - k * .5); c.scale.z = .6; noInk.push(c); }); });
+  }
+  if (A.mark === 'face'){ var fc = M(S(.11), lightM, 0, -.015, .045, head); fc.scale.set(1.05, .95, .9); }
+  if (A.mark === 'panda') [-1, 1].forEach(function(s){ var pt = M(S(.038), darkM, s * .055, -.008, .112, head); pt.scale.set(.85, 1.15, .4); pt.rotation.z = s * .4; noInk.push(pt); });
+  if (A.mark === 'tiger'){
+    [-.05, 0, .05].forEach(function(x){ var st = M(new T3.BoxGeometry(.012, .05, .02), darkM, x, .1, .085, head); st.rotation.x = -.6; noInk.push(st); });
+    [-1, 1].forEach(function(s){ [0, 1].forEach(function(k){ var st = M(new T3.BoxGeometry(.045, .01, .02), darkM, s * .12, .01 - k * .03, .05, head); st.rotation.set(0, s * .7, -s * .2); noInk.push(st); }); });
+  }
+  if (A.snout === 'muzzle'){ var mz = M(S(.06), lightM, 0, -.05, .1, head); mz.scale.set(1.15, .75, .7); }
+  // 眼睛：深色眼框＋有顏色的虹膜（下方較亮）＋大小兩顆高光，眨眼時整顆一起壓扁
+  var eyes = [], pale = A.fur === '#fbfbf7' || A.fur === '#fbf7f2', irisC = hexMix(pale ? '#6a5acd' : A.fur, '#2b2140', .45);
   [-.052, .052].forEach(function(x){
     var y = e === 'frog' ? .115 : -.012, z = e === 'frog' ? .1 : .124;
-    var eye = M(new T3.SphereGeometry(.028, 14, 12), new T3.MeshBasicMaterial({color:'#2b2140'}), x * (e === 'frog' ? 1.2 : 1), y, z, head);
+    var eye = M(S(.028, 18, 14), new T3.MeshBasicMaterial({color:'#2b2140'}), x * (e === 'frog' ? 1.2 : 1), y, z, head);
     eye.scale.set(.82, 1.25, .5); eyes.push(eye); noInk.push(eye);
-    var hl = M(new T3.SphereGeometry(.011, 8, 6), new T3.MeshBasicMaterial({color:'#ffffff'}), .3, .4, 1.15, eye); hl.scale.set(1.2, .8, 2); noInk.push(hl);
-    var blush = M(new T3.SphereGeometry(.024, 12, 8), new T3.MeshBasicMaterial({color:'#ff8fa8', transparent:true, opacity:.55, depthWrite:false}), x * 1.5, -.055, .11, head);
+    var iris = M(S(.02, 14, 10), new T3.MeshBasicMaterial({color:irisC}), 0, -.005, .018, eye); iris.scale.z = .6; noInk.push(iris);
+    var low = M(S(.012, 10, 8), new T3.MeshBasicMaterial({color:hexMix(irisC, '#ffffff', .4)}), 0, -.012, .024, eye); low.scale.set(1.2, .7, .5); noInk.push(low);
+    var pup = M(S(.009, 10, 8), new T3.MeshBasicMaterial({color:'#1a1226'}), 0, -.001, .026, eye); pup.scale.z = .5; noInk.push(pup);
+    noInk.push(M(S(.008, 10, 8), new T3.MeshBasicMaterial({color:'#ffffff'}), .008, .011, .03, eye));
+    noInk.push(M(S(.0038, 8, 6), new T3.MeshBasicMaterial({color:'#ffffff'}), -.009, -.013, .03, eye));
+    if (e !== 'frog'){ var br = M(new T3.CapsuleGeometry(.0045, .022, 4, 8), new T3.MeshBasicMaterial({color:hexMix(A.fur, '#2b2140', .6)}), x * 1.02, .042, .126, head); br.rotation.z = Math.PI / 2 + (x < 0 ? -.18 : .18); noInk.push(br); }
+    var blush = M(S(.024, 14, 10), new T3.MeshBasicMaterial({color:'#ff8fa8', transparent:true, opacity:.55, depthWrite:false}), x * 1.5, -.055, .11, head);
     blush.scale.set(1.1, .5, .35); noInk.push(blush);
   });
   // 鼻子、嘴
-  if (A.snout === 'beak'){ var bk = M(new T3.ConeGeometry(.03, .07, 8), noseM, 0, -.045, .15, head); bk.rotation.x = Math.PI / 2; }
-  else if (A.snout === 'pig'){ var sn = M(new T3.CylinderGeometry(.04, .042, .035, 16), noseM, 0, -.045, .135, head); sn.rotation.x = Math.PI / 2; [-1, 1].forEach(function(s){ noInk.push(M(new T3.SphereGeometry(.007, 6, 6), new T3.MeshBasicMaterial({color:INK}), s * .014, -.045, .153, head)); }); }
-  else if (A.snout === 'bignose'){ var bn = M(new T3.SphereGeometry(.038, 14, 10), noseM, 0, -.035, .13, head); bn.scale.set(.8, 1.05, .6); }
-  else if (A.snout !== 'none'){ var ns = M(new T3.SphereGeometry(.016, 10, 8), noseM, 0, A.snout === 'muzzle' ? -.035 : -.04, A.snout === 'muzzle' ? .158 : .136, head); ns.scale.set(1.3, .9, .9); noInk.push(ns); }
+  if (A.snout === 'beak'){ var bk = M(new T3.ConeGeometry(.03, .07, 16), noseM, 0, -.045, .15, head); bk.rotation.x = Math.PI / 2; }
+  else if (A.snout === 'pig'){ var sn = M(new T3.CylinderGeometry(.04, .042, .035, 24), noseM, 0, -.045, .135, head); sn.rotation.x = Math.PI / 2; [-1, 1].forEach(function(s){ noInk.push(M(S(.007, 8, 6), new T3.MeshBasicMaterial({color:INK}), s * .014, -.045, .153, head)); }); }
+  else if (A.snout === 'bignose'){ var bn = M(S(.038), noseM, 0, -.035, .13, head); bn.scale.set(.8, 1.05, .6); noInk.push(M(S(.008, 8, 6), new T3.MeshBasicMaterial({color:'#ffffff', transparent:true, opacity:.7}), -.01, -.015, .152, head)); }
+  else if (A.snout !== 'none'){
+    var mzl = A.snout === 'muzzle';
+    var ns = M(S(.016, 12, 10), noseM, 0, mzl ? -.035 : -.04, mzl ? .158 : .136, head); ns.scale.set(1.3, .9, .9); noInk.push(ns);
+    noInk.push(M(S(.005, 6, 6), new T3.MeshBasicMaterial({color:'#ffffff', transparent:true, opacity:.75}), -.006, mzl ? -.03 : -.035, mzl ? .17 : .149, head));
+  }
   if (A.snout !== 'beak' && A.snout !== 'pig' && A.snout !== 'bignose'){
-    var mouth = M(new T3.TorusGeometry(.014, .004, 6, 12, Math.PI), new T3.MeshBasicMaterial({color:'#a24a52'}), 0, A.snout === 'muzzle' ? -.068 : -.062, A.snout === 'muzzle' ? .152 : .132, head);
+    var mz2 = A.snout === 'muzzle';
+    var mouth = M(new T3.TorusGeometry(.014, .004, 6, 14, Math.PI), new T3.MeshBasicMaterial({color:'#a24a52'}), 0, mz2 ? -.068 : -.062, mz2 ? .152 : .132, head);
     mouth.rotation.z = Math.PI; noInk.push(mouth);
+    var tongue = M(S(.007, 8, 6), new T3.MeshBasicMaterial({color:'#ff7f95'}), 0, mz2 ? -.074 : -.068, mz2 ? .15 : .13, head); tongue.scale.set(1.2, .7, .6); noInk.push(tongue);
   }
   if (A.mark === 'whisker') [-1, 1].forEach(function(s){ [0, 1].forEach(function(k){ var w = M(new T3.BoxGeometry(.06, .003, .003), new T3.MeshBasicMaterial({color:INK}), s * .1, -.05 - k * .015, .1, head); w.rotation.z = s * (k ? -.12 : .12); noInk.push(w); }); });
   noInk.forEach(function(m){ m.userData.noInk = true; });
+  // 腳下的柔和接觸陰影，讓角色「站」在地上
+  var blob = new T3.Mesh(new T3.PlaneGeometry(.34, .34), new T3.MeshBasicMaterial({map:blobTex(), transparent:true, depthWrite:false}));
+  blob.rotation.x = -Math.PI / 2; blob.position.y = .012; blob.userData.noInk = true; blob.raycast = noPick; g.add(blob);
   g.scale.setScalar(1.05);
-  shadowAll(g); noInk.forEach(function(m){ m.castShadow = false; });
-  inkAll(g, .009); scene.add(g);
+  shadowAll(g); noInk.forEach(function(m){ m.castShadow = false; }); blob.castShadow = blob.receiveShadow = false;
+  inkAll(g, .008); scene.add(g);
   var tag = document.createElement('div'); tag.className = 'av3' + (mine ? ' mine' : '');
   if (mine){ tag.title = '點一下換動物、改名字'; tag.addEventListener('click', function(ev){ ev.stopPropagation(); openNamePop(); }); tag.addEventListener('pointerdown', function(ev){ ev.stopPropagation(); }); }
   labRoot.appendChild(tag);
   var bub = document.createElement('div'); bub.className = 'bub3'; bub.style.display = 'none'; labRoot.appendChild(bub);   // 聊天對話泡泡（內容在 index.html 的 BUBBLES）
-  return {g:g, head:head, eyes:eyes, legL:legL, legR:legR, armL:armL, armR:armR, shirt:shirtM, tag:tag, bub:bub, bubText:'', animal:A.id, last:'', px:null, pz:null, yaw:0, blink:2 + Math.random() * 3, t:0};
+  return {g:g, body:body, torso:torso, head:head, eyes:eyes, legL:legL, legR:legR, armL:armL, armR:armR, shirt:shirtM, trim:trimM, shoe:shoeM, tag:tag, bub:bub, bubText:'', animal:A.id, last:'', px:null, pz:null, yaw:0, blink:2 + Math.random() * 3, t:0};
 }
 function dropAv(a){ scene.remove(a.g); a.tag.remove(); a.bub.remove(); a.g.traverse(function(m){ if (m.geometry && !m.userData.ink) m.geometry.dispose(); }); }
 function poseAv(a, o, name, shirt, dt){
@@ -1039,7 +1125,11 @@ function poseAv(a, o, name, shirt, dt){
   var sw = moving ? Math.sin(o.phase) * .7 : 0;
   a.legL.rotation.x = sw; a.legR.rotation.x = -sw; a.armL.rotation.x = -sw * 1.1; a.armR.rotation.x = sw * 1.1;
   a.t += dt;
-  a.g.position.y += moving ? Math.abs(Math.sin(o.phase)) * .04 : 0;                     // 走路一蹦一蹦
+  var hop = moving ? Math.abs(Math.sin(o.phase)) : 0;
+  a.body.position.y = hop * .04;                                                        // 走路一蹦一蹦（影子留在地上）
+  a.body.scale.set(1 + (moving ? (1 - hop) * .04 : 0), 1 - (moving ? (1 - hop) * .05 : 0), 1);   // 落地時微微壓扁
+  a.body.rotation.x = moving ? .1 : 0;                                                  // 往前傾
+  a.torso.rotation.y = moving ? Math.sin(o.phase) * .18 : 0;                           // 跟著步伐扭腰
   a.head.rotation.z = moving ? Math.sin(o.phase) * .07 : Math.sin(a.t * 1.6) * .04;   // 走路晃頭、站著輕輕搖
   a.head.position.y = .39 + (moving ? 0 : Math.sin(a.t * 2.4) * .006);                // 站著時的呼吸
   a.blink -= dt;
@@ -1047,7 +1137,7 @@ function poseAv(a, o, name, shirt, dt){
   a.eyes.forEach(function(e){ e.scale.y = lid; });
   var label = (hasBadWord(name) ? '旅人' : name) + (a.tag.classList.contains('mine') ? '（你）✎' : '');
   if (label !== a.last){ a.tag.textContent = label; a.last = label; }
-  if (shirt && a.shirtHex !== shirt){ a.shirt.color.set(shirt); a.tag.style.background = shirt; a.shirtHex = shirt; }
+  if (shirt && a.shirtHex !== shirt){ a.shirt.color.set(shirt); a.trim.color.set(hexMix(shirt, '#3b2f3a', .3)); a.shoe.color.set(hexMix(shirt, '#3b2f3a', .45)); a.tag.style.background = shirt; a.shirtHex = shirt; }
 }
 function syncAvatars(dt){
   var A = animalOf(me);
@@ -1148,6 +1238,7 @@ function updateSky(force){
   sun.intensity = 1.9 * (1 - dk) + .75 * dk;
   hemi.intensity = 1.25 * (1 - dk) + .7 * dk;
   hemi.color.copy(col('#dff3ff').lerp(col('#3a4f88'), dk)); hemi.groundColor.copy(col('#8a9a6a').lerp(col('#1a2238'), dk));
+  RIM_U.value = .24 * (1 - dk) + .1 * dk;                                             // 人物邊緣光：夜裡收斂
   O.water.material.color.copy(col('#47c6e6').lerp(col('#1d4f86'), dk).lerp(col('#f0a58f'), dusk * .35));
   O.stars.material.opacity = Math.max(0, dk - .25) * 1.2;
   O.flies.material.opacity = Math.max(0, dk - .4) * 1.4;
