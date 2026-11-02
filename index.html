@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>創作者小鎮 · 走進港邊倉庫，把靈感做成作品</title>
-<meta name="description" content="把 27 個 AI 內容創作工具放進一座港邊倉庫小鎮：紅磚倉庫、貨櫃屋、運河、鐵道與碼頭，靈感草坪、提示詞看台、影音片場、插畫碼頭等九個地點、作品接力線、創作者的一天與兩年創作之路時間軸。">
+<meta name="description" content="把 27 個 AI 內容創作工具放進一座港邊倉庫小鎮：手繪動畫風的紅瓦灰泥倉庫、貨櫃屋、運河、鐵道與碼頭，靈感草坪、提示詞看台、影音片場、插畫碼頭等九個地點、作品接力線、創作者的一天與兩年創作之路時間軸。">
 <meta name="theme-color" content="#16566f">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -15,14 +15,14 @@
 <style>
 :root{
   --ink:#14303d; --ink-dim:#4d6672; --ink-faint:#8aa0aa;
-  /* 地圖色票＝立體 island3d.js 的 PAL／THEME（港邊黃金時刻），改一邊要改另一邊 */
-  --sea:#1f6f86; --sea-deep:#123b58; --foam:#d8efe6; --lagoon:#3a9c9a;
-  --sand:#d6cfc0; --grass:#b7c87c; --cliff:#8b8578;
+  /* 地圖色票＝立體 island3d.js 的 PAL／THEME（手繪動畫風的海港小鎮），改一邊要改另一邊 */
+  --sea:#2a8fbf; --sea-deep:#1b4f8f; --foam:#f2fbff; --lagoon:#5cc7c9;
+  --sand:#e6dcc4; --grass:#93c25e; --cliff:#9a8f7c;
   --panel:#fbfdfd; --panel-2:#eef6f8; --line:#d4e3e8;
   --coral:#ff6f59; --coral-ink:#c8412d;
   --lic:#e11d2e;
-  --park:#9cc468; --lawn:#c6d498; --yard:#eadcc0; --paving:#e2ddd3; --wood:#cdb79a; --road:#f1ede4;
-  --river:#2f8f94; --river-rim:#b3ab9b; --hillside:#c9b9a0; --hilltop:#e6dccb;
+  --park:#7fba52; --lawn:#a9d06e; --yard:#efe2c4; --paving:#e8e0cf; --wood:#c8a27a; --road:#efe6d2;
+  --river:#3aa3b8; --river-rim:#bfb39b; --hillside:#cbbd9f; --hilltop:#e8dfcb;
   --shadow:0 10px 30px rgba(12,48,64,.18);
   --mq:0px;
   --f-display:"Huninn","Noto Sans TC",system-ui,sans-serif;
@@ -32,12 +32,12 @@
 @media (prefers-color-scheme: dark){
   :root{
     --ink:#e4f0f3; --ink-dim:#a4bcc5; --ink-faint:#6f8b96;
-    --sea:#0f3a4c; --sea-deep:#081f30; --foam:#2c6070; --lagoon:#1f5f60;
-    --sand:#7c776c; --grass:#6c7744; --cliff:#4a463f;
+    --sea:#123d5e; --sea-deep:#0a2340; --foam:#2c5f80; --lagoon:#1f5f6a;
+    --sand:#7c766a; --grass:#4f7a3a; --cliff:#4a463f;
     --panel:#11242e; --panel-2:#183340; --line:#264552;
     --coral:#ff8470; --coral-ink:#ffb3a5;
     --lic:#ff4d5a;
-    --park:#5d7638; --lawn:#6d7a4c; --yard:#8a7a52; --paving:#56616a; --wood:#7a5e3c; --road:#6d7780;
+    --park:#456f34; --lawn:#5a8344; --yard:#8a7a52; --paving:#56616a; --wood:#7a5e3c; --road:#6d7780;
     --river:#22708a; --river-rim:#575247; --hillside:#6e624f; --hilltop:#8a7f6b;
     --shadow:0 10px 30px rgba(0,0,0,.45);
   }
@@ -120,6 +120,7 @@ a{color:inherit}
 
 /* ---------- 立體漫遊 ---------- */
 .world3d{position:absolute;inset:0;z-index:1;display:none;background:#9dd6ee}
+.paper{position:absolute;inset:0;z-index:4;pointer-events:none;mix-blend-mode:multiply;opacity:.6;background-size:256px 256px}   /* 手繪紙質紋理 */
 .world3d.on{display:block}
 body.view-3d #map{display:none}
 #c3d{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab;outline:none}
@@ -445,6 +446,7 @@ body.view-time .talk-card{bottom:216px}
   </header>
 
   <svg id="map" class="pan" role="application" aria-label="創作者小鎮地圖：每棟建築是一個線上工具"></svg>
+  <div class="paper" id="paper" aria-hidden="true"></div>
 
   <div class="world3d" id="world3d">
     <canvas id="c3d" aria-label="創作者小鎮立體漫遊：拖曳轉視角、點地面走過去、點建築看工具"></canvas>
@@ -580,7 +582,7 @@ body.view-time .talk-card{bottom:216px}
         <li>接力線與時間軸是課程整理的建議使用順序，工具之間沒有自動傳資料。</li>
         <li>探索足跡只存在你這台裝置的瀏覽器，不會上傳。為了讓同時在鎮上的人互相看見，系統只會即時交換你的角色名字、選的動物、衣服顏色與位置，不會記錄或保存。</li>
         <li>聊天訊息只即時轉給同一個房間裡的人；轉播站只在記憶體暫留最近 20 則讓剛進來的人看得到，不寫入任何儲存，房間沒人後就消失。訊息會自動拿掉網址、把不雅字詞遮成 *，但無法擋下所有不當內容，請勿在聊天中留下電話、地址等個人資料。</li>
-        <li>場景靈感來自高雄港邊舊倉庫群改建藝術區的氛圍；所有建築、地標、彩繪、車輛與船隻都是程式自繪的虛構場景，沒有使用任何官方標誌、照片或藝術作品。本站與高雄市政府文化局、駁二藝術特區無任何關係。</li>
+        <li>場景靈感來自高雄港邊舊倉庫群改建藝術區的氛圍；所有建築、地標、彩繪、車輛與船隻都是程式自繪的虛構場景，沒有使用任何官方標誌、照片或藝術作品。本站與高雄市政府文化局、駁二藝術特區無任何關係。畫面的手繪動畫風格只借整體氛圍（藍天、積雲、草原、紅瓦屋頂），沒有使用任何動畫作品的角色、場景或標誌。</li>
         <li>僅供教學、課程及個人使用，禁止未經授權公開發布、販售或商業化使用。</li>
       </ul>
     </div>
@@ -604,8 +606,8 @@ var ZONES = [
   {id:'strategy', name:'提示詞看台', en:'PROMPT STEPS',   color:'#9d8cf2', ground:null, label:[6.4,4.3,13],          desc:'坐上階梯看台把話說清楚：寫出 AI 聽得懂的提示詞，再整理成可以重複用的技能。'},
   {id:'school',   name:'創作學院', en:'CREATOR ACADEMY',  color:'#6672e0', ground:'var(--yard)', extra:[7.15,-.35,11.85,2.95], desc:'舊倉庫改建的教室與露天舞台：用卡牌遊戲練提示詞框架，課堂練習也在這裡查。'},
   {id:'calc',     name:'影音片場', en:'STUDIO LOT',       color:'#2ec4b6', ground:'var(--paving)', extra:[12.45,1.75,17.15,5.15], desc:'挑高的鐵皮倉庫改成攝影棚：影片提示詞、配音合成、剪輯上字幕。'},
-  {id:'fund',     name:'聲音廣場', en:'SOUND PLAZA',      color:'#f08a4b', ground:'var(--paving)', extra:[15.4,10.7,16.6,11.9], desc:'紅磚倉庫圍起的廣場：旁白配音和配樂都在這裡做。'},
-  {id:'brand',    name:'社群大街', en:'SOCIAL AVENUE',    color:'#ef6b8a', ground:'var(--paving)', desc:'紅磚店面一字排開：規劃方向、排內容檔期、寫貼文、發文前健診。'},
+  {id:'fund',     name:'聲音廣場', en:'SOUND PLAZA',      color:'#f08a4b', ground:'var(--paving)', extra:[15.4,10.7,16.6,11.9], desc:'紅瓦倉庫圍起的廣場：旁白配音和配樂都在這裡做。'},
+  {id:'brand',    name:'社群大街', en:'SOCIAL AVENUE',    color:'#ef6b8a', ground:'var(--paving)', desc:'灰泥店面一字排開：規劃方向、排內容檔期、寫貼文、發文前健診。'},
   {id:'ecom',     name:'插畫碼頭',   en:'ART PIER',         color:'#4f9dff', ground:'var(--wood)', desc:'貨櫃改建的畫室，窗外就是港口：生圖提示詞、漫畫分鏡、LINE 貼圖。'},
   {id:'ops',      name:'寫作巷',   en:'WRITERS LANE',     color:'#6bbf59', ground:'var(--lawn)', extra:[1.15,12.65,4.15,15.55], desc:'倉庫後巷的小工作室：把草稿整理成文件，替簡報換上風格。'},
   {id:'hub',      name:'發布塔',   en:'PUBLISH TOWER',    color:'#e05a47', ground:'var(--paving)', desc:'運河邊的號誌塔與工作坊：把每天重複的創作流程串成會自己跑的工作流。'}
@@ -1029,12 +1031,12 @@ function drawFar(g){
   drawFarBridge(g);
   var H = FARB.style === 'harbor';
   el('polygon', {points:pts(farOutline(.55, 120).map(function(q){ var p = iso(q[0], q[1]); return [p[0], p[1] + 8]; })), fill:'var(--foam)', opacity:.5}, g);
-  el('polygon', {points:pts(farOutline(H ? .05 : .4, 120).map(function(q){ var p = iso(q[0], q[1]); return [p[0], p[1] + 14]; })), fill:H ? '#8b8578' : '#d2b071'}, g);
-  el('polygon', {points:pts(farOutline(H ? .05 : .4, 120).map(function(q){ return iso(q[0], q[1]); })), fill:H ? '#d6cfc0' : '#fdf1cf'}, g);
-  el('polygon', {points:pts(farOutline(H ? -.35 : -.05, 120).map(function(q){ return iso(q[0], q[1]); })), fill:H ? '#b7c87c' : '#9edb6f'}, g);
+  el('polygon', {points:pts(farOutline(H ? .05 : .4, 120).map(function(q){ var p = iso(q[0], q[1]); return [p[0], p[1] + 14]; })), fill:H ? '#9a8f7c' : '#d2b071'}, g);
+  el('polygon', {points:pts(farOutline(H ? .05 : .4, 120).map(function(q){ return iso(q[0], q[1]); })), fill:H ? '#e6dcc4' : '#fdf1cf'}, g);
+  el('polygon', {points:pts(farOutline(H ? -.35 : -.05, 120).map(function(q){ return iso(q[0], q[1]); })), fill:H ? '#93c25e' : '#9edb6f'}, g);
   FAR_THINGS.forEach(function(o){
     var p = iso(o.x, o.y);
-    if (o.k === 'w') farGable(g, o.x, o.y, o.s, o.h * .8, 9, '#9c4a36', '#bd6247', o.c < .5 ? '#66737c' : '#7a5a4a');
+    if (o.k === 'w') farGable(g, o.x, o.y, o.s, o.h * .8, 9, '#cdb79c', '#f2e2c4', o.c < .33 ? '#5f9e8f' : '#cf6a3f');
     else if (o.k === 'c'){ farBox(g, o.x, o.y, o.s, 9, '#8d3a2c', FAR_COL.box[Math.floor(o.c * 7)], mix(FAR_COL.box[Math.floor(o.c * 7)], '#ffffff', .3)); farBox(g, o.x + .05, o.y, o.s * .9, 18, '#2a5f9a', FAR_COL.box[Math.floor(o.c * 7 + 3) % 7], mix(FAR_COL.box[Math.floor(o.c * 7 + 3) % 7], '#ffffff', .3)); }
     else if (o.k === 'p'){ var tp = [p[0] + 2, p[1] - 30]; el('path', {d:'M' + p[0] + ' ' + p[1] + ' Q' + p[0] + ' ' + (p[1] - 15) + ' ' + tp[0] + ' ' + tp[1], stroke:'#8a6a48', 'stroke-width':2.6, fill:'none'}, g);
       [[-12, 4], [-7, -5], [0, -7], [7, -5], [12, 4]].forEach(function(f){ el('path', {d:'M' + tp[0] + ' ' + tp[1] + ' Q' + (tp[0] + f[0] * .5) + ' ' + (tp[1] - 5) + ' ' + (tp[0] + f[0]) + ' ' + (tp[1] + f[1] + 5), stroke:'#4f9a5a', 'stroke-width':2.6, fill:'none', 'stroke-linecap':'round'}, g); }); }
@@ -1052,7 +1054,7 @@ function drawFar(g){
     else if (o.k === 'L'){ el('rect', {x:p[0] - 4.5, y:p[1] - 40, width:9, height:40, fill:'#faf4e8', stroke:'#3b2f3a', 'stroke-width':.8}, g); el('rect', {x:p[0] - 4.5, y:p[1] - 28, width:9, height:6, fill:'#e05a47'}, g);
       el('polygon', {points:pts([[p[0] - 7, p[1] - 40], [p[0] + 7, p[1] - 40], [p[0], p[1] - 51]]), fill:'#e05a47'}, g); el('circle', {class:'pulse', cx:p[0], cy:p[1] - 43, r:2.6, fill:'#ffe08a'}, g); }
     else if (o.k === 'T'){
-      if (H){ farBox(g, o.x, o.y, .7, 70, '#9c4a36', '#bd6247', '#d27a5c'); farBox(g, o.x, o.y, .45, 96, '#3d4f5c', '#55697a', '#9fb3c0'); el('line', {x1:p[0], y1:p[1] - 96 - 8, x2:p[0], y2:p[1] - 128, stroke:'#3b2f3a', 'stroke-width':1.6}, g); el('circle', {class:'pulse', cx:p[0], cy:p[1] - 128, r:3, fill:'#ff6f59'}, g); }
+      if (H){ farBox(g, o.x, o.y, .7, 70, '#cdb79c', '#f2e2c4', '#cf6a3f'); farBox(g, o.x, o.y, .45, 96, '#3d4f5c', '#55697a', '#9fb3c0'); el('line', {x1:p[0], y1:p[1] - 96 - 8, x2:p[0], y2:p[1] - 128, stroke:'#3b2f3a', 'stroke-width':1.6}, g); el('circle', {class:'pulse', cx:p[0], cy:p[1] - 128, r:3, fill:'#ff6f59'}, g); }
       else { farBox(g, o.x, o.y, .6, 80, '#c8b8a0', '#efe4d0', '#f7efe0'); var t1 = [p[0], p[1] - 80 - 34]; el('polygon', {points:pts([iso(o.x - .6, o.y + .6).map(function(v, i){ return i ? v - 80 : v; }), iso(o.x + .6, o.y + .6).map(function(v, i){ return i ? v - 80 : v; }), t1]), fill:'#ff6f59'}, g); el('polygon', {points:pts([iso(o.x + .6, o.y + .6).map(function(v, i){ return i ? v - 80 : v; }), iso(o.x + .6, o.y - .6).map(function(v, i){ return i ? v - 80 : v; }), t1]), fill:'#ff9a87'}, g); }
     }
   });
@@ -1261,7 +1263,6 @@ function buildMap(){
   zoneTag(tp[0], tp[1] + 22, '港邊輕軌', 'HARBOR TRAM', '#6b5a48', 'zone-tag decor-tag');
 
   // 夜色、窗燈、接力線、標籤、吉祥物、雲
-  el('rect', {x:-5000, y:-4000, width:10000, height:9000, fill:'#ff9a3c', opacity:.07, 'pointer-events':'none'}, svg);   // 黃金時刻暖光，對應立體的暖色日光
   L.night = el('rect', {x:-5000, y:-4000, width:10000, height:9000, fill:'#071a35', opacity:0, 'pointer-events':'none'}, svg);
   L.lights = el('g', {'pointer-events':'none'}, svg);
   TOOLS.forEach(function(t){
@@ -1302,12 +1303,13 @@ function buildMap(){
   drawBoard2D();
   L.ptags = el('g', {'pointer-events':'none'}, svg);   // 人物名牌永遠在最上層，走到建築後面也看得到名字
   buildAvatar();
-  L.clouds = el('g', {'pointer-events':'none', opacity:.4}, svg);
+  L.clouds = el('g', {'pointer-events':'none', opacity:.5}, svg);
   L.gulls = el('g', {'pointer-events':'none'}, svg); buildGulls();
   for (var c2 = 0; c2 < 4; c2++){
-    var cg = el('g', {}, L.clouds), w0 = 50 + c2 * 14;
-    el('ellipse', {cx:0, cy:0, rx:w0, ry:w0*.32, fill:'#fff', opacity:.75}, cg);
-    el('ellipse', {cx:w0*.35, cy:-w0*.18, rx:w0*.5, ry:w0*.3, fill:'#fff', opacity:.75}, cg);
+    var cg = el('g', {}, L.clouds), w0 = 44 + c2 * 14;
+    el('ellipse', {cx:0, cy:w0*.1, rx:w0*1.05, ry:w0*.2, fill:'#d6e3f2'}, cg);
+    [[-.55, -.04, .4], [0, -.3, .58], [.52, -.1, .44], [.14, -.62, .38]].forEach(function(b){ el('circle', {cx:w0*b[0], cy:w0*b[1], r:w0*b[2], fill:'#ffffff'}, cg); });
+    el('ellipse', {cx:0, cy:w0*.08, rx:w0*.98, ry:w0*.12, fill:'#e3ecf6'}, cg);
   }
   svg.insertBefore(L.clouds, L.links);   // 雲在建築之上、接力線與標籤之下，不擋字
   drawLinks();
@@ -1367,7 +1369,7 @@ function decorate(z, g){
 
 }
 
-function isPalm(t){ return hash(t.gx.toFixed(2) + t.gy.toFixed(2)) % 4 !== 0; }
+function isPalm(t){ return hash(t.gx.toFixed(2) + t.gy.toFixed(2)) % 6 === 0; }
 function drawTree(t){
   var p = up(iso(t.gx, t.gy), t.elev), k = t.big ? 1.25 : 1;
   var g = el('g', {'pointer-events':'none'}, L.blds); g._d = t.gx + t.gy;
@@ -1381,9 +1383,11 @@ function drawTree(t){
     });
     el('circle', {cx:top[0], cy:top[1] + 1, r:2.2, fill:'#7a5a32'}, g);
   } else {
-    el('rect', {x:p[0]-1.5, y:p[1]-10, width:3, height:10, fill:'#8a6239'}, g);
-    el('ellipse', {cx:p[0], cy:p[1]-15*k, rx:12*k, ry:7*k, fill:'#4a9f50'}, g);
-    el('ellipse', {cx:p[0]+3*k, cy:p[1]-17*k, rx:7*k, ry:4*k, fill:'#6cb85a'}, g);
+    el('rect', {x:p[0]-1.6, y:p[1]-11, width:3.2, height:11, fill:'#7a5634'}, g);
+    el('circle', {cx:p[0]-5*k, cy:p[1]-15*k, r:7*k, fill:'#3f7f3f'}, g);
+    el('circle', {cx:p[0]+5*k, cy:p[1]-16*k, r:7.5*k, fill:'#4d8f45'}, g);
+    el('circle', {cx:p[0], cy:p[1]-22*k, r:8*k, fill:'#5c9e4a'}, g);
+    el('circle', {cx:p[0]-2.5*k, cy:p[1]-25.5*k, r:4.2*k, fill:'#86c060'}, g);
   }
 }
 
@@ -1435,6 +1439,21 @@ function up(p, h){ return [p[0], p[1] - h]; }
 
 var CREAM = {house:1, pavilion:1, school:1, civic:1, lighthouse:1};
 var BRICK = {brick:1, shop:1};
+// 手繪動畫風的海港小鎮：奶油色灰泥牆（帶一點場地色）＋赤陶或銅綠屋頂、木板倉庫、爬牆的常春藤。平面與立體都呼叫 bldLook()
+var GH = {plaster:'#f6e9cf', shade:'#8a6a52', terracotta:'#cf6a3f', copper:'#5f9e8f', plank:'#c79a6a', ivy:['#3f7f3f', '#5a9a48', '#78b45a']};
+function bldLook(t){
+  var z = zoneById[t.zone], hv = hash(t.id), wall = t.style === 'warehouse' ? GH.plank : mix(GH.plaster, z.color, .16);
+  return {wall:wall, wallD:mix(wall, GH.shade, .32), roof:hv % 3 === 0 ? GH.copper : GH.terracotta, hv:hv};
+}
+(function(){                                                       // 紙質紋理：程式產生一張淡淡的暖色紙紋
+  try {
+    var c = document.createElement('canvas'); c.width = c.height = 256; var x = c.getContext('2d'), d = x.createImageData(256, 256), r = rng(5);
+    for (var i = 0; i < d.data.length; i += 4){ var v = 240 + r() * 15; d.data[i] = v; d.data[i + 1] = v - 2; d.data[i + 2] = v - 9; d.data[i + 3] = 255; }
+    x.putImageData(d, 0, 0); x.lineWidth = 1;
+    for (var k = 0; k < 70; k++){ var a = r() * 256, b = r() * 256; x.strokeStyle = 'rgba(150,120,80,' + (.04 + r() * .06).toFixed(3) + ')'; x.beginPath(); x.moveTo(a, b); x.quadraticCurveTo(a + r() * 20 - 10, b + r() * 20 - 10, a + r() * 36 - 18, b + r() * 36 - 18); x.stroke(); }
+    document.getElementById('paper').style.backgroundImage = 'url(' + c.toDataURL() + ')';
+  } catch(e){}
+})();
 var BOX_C = ['#e05a47', '#f4b942', '#4f9dff', '#2ec4b6', '#9d8cf2', '#ef6b8a', '#6bbf59'];
 function drawContainer(t, g, z){                                   // 兩個錯開疊起來的貨櫃
   var e = t.elev, hv = hash(t.id);
@@ -1460,8 +1479,9 @@ function drawBuilding(t){
   var c = iso(t.gx, t.gy);
   el('ellipse', {class:'ring', cx:c[0], cy:c[1] - e, rx:HW*(s*2 + .15), ry:HH*(s*2 + .15), fill:'none', stroke:'var(--coral)', 'stroke-width':3}, g);
   el('polygon', {points:pts([f.T, f.R, f.B, f.Lp].map(function(p){ return [p[0]+5, p[1]+3 - e]; })), fill:'rgba(0,0,0,.14)'}, g);
-  var wallL = CREAM[st] ? '#e3d6c0' : BRICK[st] ? '#9c4a36' : st === 'warehouse' ? '#7f898f' : mix(z.color, '#4a5d68', .45);
-  var wallR = CREAM[st] ? '#faf4e8' : BRICK[st] ? '#bd6247' : st === 'warehouse' ? '#aab3b8' : mix(z.color, '#ffffff', .55);
+  var look = bldLook(t);
+  var wallL = CREAM[st] ? '#e3d6c0' : BRICK[st] || st === 'warehouse' ? look.wallD : mix(z.color, '#4a5d68', .45);
+  var wallR = CREAM[st] ? '#faf4e8' : BRICK[st] || st === 'warehouse' ? look.wall : mix(z.color, '#ffffff', .55);
   function onFace(A, B, a1, a2, z1, z2){ var u = [B[0]-A[0], B[1]-A[1]]; var P = function(a, zz){ return [A[0] + u[0]*a, A[1] + u[1]*a - e - zz]; }; return [P(a1, z1), P(a2, z1), P(a2, z2), P(a1, z2)]; }
   var faces = [[f.Lp, f.B], [f.B, f.R]];
   if (st === 'container'){
@@ -1476,14 +1496,16 @@ function drawBuilding(t){
   }
   el('polygon', {points:pts([F(f.Lp), F(f.B), F(f.B, h), F(f.Lp, h)]), fill:wallL}, g);
   el('polygon', {points:pts([F(f.B), F(f.R), F(f.R, h), F(f.B, h)]), fill:wallR}, g);
-  if (BRICK[st]) faces.forEach(function(fc){ for (var zz = 3; zz < h - 1; zz += 3.2) el('polygon', {points:pts(onFace(fc[0], fc[1], 0, 1, zz, zz + .5)), fill:'rgba(60,20,10,.22)'}, g); });
-  if (st === 'warehouse') faces.forEach(function(fc){ for (var a = .1; a < 1; a += .1) el('polygon', {points:pts(onFace(fc[0], fc[1], a, a + .012, 0, h)), fill:'rgba(0,0,0,.14)'}, g); });
+  if (BRICK[st]) faces.forEach(function(fc){ el('polygon', {points:pts(onFace(fc[0], fc[1], 0, 1, 0, 2.2)), fill:'rgba(90,60,40,.22)'}, g); });   // 牆腳一圈石材
+  if (st === 'warehouse') faces.forEach(function(fc){ for (var a = .1; a < 1; a += .1) el('polygon', {points:pts(onFace(fc[0], fc[1], a, a + .012, 0, h)), fill:'rgba(70,40,20,.2)'}, g); });   // 木板縫
   if (st === 'brick'){
     el('polygon', {points:pts(onFace(f.Lp, f.B, .32, .68, 0, 13)), fill:z.color, stroke:'#fff', 'stroke-width':1}, g);   // 大鐵門漆場地色
-    var hv2 = hash(t.id), MC = ['#ffd23f', '#4f9dff', '#ef6b8a', '#2ec4b6', '#9d8cf2'];             // 側牆的抽象彩繪
-    el('polygon', {points:pts(onFace(f.B, f.R, .08, .92, 3, h - 3)), fill:'#f4efe6', opacity:.9}, g);
-    el('polygon', {points:pts(onFace(f.B, f.R, .1, .45 + (hv2 % 3) * .1, 4, h * .55)), fill:MC[hv2 % 5]}, g);
-    el('polygon', {points:pts(onFace(f.B, f.R, .5, .9, h * .35, h - 4)), fill:MC[(hv2 + 2) % 5]}, g);
+    var hv2 = hash(t.id);                                                                           // 側牆爬上來的常春藤
+    [[.08, .3, .62], [.22, .42, .4], [.7, .95, .5 + (hv2 % 3) * .12]].forEach(function(v, i){
+      var q = onFace(f.B, f.R, v[0], v[1], 0, h * v[2]), cx = (q[0][0] + q[1][0]) / 2, cyB = (q[0][1] + q[1][1]) / 2, cyT = (q[2][1] + q[3][1]) / 2, rw = Math.abs(q[1][0] - q[0][0]) / 2;
+      el('ellipse', {cx:cx, cy:(cyB + cyT) / 2, rx:rw, ry:Math.abs(cyB - cyT) / 2, fill:GH.ivy[(hv2 + i) % 3], opacity:.9}, g);
+      el('ellipse', {cx:cx - rw * .25, cy:cyT + 2, rx:rw * .45, ry:2.6, fill:GH.ivy[2]}, g);
+    });
     var num = String(TOOLS.indexOf(t) + 1); num = num.length < 2 ? '0' + num : num;
     var np = F(iso(t.gx + s, t.gy), h * .5);
     el('text', {x:np[0] + 2, y:np[1] + 3, 'text-anchor':'middle', 'font-size':9, 'font-weight':700, fill:'#3b2f3a', 'font-family':'var(--f-mono)'}, g).textContent = num;
@@ -1497,7 +1519,7 @@ function drawBuilding(t){
   });
   drawWindows(t, g, 'rgba(255,255,255,.55)', 'rgba(20,48,61,.28)');
   if (t.roof && (st === 'house' || st === 'warehouse' || st === 'brick')){
-    var P1 = iso(t.gx - s, t.gy), P2 = iso(t.gx + s, t.gy), roofC = st === 'house' ? z.color : mix('#66737c', z.color, .3);
+    var P1 = iso(t.gx - s, t.gy), P2 = iso(t.gx + s, t.gy), roofC = st === 'house' ? z.color : look.roof;
     el('polygon', {points:pts([F(f.T, h), F(f.R, h), F(P2, top), F(P1, top)]), fill:mix(roofC, '#14303d', .25)}, g);
     el('polygon', {points:pts([F(f.R, h), F(f.B, h), F(P2, top)]), fill:wallR}, g);
     el('polygon', {class:'roof', points:pts([F(P1, top), F(P2, top), F(f.B, h), F(f.Lp, h)]), fill:roofC}, g);

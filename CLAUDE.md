@@ -94,3 +94,13 @@
 - `index.html` `:root` 地形色票改成跟 `island3d.js` 的 `PAL`／`THEME` 同值（暗色模式草地也改橄欖色），新增 `--lagoon`（＝`THEME.shallow`），`buildMap()` 岸壁外一圈淺水環（r+1.3）；`L.night` 前加一層 `#ff9a3c` 7% 的暖光，對應立體的暖色日光。2D 圓樹／棕櫚葉色改用立體 `LEAF`。
 - 小地圖 `miniSetup()` 直接讀 `PAL`／`THEME`；2D 鄰島 `drawFar()` 改用對方島的立體色票。
 - **日後改 `PAL`／`THEME` 要同步改 CSS 色票**。SW 快取 v7→v8。
+
+## 手繪動畫風（2026-11-02）
+使用者要求「創作者小鎮改成宮崎駿的風格」。做法是**只借畫風氛圍**（蔚藍天空、巨大積雲、清透空氣、鮮綠草原、紅瓦灰泥小鎮、風吹草動），**不放任何吉卜力作品的角色、場景、交通工具或名稱**；介面也不寫「宮崎駿／吉卜力」字樣，免責聲明（index 頁尾與 manual）只寫「手繪動畫風格只借整體氛圍…沒有使用任何動畫作品的角色、場景或標誌」。港區配置、工具位置、輕軌、起重機、貨輪都沒動。
+- **共用配色 `bldLook(t)`（index.html，`GH` 常數）**：灰泥牆＝`GH.plaster` 混 16% 場地色、暗面混 `GH.shade`；屋頂 `hash(id)%3===0` 銅綠 `GH.copper`，其餘赤陶 `GH.terracotta`；`warehouse` 是木板 `GH.plank`。平面 `drawBuilding()` 與立體 `buildBuilding()` 都呼叫它，改顏色只改一處。原本的紅磚紋、側牆抽象彩繪改成牆腳石材＋常春藤（2D 橢圓葉叢、3D `muralTex()` 透明底葉子貼圖 `alphaTest`）。
+- **色票**：CSS `:root` 與 `island3d.js` 的 `PAL`／`THEME` 同步換成蔚藍海（mid `#2a8fbf`／deep `#1b4f8f`／淺水 `#5cc7c9`）、草原 `#93c25e`；拿掉黃金時刻暖光層。`THEME.ghibli=true` 時不建探照燈。
+- **立體上色**：`toonGrad()` 改四段柔和色階（150/198/236/255）；描邊 `INK` 改暖褐 `#4a3c33`、粗細 ×`INK_K=.7`（`inkMat()` 內乘，人物描邊也一起變細）。圓冠樹改 6 顆球、深淺綠，棕櫚樹 `isPalm()` 由 3/4 降到 1/6（2D 同步，圓樹改成四顆圓疊出亮部）。地平線積雲 13 朵、12 顆球更高，雲底用藍灰材質 `O.farMatB`（`updateSky()` 跟著天色變）。
+- **風（`buildWind()`，在 `buildFlowers()` 之後）**：約 2600 叢三葉草叢 InstancedMesh，`onBeforeCompile` 依 `instanceMatrix` 位置＋時間彎曲（`uWind`，靜止時為 0）；只長在草地（靈感草坪、寫作巷以外的場地不長，避開山丘、軌道、`freeLand()`）。白天 150 顆絨毛 Points 隨風往東南飄、繞回，夜晚淡出（`O.wind.dk`）。
+- **手繪紙質紋理**：`#paper` 疊在地圖與立體上方（z-index 4，名牌與介面之下），`mix-blend-mode:multiply`、opacity .6，紋理由程式產生（暖色雜訊＋纖維線）。
+- 2D 雲改成圓滾積雲＋藍灰平底。創業島那邊的鄰島（2D `drawFar()`、3D `buildFar()` 的 harbor 分支）也改成紅瓦灰泥＋新草地色。
+- SW 快取 v8→v9（創業島 v10→v11）。驗證：Playwright 平面、立體近景／鳥瞰／低角度（草叢與絨毛）／夜晚、375px 無橫向溢出、創業島看對岸小鎮，除刻意連不上的 presence 外無 console 錯誤。

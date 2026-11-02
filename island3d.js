@@ -16,15 +16,15 @@ var cam = {yaw:Math.PI / 4, pitch:.55, dist:8.5, tx:0, ty:0, tz:0, overview:fals
 var O = {blds:{}, pick:[], tags:[], zoneTags:[], avs:{}, lamps:[], anim:[]};
 var keys = {}, lastT = 0, rafId = 0, sky = {dk:-1}, lastZone = null, bannerT = 0;
 
-var PAL = {grass:'#b7c87c', grass2:'#a7bb6e', sand:'#d6cfc0', wet:'#8b8578', deep:'#1f6f8f', shallow:'#5fb8c8',
-  park:'#9cc468', lawn:'#c6d498', yard:'#eadcc0', paving:'#e2ddd3', wood:'#cdb79a', road:'#f1ede4',
-  hilltop:'#e6dccb', hillside:'#c9b9a0', rim:'#b3ab9b', ballast:'#b9ad9a'};
-// 景色主題（兩座島共用景色程式，只有這裡不同）：港邊倉庫的黃金時刻——暖色薄霧、深青港灣、橄欖色草地
-var THEME = {id:'harbor', top:'#4a7fb0', hor:'#ffd6a8', topN:'#130c2c', horN:'#4b2a4c', topD:'#3d3478', horD:'#ff7e4a', fog:[20, 78],
-  sun:'#ffd29a', sunD:'#ff9a55', sunN:'#b39cff', hemi:'#ffe6cc', ground:'#7d6a4c', hemiN:'#3d2f5c', groundN:'#1e1626',
-  shallow:'#3a9c9a', mid:'#1f6f86', deep:'#123b58', lagoon:1.6, waterOp:.9, waterNight:'#3a3060', waterDusk:'#ff9f6a',
-  glint:'#ffe1a0', glintNight:'#ffcf8a', glints:420, glintK:1.3};
-var INK = '#3b2f3a';                                              // 描邊色：深褐紫，比純黑柔和
+var PAL = {grass:'#93c25e', grass2:'#86b753', sand:'#e6dcc4', wet:'#9a8f7c', deep:'#1b4f8f', shallow:'#5cc7c9',
+  park:'#7fba52', lawn:'#a9d06e', yard:'#efe2c4', paving:'#e8e0cf', wood:'#c8a27a', road:'#efe6d2',
+  hilltop:'#e8dfcb', hillside:'#cbbd9f', rim:'#bfb39b', ballast:'#b9ad9a'};
+// 景色主題（兩座島共用景色程式，只有這裡不同）：手繪動畫風的海港小鎮——蔚藍高空、巨大積雲、清透空氣、鮮綠草原、蔚藍海灣
+var THEME = {id:'harbor', top:'#2f7fd6', hor:'#d6eefa', topN:'#0e1838', horN:'#2c3f6e', topD:'#5a5fae', horD:'#ffb08a', fog:[34, 105],
+  sun:'#fff6e0', sunD:'#ffad6b', sunN:'#a8bfff', hemi:'#e8f4ff', ground:'#7d9a58', hemiN:'#34477a', groundN:'#1a2234',
+  shallow:'#5cc7c9', mid:'#2a8fbf', deep:'#1b4f8f', lagoon:1.8, waterOp:.86, waterNight:'#2a4278', waterDusk:'#ffb38a',
+  glint:'#ffffff', glintNight:'#dbe6ff', glints:380, glintK:1.2, ghibli:true};
+var INK = '#4a3c33', INK_K = .7;                                  // 描邊色：暖褐、細一點，像手繪動畫的線
 var CREAM = {house:1, pavilion:1, school:1, civic:1, lighthouse:1};
 
 function smooth(a, b, x){ var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
@@ -86,7 +86,7 @@ function terrainColor(gx, gy, y, n){
 var GRAD = null;
 function toonGrad(){
   if (GRAD) return GRAD;
-  GRAD = new T3.DataTexture(new Uint8Array([120, 200, 255]), 3, 1, T3.RedFormat);
+  GRAD = new T3.DataTexture(new Uint8Array([150, 198, 236, 255]), 4, 1, T3.RedFormat);   // 四段柔和色階，像手繪上色
   GRAD.minFilter = GRAD.magFilter = T3.NearestFilter; GRAD.generateMipmaps = false; GRAD.needsUpdate = true;
   return GRAD;
 }
@@ -98,7 +98,7 @@ function std(c, o){
 // 描邊：背面外推法（inverted hull）。外推方向用「同一位置的平均法線」，方塊轉角才不會裂開
 var INK_MATS = {};
 function inkMat(th){
-  var k = th.toFixed(4);
+  var k = (th * INK_K).toFixed(4);
   if (INK_MATS[k]) return INK_MATS[k];
   var m = new T3.MeshBasicMaterial({color:INK, side:T3.BackSide});
   m.onBeforeCompile = function(sh){
@@ -245,18 +245,20 @@ function windowTextures(){
   return winCanvas;
 }
 var texCache = {};
-function patternTex(kind){                                        // 紅磚牆（含一扇窗）／鐵皮浪板（頂端一排氣窗）
+function patternTex(kind){                                        // 灰泥牆（拱窗＋木百葉）／木板倉庫（頂端一排氣窗）
   if (texCache[kind]) return texCache[kind];
   function mk(night){
     var c = document.createElement('canvas'); c.width = 64; c.height = 64; var x = c.getContext('2d');
     if (kind === 'brick'){
-      x.fillStyle = night ? '#000' : '#b85c43'; x.fillRect(0, 0, 64, 64);
-      if (!night){ x.fillStyle = 'rgba(70,25,15,.35)'; for (var y = 0; y < 64; y += 8){ x.fillRect(0, y, 64, 1.5); for (var k = (y / 8) % 2 ? 8 : 0; k < 64; k += 16) x.fillRect(k, y, 1.5, 8); } }
-      x.fillStyle = night ? '#fff' : '#8fa9b8'; x.beginPath(); x.moveTo(22, 52); x.lineTo(22, 26); x.arc(32, 26, 10, Math.PI, 0); x.lineTo(42, 52); x.fill();
-      if (!night){ x.strokeStyle = '#f4efe6'; x.lineWidth = 2; x.stroke(); }
+      x.fillStyle = night ? '#000' : '#ffffff'; x.fillRect(0, 0, 64, 64);
+      if (!night){ var rr = rng(3); for (var k = 0; k < 14; k++){ x.fillStyle = 'rgba(150,110,70,' + (.04 + rr() * .06).toFixed(3) + ')'; x.beginPath(); x.ellipse(rr() * 64, rr() * 64, 4 + rr() * 9, 3 + rr() * 6, rr() * 3, 0, 7); x.fill(); }
+        x.fillStyle = 'rgba(110,80,55,.28)'; x.fillRect(0, 58, 64, 6);
+        x.fillStyle = '#5f8f6a'; x.fillRect(13, 24, 7, 28); x.fillRect(44, 24, 7, 28); x.fillStyle = 'rgba(0,0,0,.18)'; for (var y2 = 27; y2 < 52; y2 += 4){ x.fillRect(14, y2, 5, 1); x.fillRect(45, y2, 5, 1); } }
+      x.fillStyle = night ? '#fff' : '#8fb3c8'; x.beginPath(); x.moveTo(22, 52); x.lineTo(22, 26); x.arc(32, 26, 10, Math.PI, 0); x.lineTo(42, 52); x.fill();
+      if (!night){ x.strokeStyle = '#ffffff'; x.lineWidth = 2.4; x.stroke(); x.fillStyle = '#ffffff'; x.fillRect(31, 18, 2, 34); x.fillRect(22, 36, 20, 2); x.fillStyle = '#e88aa0'; x.fillRect(20, 52, 24, 4); }
     } else {
-      x.fillStyle = night ? '#000' : '#a3adb3'; x.fillRect(0, 0, 64, 64);
-      if (!night){ x.fillStyle = 'rgba(0,0,0,.16)'; for (var i = 0; i < 64; i += 8) x.fillRect(i, 0, 3, 64); }
+      x.fillStyle = night ? '#000' : '#ffffff'; x.fillRect(0, 0, 64, 64);
+      if (!night){ x.fillStyle = 'rgba(70,40,20,.22)'; for (var i = 0; i < 64; i += 8) x.fillRect(i, 0, 1.5, 64); x.fillStyle = 'rgba(70,40,20,.08)'; for (var i2 = 3; i2 < 64; i2 += 16) x.fillRect(i2, 0, 4, 64); }
       x.fillStyle = night ? '#fff' : '#8fa9b8'; x.fillRect(6, 6, 52, 9);
     }
     var t = new T3.CanvasTexture(c); t.wrapS = t.wrapT = T3.RepeatWrapping; t.anisotropy = 4;
@@ -264,18 +266,18 @@ function patternTex(kind){                                        // 紅磚牆�
   }
   return (texCache[kind] = {map:mk(false), emi:mk(true)});
 }
-function patternMat(kind, cols, rows){
+function patternMat(kind, cols, rows, color){
   var w = patternTex(kind), map = w.map.clone(), emi = w.emi.clone();
   map.repeat.set(cols, rows); emi.repeat.set(cols, rows); map.needsUpdate = emi.needsUpdate = true;
-  return std('#ffffff', {map:map, emissive:'#ffd27a', emissiveMap:emi, emissiveIntensity:0});
+  return std(color || '#ffffff', {map:map, emissive:'#ffd27a', emissiveMap:emi, emissiveIntensity:0});
 }
-function muralTex(z, hv){                                          // 側牆的抽象彩繪（程式自繪的原創圖案）
+function muralTex(z, hv){                                          // 側牆爬上來的常春藤（透明底，只畫葉子）
   return canvasTex(128, 96, function(x, w, h){
-    var C2 = [z.color, '#ffd23f', '#4f9dff', '#ef6b8a', '#2ec4b6', '#9d8cf2'];
-    x.fillStyle = '#f4efe6'; x.fillRect(0, 0, w, h);
-    x.fillStyle = C2[(hv + 1) % 6]; x.beginPath(); x.arc(w * (.25 + (hv % 3) * .1), h * .55, 30, 0, 7); x.fill();
-    x.fillStyle = C2[(hv + 3) % 6]; x.beginPath(); x.moveTo(w * .45, h); x.lineTo(w * .8, h * .15); x.lineTo(w, h); x.fill();
-    x.strokeStyle = C2[0]; x.lineWidth = 7; x.beginPath(); for (var i = 0; i <= 8; i++) x.lineTo(i * 16, h * .3 + Math.sin(i + hv) * 10); x.stroke();
+    var r = rng(hv % 997 + 3), IV = GH.ivy;
+    [[.18, .75], [.5, .45 + (hv % 3) * .12], [.85, .7]].forEach(function(cl, j){
+      for (var k = 0; k < 70; k++){ var a = r() * 6.28, d = Math.sqrt(r()), cx = cl[0] * w + Math.cos(a) * d * 22, cy = h - r() * cl[1] * h;
+        x.fillStyle = IV[(k + j) % 3]; x.beginPath(); x.ellipse(cx, cy, 5 + r() * 3, 3.5 + r() * 2, r() * 3, 0, 7); x.fill(); }
+    });
   });
 }
 function numberTex(n){
@@ -304,8 +306,10 @@ function buildBuilding(t){
          : st === 'brick' || st === 'shop' ? patternMat('brick', cols, st === 'brick' ? 1 : Math.max(1, rows))
          : st === 'warehouse' ? patternMat('steel', Math.max(2, cols * 2), 1)
          : wallMat(wall, cols, st === 'house' ? 1 : rows);
-  if (st === 'brick' || st === 'shop') wallPlain = std('#b85c43');
-  if (st === 'brick' || st === 'warehouse') roofM = std(hexMix('#66737c', z.color, .3));
+  var look = bldLook(t);                                           // 灰泥牆＋赤陶／銅綠屋頂（平面地圖同一份配色）
+  if (wm && (st === 'brick' || st === 'shop' || st === 'warehouse')) wm.color.set(look.wall);
+  if (st === 'brick' || st === 'shop' || st === 'warehouse') wallPlain = std(look.wall);
+  if (st === 'brick' || st === 'warehouse') roofM = std(look.roof);
   var foot = new T3.Mesh(new T3.BoxGeometry(w + .12, .4, w + .12), std('#cfc6b4')); foot.position.y = -.17; g.add(foot);
   var top = h;
 
@@ -345,7 +349,7 @@ function buildBuilding(t){
       door.position.set(0, (big ? h * .62 : .26) / 2, w / 2 + .011); g.add(door);
       if (big){ var trim = new T3.Mesh(new T3.BoxGeometry(w + .16, .04, .04), std(z.color)); trim.position.set(0, h + .01, w / 2 + .07); g.add(trim); }
       if (st === 'brick'){
-        var mu = new T3.Mesh(new T3.PlaneGeometry(w * .82, h * .78), std('#ffffff', {map:muralTex(z, hv)})); mu.rotation.y = Math.PI / 2; mu.position.set(w / 2 + .012, h * .45, 0); mu.userData.noInk = true; g.add(mu);
+        var mu = new T3.Mesh(new T3.PlaneGeometry(w * .9, h * .8), std('#ffffff', {map:muralTex(z, hv), transparent:true, alphaTest:.4})); mu.rotation.y = Math.PI / 2; mu.position.set(w / 2 + .012, h * .4, 0); mu.userData.noInk = true; g.add(mu);
         var nn = String(TOOLS.indexOf(t) + 1); if (nn.length < 2) nn = '0' + nn;
         var plate = new T3.Mesh(new T3.PlaneGeometry(.24, .15), std('#ffffff', {map:numberTex(nn)})); plate.position.set(0, h + (rh || .3) * .42, w / 2 + .075); plate.userData.noInk = true; g.add(plate);
       }
@@ -840,7 +844,7 @@ function mergeGeo(list){                          // 簡易合併（全部轉成
 function blob(r, x, y, z){ var g = new T3.IcosahedronGeometry(r, 2); g.translate(x, y, z); return g; }
 function buildTrees(){
   var list = (L.trees || []).filter(function(t){ return landY(t.gx, t.gy) > SEA + .15 && !O.markSpots.some(function(m){ return Math.hypot(t.gx - m[0], t.gy - m[1]) < m[2]; }); });
-  var roundG = mergeGeo([blob(.2, 0, .44, 0), blob(.15, .13, .36, .04), blob(.14, -.12, .37, -.03), blob(.13, .02, .6, -.02)]);
+  var roundG = mergeGeo([blob(.22, 0, .46, 0), blob(.17, .16, .38, .05), blob(.16, -.15, .39, -.04), blob(.15, .03, .64, -.02), blob(.12, -.08, .58, .1), blob(.12, .12, .55, -.1)]);
   var pt = new T3.CylinderGeometry(.028, .045, .8, 7); pt.translate(0, .4, 0);
   var trunkG = mergeGeo([pt]);                                    // 棕櫚樹幹（圓冠樹也用，縮短）
   var fronds = [];
@@ -854,7 +858,7 @@ function buildTrees(){
   var m = new T3.Matrix4(), q = new T3.Quaternion(), s = new T3.Vector3(), p = new T3.Vector3(), c = new T3.Color(), e = new T3.Euler();
   function place(t, k){ var sc = (t.big ? 1.3 : 1) * k; e.set(0, (t.gx * 7 + t.gy * 3) % 6.28, 0); q.setFromEuler(e); s.set(sc, sc, sc); p.set(t.gx, landY(t.gx, t.gy) - .02, t.gy); m.compose(p, q, s); return m; }
   list.forEach(function(t, i){ trunk.setMatrixAt(i, place(t, 1)); if (!isPalm(t)){ var mm = new T3.Matrix4(); trunk.getMatrixAt(i, mm); mm.multiply(new T3.Matrix4().makeScale(1, .35, 1)); trunk.setMatrixAt(i, mm); } });
-  var LEAF = ['#4fae55', '#3f9a4c', '#62bb58', '#459f52', '#7cc95f', '#e8a33d'];   // 偶爾一棵開花的樹
+  var LEAF = ['#4d8f45', '#3f7f3f', '#5c9e4a', '#6aaa50', '#7fbb5c', '#f2c6d2'];   // 深淺綠交錯，偶爾一棵開花的樹
   pines.forEach(function(t, i){ pineM.setMatrixAt(i, place(t, 1)); pineM.setColorAt(i, c.set(LEAF[hash(i + 'p') % 4])); });
   rounds.forEach(function(t, i){ roundM.setMatrixAt(i, place(t, .95)); roundM.setColorAt(i, c.set(LEAF[hash(i + 'r') % 11 === 0 ? 5 : hash(i + 'r') % 5])); });
   [trunk, pineM, roundM].forEach(function(o){ o.castShadow = true; o.receiveShadow = true; scene.add(o); inkMesh(o, .014); });
@@ -879,30 +883,69 @@ function buildFlowers(){
   pts.forEach(function(q, i){ stem.makeTranslation(q[0], landY(q[0], q[1]) + .018, q[1]); mesh.setMatrixAt(i, stem); mesh.setColorAt(i, c.set(FL[i % FL.length])); });
   scene.add(mesh);
 }
+// 風：草原上的草叢隨風擺動（shader 依位置與時間彎曲），白天空中飄著蒲公英般的絨毛
+function buildWind(){
+  var blades = [];
+  for (var b = 0; b < 3; b++){ var cg = new T3.ConeGeometry(.02, .17, 3); cg.translate(0, .085, 0); cg.rotateZ((b - 1) * .4); cg.rotateY(b * 2.1); blades.push(cg); }
+  var tuftG = mergeGeo(blades), spots = [], r = rng(31), tries = 0;
+  while (spots.length < 2600 && tries++ < 40000){
+    var a = r() * 6.28, d = Math.sqrt(r()) * 13, gx = C[0] + Math.cos(a) * d, gy = C[1] + Math.sin(a) * d;
+    if (edgeD(gx, gy) > -.7 || landY(gx, gy) < LAND - .05 || hillAt(gx, gy) > .03) continue;
+    var z = zoneOfPoint(gx, gy); if (z && z.id !== 'idea' && z.id !== 'ops') continue;
+    if (trackDist(gx, gy) < .45 || !freeLand(gx, gy, -.25)) continue;
+    spots.push([gx, gy, r()]);
+  }
+  var WU = {value:0}, mat = std('#ffffff');
+  mat.onBeforeCompile = function(sh){
+    sh.uniforms.uWind = WU;
+    sh.vertexShader = 'uniform float uWind;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvec2 ip = vec2(instanceMatrix[3][0], instanceMatrix[3][2]);\nfloat sw = sin(uWind * 1.6 - ip.x * .7 - ip.y * .4) * .55 + sin(uWind * 3.3 + ip.x * 2.1) * .15 + .25;\ntransformed.x += sw * position.y * .55; transformed.z -= sw * position.y * .3;');
+  };
+  mat.customProgramCacheKey = function(){ return 'grass-wind'; };
+  var tufts = new T3.InstancedMesh(tuftG, mat, spots.length), m4 = new T3.Matrix4(), q = new T3.Quaternion(), e = new T3.Euler(), sc = new T3.Vector3(), ps = new T3.Vector3(), c = new T3.Color();
+  var GC = ['#6fae4a', '#86c05a', '#5d9e42', '#9ccc63', '#78b450'];
+  spots.forEach(function(sp, i){ var k = .8 + sp[2] * .7; e.set(0, sp[2] * 6.28, 0); q.setFromEuler(e); sc.set(k, k * (.8 + sp[2] * .6), k); ps.set(sp[0], landY(sp[0], sp[1]) - .01, sp[1]); m4.compose(ps, q, sc); tufts.setMatrixAt(i, m4); tufts.setColorAt(i, c.set(GC[i % GC.length])); });
+  tufts.receiveShadow = true; tufts.raycast = noPick; scene.add(tufts);
+  var NW = 150, wp = new Float32Array(NW * 3), seeds = [];
+  for (var i = 0; i < NW; i++) seeds.push([r() * 28 - 5, r() * 28 - 5, .5 + r() * 2.4, r() * 6.28, .5 + r() * .7]);
+  var wg = new T3.BufferGeometry(); wg.setAttribute('position', new T3.BufferAttribute(wp, 3));
+  var fluff = new T3.Points(wg, new T3.PointsMaterial({map:glowTex('rgba(255,255,255,1)', 'rgba(255,255,255,0)'), size:.13, transparent:true, opacity:.85, depthWrite:false}));
+  fluff.raycast = noPick; fluff.frustumCulled = false; scene.add(fluff);
+  O.wind = {dk:0};
+  function wrap(v){ return ((v + 5) % 28 + 28) % 28 - 5; }
+  O.anim.push(function(tm){
+    WU.value = state.paused ? 0 : tm;
+    fluff.material.opacity = .85 * Math.max(0, 1 - O.wind.dk * 1.6); fluff.visible = fluff.material.opacity > .02;
+    if (!fluff.visible) return;
+    for (var i = 0; i < NW; i++){ var s = seeds[i];
+      wp[i * 3] = wrap(s[0] + tm * .32 * s[4]); wp[i * 3 + 2] = wrap(s[1] - tm * .16 * s[4] + Math.sin(tm * .4 + s[3]) * .6);
+      wp[i * 3 + 1] = LAND + s[2] + Math.sin(tm * .9 + s[3]) * .22; }
+    wg.attributes.position.needsUpdate = true;
+  });
+}
 function buildSkyStuff(){
   // 雲
   O.clouds = [];
   for (var i = 0; i < 7; i++){
     var g = new T3.Group(), cm = std('#ffffff', {transparent:true, opacity:.96});
-    for (var k = 0; k < 7; k++){ var b = new T3.Mesh(new T3.IcosahedronGeometry(.45 + (k % 3) * .22, 2), cm); b.position.set((k - 3) * .45, Math.abs(3 - k) < 2 ? .25 : 0, Math.cos(k * 1.7) * .3); b.scale.y = .78; b.castShadow = true; g.add(b); }
+    for (var k = 0; k < 7; k++){ var b = new T3.Mesh(new T3.IcosahedronGeometry(.55 + (k % 3) * .26, 2), cm); b.position.set((k - 3) * .45, Math.abs(3 - k) < 2 ? .25 : 0, Math.cos(k * 1.7) * .3); b.scale.y = .78; b.castShadow = true; g.add(b); }
     g.position.set(-8 + i * 5, 9 + (i % 3) * .9, -2 + ((i * 7) % 22));
     g.userData.sp = .25 + (i % 3) * .1; scene.add(g); O.clouds.push(g);
   }
   // 地平線的積雨雲（入道雲）：不受霧影響，遠遠就看得到
   O.farClouds = [];
-  var fm = std('#ffffff', {fog:false});
-  for (var fc = 0; fc < 11; fc++){
-    var fgp = new T3.Group(), ang = fc / 11 * Math.PI * 2 + .3, rad = 72 + (fc % 3) * 8;
-    for (var kk = 0; kk < 9; kk++){
-      var bb = new T3.Mesh(new T3.IcosahedronGeometry(1, 2), fm), up = kk < 3 ? 0 : kk < 6 ? 1 : 2;
-      var sz = (3.2 - up * .7) * (1 + (fc % 2) * .3);
+  var fm = std('#ffffff', {fog:false}), fmB = std('#d3e0f0', {fog:false});
+  for (var fc = 0; fc < 13; fc++){
+    var fgp = new T3.Group(), ang = fc / 13 * Math.PI * 2 + .3, rad = 74 + (fc % 3) * 8;
+    for (var kk = 0; kk < 12; kk++){
+      var up = kk < 3 ? 0 : kk < 6 ? 1 : kk < 9 ? 2 : 3, bb = new T3.Mesh(new T3.IcosahedronGeometry(1, 2), up ? fm : fmB);
+      var sz = (4.2 - up * .75) * (1 + (fc % 2) * .35);
       bb.scale.set(sz, sz * .85, sz); bb.position.set((kk % 3 - 1) * sz * 1.1 + up * .6, up * sz * 1.25, (kk % 2) * 1.2);
       fgp.add(bb);
     }
     fgp.position.set(C[0] + Math.cos(ang) * rad, -1.5, C[1] + Math.sin(ang) * rad); fgp.lookAt(C[0], -1.5, C[1]);
     scene.add(fgp); O.farClouds.push(fgp);
   }
-  O.farMat = fm;
+  O.farMat = fm; O.farMatB = fmB;
   // 星星
   var N = 500, sp = new Float32Array(N * 3);
   for (var j = 0; j < N; j++){ var a = Math.random() * Math.PI * 2, el2 = Math.random() * 1.3 + .1, r = 80; sp[j * 3] = C[0] + Math.cos(a) * Math.cos(el2) * r; sp[j * 3 + 1] = Math.sin(el2) * r; sp[j * 3 + 2] = C[1] + Math.sin(a) * Math.cos(el2) * r; }
@@ -1126,7 +1169,7 @@ function buildHarborScene(S, r){
   var lantHalo = glowTex('rgba(255,170,80,.7)', 'rgba(255,140,60,0)');
   S.lanterns.forEach(function(L2){ var h = new T3.Sprite(new T3.SpriteMaterial({map:lantHalo, transparent:true, depthWrite:false, fog:false, blending:T3.AdditiveBlending})); h.scale.set(.8, .8, 1); h.raycast = noPick; scene.add(h); L2.h = h; });
   // 夜晚的探照燈：從碼頭兩側往天空掃
-  S.beams = [[C[0] + 10, C[1] - 6], [C[0] - 8, C[1] + 10]].map(function(p, i){
+  S.beams = (THEME.ghibli ? [] : [[C[0] + 10, C[1] - 6], [C[0] - 8, C[1] + 10]]).map(function(p, i){
     var piv = new T3.Group(); piv.position.set(p[0], LAND, p[1]);
     var cone = new T3.Mesh(new T3.CylinderGeometry(.7, .05, 22, 20, 1, true), new T3.MeshBasicMaterial({color:'#fff2c8', transparent:true, opacity:0, depthWrite:false, side:T3.DoubleSide, blending:T3.AdditiveBlending, fog:false}));
     cone.position.y = 11; cone.raycast = noPick; piv.add(cone); scene.add(piv);
@@ -1495,6 +1538,8 @@ function updateSky(force){
   O.bulbMat.emissiveIntensity = dk > .3 ? 2.2 * dk : 0;
   O.clouds.forEach(function(c){ c.children[0].material.color.copy(col('#ffffff').lerp(col('#5a6a8a'), dk).lerp(col('#ffd2b0'), dusk * .5)); });
   O.farMat.color.copy(col('#ffffff').lerp(col('#2a3766'), dk).lerp(col('#ffc0a0'), dusk * .7));
+  if (O.farMatB) O.farMatB.color.copy(col('#d3e0f0').lerp(col('#1e2a52'), dk).lerp(col('#c98a9a'), dusk * .7));
+  if (O.wind) O.wind.dk = dk;
   TOOLS.forEach(function(t){
     var on = h >= t.hour[0] && h < t.hour[1];
     var v = dk > .15 && on ? 1.6 * Math.min(1, dk * 1.5) : dk > .5 ? .12 : 0;
@@ -1758,7 +1803,7 @@ function build(){
   var sc = sun.shadow.camera; sc.left = -16; sc.right = 16; sc.top = 16; sc.bottom = -16; sc.near = 1; sc.far = 70; sun.shadow.bias = -.0004; sun.shadow.normalBias = .02;
   scene.add(sun); scene.add(sun.target);
   raycaster = new T3.Raycaster(); ndc = new T3.Vector2(); V = new T3.Vector3();
-  buildTerrain(); buildWater(); buildRoads(); TOOLS.forEach(buildBuilding); buildDecor(); buildZoneMarks(); buildTrees(); buildFlowers(); buildSkyStuff(); buildScenery(); buildLabels(); buildFar();
+  buildTerrain(); buildWater(); buildRoads(); TOOLS.forEach(buildBuilding); buildDecor(); buildZoneMarks(); buildTrees(); buildFlowers(); buildWind(); buildSkyStuff(); buildScenery(); buildLabels(); buildFar();
   O.ring = new T3.Mesh(new T3.RingGeometry(.42, .5, 40), new T3.MeshBasicMaterial({color:'#ff6f59', transparent:true, opacity:.9, side:T3.DoubleSide, depthWrite:false}));
   O.ring.rotation.x = -Math.PI / 2; scene.add(O.ring);
   built = true;
