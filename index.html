@@ -980,7 +980,7 @@ function farRoute(g, from){
 function goFar(){
   addLog('搭船前往' + FAR.name);
   var look = {n:me.name, a:me.animal, s:me.shirt};
-  lsSet('startupIslandAvatar', Object.assign({}, lsGet('startupIslandAvatar', {}), {name:me.name, animal:me.animal, shirt:me.shirt}));   // 同網域時直接寫進對面的角色存檔
+  saveMe();                                                       // 共用存檔：對面島讀到的就是同一個角色
   var u = FAR.url + '?from=' + FAR.self + '&me=' + encodeURIComponent(JSON.stringify(look)); setTimeout(function(){ location.href = u; }, 120);
 }
 function showFarTip(x, y){
@@ -1720,7 +1720,8 @@ function tick(ts){
 }
 
 /* ---------- 訪客角色：每位訪客一個人物，跟著滑鼠「走路」過去 ---------- */
-var KEY_AVATAR = 'creatorTownAvatar';
+var KEY_AVATAR = 'm255525IslandAvatar';                         // 兩座島（同網域）共用同一份角色存檔：名字、動物、衣服不會因為換島而不同
+var OLD_AVATAR_KEYS = ['creatorTownAvatar', 'startupIslandAvatar'];    // 舊版各自的存檔：第一次載入時接過來，之後同步寫回（舊快取版本也讀得到同一個角色）
 var NAME_A = ['熱血','冷靜','好奇','勇敢','細心','樂觀','愛笑','認真','點子很多的','行動派','靈感滿滿的','愛喝咖啡的'];
 var NAME_B = ['插畫家','小編','剪輯師','配音員','作家','攝影師','漫畫家','企劃','設計師','主持人'];
 var NAME_C = ['小安','阿哲','小魚','阿凱','小晴','阿寶','小樹','阿福','小米','阿德','小芸','阿豪','小橘','阿翔','小柚','阿誠'];
@@ -1790,10 +1791,12 @@ function maskBadWords(text) {
 // ---- 名字禁用字詞 end ----
 function pick(a){ return a[Math.floor(Math.random() * a.length)]; }
 function newAvatar(){ return {name:randomName(), shirt:pick(SHIRTS), hair:pick(HAIRS), animal:pick(ANIMALS).id}; }
+function saveMe(){ lsSet(KEY_AVATAR, me); OLD_AVATAR_KEYS.forEach(function(k){ lsSet(k, me); }); }
+if (!lsGet(KEY_AVATAR, null)){ for (var oi = 0; oi < OLD_AVATAR_KEYS.length; oi++){ var om = lsGet(OLD_AVATAR_KEYS[oi], null); if (om && om.name){ lsSet(KEY_AVATAR, om); break; } } }
 var me = lsGet(KEY_AVATAR, null), firstVisit = false;
-if (!me || !me.name){ me = newAvatar(); lsSet(KEY_AVATAR, me); firstVisit = true; }
-else if (hasBadWord(me.name)){ me.name = randomName(); lsSet(KEY_AVATAR, me); }
-if (!animalById[me.animal]){ me.animal = pick(ANIMALS).id; lsSet(KEY_AVATAR, me); }   // 舊訪客：自動配一隻動物
+if (!me || !me.name){ me = newAvatar(); saveMe(); firstVisit = true; }
+else if (hasBadWord(me.name)){ me.name = randomName(); saveMe(); }
+if (!animalById[me.animal]){ me.animal = pick(ANIMALS).id; saveMe(); }   // 舊訪客：自動配一隻動物
 // 走橋過來的人：沿用對面島上的名字、動物、衣服顏色（網址 ?me=），角色不會因為換島而改變
 (function(){
   var q = /[?&]me=([^&#]*)/.exec(location.search); if (!q) return;
@@ -1802,7 +1805,7 @@ if (!animalById[me.animal]){ me.animal = pick(ANIMALS).id; lsSet(KEY_AVATAR, me)
     if (n && !hasBadWord(n)) me.name = n;
     if (animalById[d.a]) me.animal = d.a;
     if (/^#[0-9a-fA-F]{6}$/.test(d.s || '')) me.shirt = d.s;
-    lsSet(KEY_AVATAR, me); firstVisit = false;
+    saveMe(); firstVisit = false;
   } catch(e){}
 })();
 
@@ -2111,7 +2114,7 @@ function randomName(){ var n; do { n = pick(NAME_A) + pick(NAME_B) + pick(NAME_C
 function cleanName(v){ return String(v || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 12); }
 function setMyLook(name, animal){
   if (name === me.name && animal === me.animal) return;
-  var old = me.name, oldA = me.animal; me.name = name; me.animal = animal; lsSet(KEY_AVATAR, me); renderAvatarName();
+  var old = me.name, oldA = me.animal; me.name = name; me.animal = animal; saveMe(); renderAvatarName();
   if (old !== name) addLog(old + ' 改名為 ' + me.name);
   if (oldA !== animal) addLog(me.name + ' 變成了' + animalById[animal].name + ' ' + animalById[animal].emoji);
   netSend({t:'look', name:me.name, shirt:me.shirt, hair:me.hair, animal:me.animal});
@@ -2995,7 +2998,7 @@ loadBoard(); setInterval(loadBoard, 10 * 60 * 1000);
  * 最新開啟（或按「在這裡繼續」）的分頁擁有角色，其他分頁收到 localStorage 的 storage 事件就斷線暫停。 */
 var KEY_CLAIM = 'm255525IslandClaim', TAB_ID = Math.random().toString(36).slice(2, 10);
 function claimAvatar(){
-  net.paused = false; hideDupCard();
+  syncMe(); net.paused = false; hideDupCard();
   lsSet(KEY_CLAIM, {tab:TAB_ID, site:FAR.self, t:Date.now()});
   if (!net.ws) netConnect();
 }
@@ -3013,6 +3016,16 @@ function pauseAvatar(site){
   c.hidden = false; renderOnline();
 }
 function hideDupCard(){ var c = $('dupCard'); if (c) c.hidden = true; }
+// 角色以共用存檔為準：另一個分頁（任一座島）改了名字／動物／衣服，或從上一頁回來時，這裡跟著換，不會自己變成別的角色
+function syncMe(){
+  var d = lsGet(KEY_AVATAR, null);
+  if (!d || !d.name || hasBadWord(d.name) || !animalById[d.animal]) return;
+  if (d.name === me.name && d.animal === me.animal && d.shirt === me.shirt) return;
+  me.name = d.name; me.animal = d.animal; if (/^#[0-9a-fA-F]{6}$/.test(d.shirt || '')) me.shirt = d.shirt; if (d.hair) me.hair = d.hair;
+  renderAvatarName();
+  netSend({t:'look', name:me.name, shirt:me.shirt, hair:me.hair, animal:me.animal});
+}
+window.addEventListener('storage', function(e){ if (e.key === KEY_AVATAR) syncMe(); });
 window.addEventListener('storage', function(e){
   if (e.key !== KEY_CLAIM || !e.newValue) return;
   var v; try { v = JSON.parse(e.newValue); } catch(err){ return; }
