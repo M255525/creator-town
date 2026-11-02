@@ -15,13 +15,14 @@
 <style>
 :root{
   --ink:#14303d; --ink-dim:#4d6672; --ink-faint:#8aa0aa;
-  --sea:#2b7f9e; --sea-deep:#16566f; --foam:#cfe7ec;
-  --sand:#d9d3c5; --grass:#bcd88f; --cliff:#7d776c;
+  /* 地圖色票＝立體 island3d.js 的 PAL／THEME（港邊黃金時刻），改一邊要改另一邊 */
+  --sea:#1f6f86; --sea-deep:#123b58; --foam:#d8efe6; --lagoon:#3a9c9a;
+  --sand:#d6cfc0; --grass:#b7c87c; --cliff:#8b8578;
   --panel:#fbfdfd; --panel-2:#eef6f8; --line:#d4e3e8;
   --coral:#ff6f59; --coral-ink:#c8412d;
   --lic:#e11d2e;
-  --park:#93cf6c; --lawn:#c3e19a; --yard:#e8dcc4; --paving:#e2ddd3; --wood:#c9b49a; --road:#efece4;
-  --river:#3d97b3; --river-rim:#9b9384; --hillside:#c4b49b; --hilltop:#e6dccb;
+  --park:#9cc468; --lawn:#c6d498; --yard:#eadcc0; --paving:#e2ddd3; --wood:#cdb79a; --road:#f1ede4;
+  --river:#2f8f94; --river-rim:#b3ab9b; --hillside:#c9b9a0; --hilltop:#e6dccb;
   --shadow:0 10px 30px rgba(12,48,64,.18);
   --mq:0px;
   --f-display:"Huninn","Noto Sans TC",system-ui,sans-serif;
@@ -31,12 +32,12 @@
 @media (prefers-color-scheme: dark){
   :root{
     --ink:#e4f0f3; --ink-dim:#a4bcc5; --ink-faint:#6f8b96;
-    --sea:#103f55; --sea-deep:#0a2433; --foam:#2c6070;
-    --sand:#7c776c; --grass:#6e8d4f; --cliff:#4a463f;
+    --sea:#0f3a4c; --sea-deep:#081f30; --foam:#2c6070; --lagoon:#1f5f60;
+    --sand:#7c776c; --grass:#6c7744; --cliff:#4a463f;
     --panel:#11242e; --panel-2:#183340; --line:#264552;
     --coral:#ff8470; --coral-ink:#ffb3a5;
     --lic:#ff4d5a;
-    --park:#4f7a3c; --lawn:#5f8445; --yard:#8a7a52; --paving:#56616a; --wood:#7a5e3c; --road:#6d7780;
+    --park:#5d7638; --lawn:#6d7a4c; --yard:#8a7a52; --paving:#56616a; --wood:#7a5e3c; --road:#6d7780;
     --river:#22708a; --river-rim:#575247; --hillside:#6e624f; --hilltop:#8a7f6b;
     --shadow:0 10px 30px rgba(0,0,0,.45);
   }
@@ -1028,9 +1029,9 @@ function drawFar(g){
   drawFarBridge(g);
   var H = FARB.style === 'harbor';
   el('polygon', {points:pts(farOutline(.55, 120).map(function(q){ var p = iso(q[0], q[1]); return [p[0], p[1] + 8]; })), fill:'var(--foam)', opacity:.5}, g);
-  el('polygon', {points:pts(farOutline(H ? .05 : .4, 120).map(function(q){ var p = iso(q[0], q[1]); return [p[0], p[1] + 14]; })), fill:H ? '#7d776c' : '#b98a4e'}, g);
-  el('polygon', {points:pts(farOutline(H ? .05 : .4, 120).map(function(q){ return iso(q[0], q[1]); })), fill:H ? '#d9d3c5' : '#f3d798'}, g);
-  el('polygon', {points:pts(farOutline(H ? -.35 : -.05, 120).map(function(q){ return iso(q[0], q[1]); })), fill:H ? '#bcd88f' : '#b8e08a'}, g);
+  el('polygon', {points:pts(farOutline(H ? .05 : .4, 120).map(function(q){ var p = iso(q[0], q[1]); return [p[0], p[1] + 14]; })), fill:H ? '#8b8578' : '#d2b071'}, g);
+  el('polygon', {points:pts(farOutline(H ? .05 : .4, 120).map(function(q){ return iso(q[0], q[1]); })), fill:H ? '#d6cfc0' : '#fdf1cf'}, g);
+  el('polygon', {points:pts(farOutline(H ? -.35 : -.05, 120).map(function(q){ return iso(q[0], q[1]); })), fill:H ? '#b7c87c' : '#9edb6f'}, g);
   FAR_THINGS.forEach(function(o){
     var p = iso(o.x, o.y);
     if (o.k === 'w') farGable(g, o.x, o.y, o.s, o.h * .8, 9, '#9c4a36', '#bd6247', o.c < .5 ? '#66737c' : '#7a5a4a');
@@ -1130,6 +1131,9 @@ function buildMap(){
     beach.push(iso(C[0] + Math.cos(a) * (r + .3), C[1] + Math.sin(a) * (r + .3)));
   }
   // 岸壁：混凝土收邊＋垂直的堤岸牆，不是沙灘
+  // 淺水環：跟立體水面一樣岸邊淺、外海深（--lagoon＝立體 THEME.shallow）
+  [[1.3, .35]].forEach(function(L2){ var lg = []; for (var j = 0; j < 96; j++){ var a2 = j / 96 * Math.PI * 2, r2 = islandR(a2) + L2[0]; lg.push(iso(C[0] + Math.cos(a2) * r2, C[1] + Math.sin(a2) * r2)); }
+    el('polygon', {points:pts(lg), fill:'var(--lagoon)', opacity:L2[1]}, ground); });
   el('polygon', {points:pts(beach.map(function(p){ return [p[0], p[1] + 10]; })), fill:'var(--foam)', opacity:.45}, ground);
   el('polygon', {points:pts(beach.map(function(p){ return [p[0], p[1] + 22]; })), fill:'var(--cliff)'}, ground);
   el('polygon', {points:pts(beach), fill:'var(--sand)', stroke:'rgba(0,0,0,.18)', 'stroke-width':1}, ground);
@@ -1257,6 +1261,7 @@ function buildMap(){
   zoneTag(tp[0], tp[1] + 22, '港邊輕軌', 'HARBOR TRAM', '#6b5a48', 'zone-tag decor-tag');
 
   // 夜色、窗燈、接力線、標籤、吉祥物、雲
+  el('rect', {x:-5000, y:-4000, width:10000, height:9000, fill:'#ff9a3c', opacity:.07, 'pointer-events':'none'}, svg);   // 黃金時刻暖光，對應立體的暖色日光
   L.night = el('rect', {x:-5000, y:-4000, width:10000, height:9000, fill:'#071a35', opacity:0, 'pointer-events':'none'}, svg);
   L.lights = el('g', {'pointer-events':'none'}, svg);
   TOOLS.forEach(function(t){
@@ -1372,13 +1377,13 @@ function drawTree(t){
     el('path', {d:'M'+p[0]+' '+p[1]+' Q'+(p[0] + lean*.2)+' '+(p[1] - 18*k)+' '+top[0]+' '+top[1], stroke:'#8a6a48', 'stroke-width':3, fill:'none', 'stroke-linecap':'round'}, g);
     [[-15, 4], [-9, -6], [0, -9], [9, -6], [15, 4], [-4, 9], [5, 8]].forEach(function(f, i){
       var e = [top[0] + f[0]*k, top[1] + f[1]*k + 6], c = [top[0] + f[0]*.5*k, top[1] - 6*k + f[1]*.3];
-      el('path', {d:'M'+top[0]+' '+top[1]+' Q'+c[0]+' '+c[1]+' '+e[0]+' '+e[1], stroke:i % 2 ? '#3f8a4a' : '#56a654', 'stroke-width':3.2, fill:'none', 'stroke-linecap':'round'}, g);
+      el('path', {d:'M'+top[0]+' '+top[1]+' Q'+c[0]+' '+c[1]+' '+e[0]+' '+e[1], stroke:i % 2 ? '#3f9a4c' : '#5aae55', 'stroke-width':3.2, fill:'none', 'stroke-linecap':'round'}, g);
     });
     el('circle', {cx:top[0], cy:top[1] + 1, r:2.2, fill:'#7a5a32'}, g);
   } else {
     el('rect', {x:p[0]-1.5, y:p[1]-10, width:3, height:10, fill:'#8a6239'}, g);
-    el('ellipse', {cx:p[0], cy:p[1]-15*k, rx:12*k, ry:7*k, fill:'#4f9a5a'}, g);
-    el('ellipse', {cx:p[0]+3*k, cy:p[1]-17*k, rx:7*k, ry:4*k, fill:'#68b062'}, g);
+    el('ellipse', {cx:p[0], cy:p[1]-15*k, rx:12*k, ry:7*k, fill:'#4a9f50'}, g);
+    el('ellipse', {cx:p[0]+3*k, cy:p[1]-17*k, rx:7*k, ry:4*k, fill:'#6cb85a'}, g);
   }
 }
 
