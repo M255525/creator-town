@@ -1215,6 +1215,95 @@ function frameScenery(tm){
   S.glints[1].material.opacity = (.25 + .5 * Math.max(0, Math.sin(tm * 2.1 + Math.PI))) * THEME.glintK;
 }
 
+/* ---------- 手繪動畫風：會飄會長的積雲、手繪白浪（THEME.ghibli 才建） ---------- */
+function strokeTex(kind){                                          // 手繪筆觸：兩頭尖、中間粗的白色弧線
+  return canvasTex(256, 64, function(x, w, h){
+    function stroke(pts, wMax){
+      for (var i = 0; i < pts.length - 1; i++){
+        var u = i / (pts.length - 2), r = wMax * Math.sin(Math.PI * Math.min(1, u * 1.15)) + .4;
+        x.beginPath(); x.arc(pts[i][0], pts[i][1], r, 0, 7); x.fill();
+      }
+    }
+    function curve(x0, x1, y0, amp, ph, n){ var o = []; for (var i = 0; i <= n; i++){ var u = i / n; o.push([x0 + (x1 - x0) * u, y0 - Math.sin(u * Math.PI * ph) * amp]); } return o; }
+    x.fillStyle = '#ffffff';
+    if (kind === 'crest'){                                         // 海面浪痕：一長一短兩筆，尾端微微捲起
+      stroke(curve(10, 200, 40, 12, 1, 90), 5);
+      var tail = []; for (var i = 0; i <= 20; i++){ var a = Math.PI * .9 - i / 20 * Math.PI * 1.25; tail.push([200 + Math.cos(a) * 14, 26 + Math.sin(a) * 10]); } stroke(tail, 3.2);
+      stroke(curve(70, 170, 54, 4, 1, 50), 2.6);
+    } else {                                                       // 岸邊浪花：三排斷續的筆觸＋小水沫
+      var r = rng(17);
+      [[14, 4.2, .92], [32, 3, .7], [48, 2.2, .5]].forEach(function(row){
+        var xx = r() * 20;
+        while (xx < w){ var len = 18 + r() * 46; x.globalAlpha = row[2]; stroke(curve(xx, Math.min(w, xx + len), row[0] + r() * 4, 2 + r() * 3, 1, 24), row[1]); xx += len + 8 + r() * 26; }
+      });
+      x.globalAlpha = .8; for (var k = 0; k < 40; k++){ x.beginPath(); x.arc(r() * w, 6 + r() * 54, .8 + r() * 1.6, 0, 7); x.fill(); }
+      x.globalAlpha = 1;
+    }
+  });
+}
+function buildGhibliSea(){
+  // 岸邊拍岸的浪花：沿岸一條貼水面的帶子，貼圖往岸邊一進一退
+  var N = 360, pos = [], uv = [], idx = [], acc = 0, prev = null, inner = .04, outer = .85;
+  for (var i = 0; i <= N; i++){
+    var a = i / N * Math.PI * 2, r = islandR(a), cx = Math.cos(a), cz = Math.sin(a);
+    var pI = [C[0] + cx * (r + inner), C[1] + cz * (r + inner)], pO = [C[0] + cx * (r + outer), C[1] + cz * (r + outer)];
+    if (prev) acc += Math.hypot(pI[0] - prev[0], pI[1] - prev[1]); prev = pI;
+    pos.push(pI[0], SEA + .07, pI[1], pO[0], SEA + .07, pO[1]); uv.push(acc / 2.4, 0, acc / 2.4, 1);
+    if (i < N){ var k = i * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
+  }
+  var sg = new T3.BufferGeometry(); sg.setAttribute('position', new T3.Float32BufferAttribute(pos, 3)); sg.setAttribute('uv', new T3.Float32BufferAttribute(uv, 2)); sg.setIndex(idx);
+  var st = strokeTex('shore'); st.wrapS = T3.RepeatWrapping;
+  var shoreM = new T3.MeshBasicMaterial({map:st, transparent:true, depthWrite:false, side:T3.DoubleSide});
+  var shore = new T3.Mesh(sg, shoreM); shore.raycast = noPick; shore.renderOrder = 2; scene.add(shore);
+  O.foam.visible = false;
+  // 海面上一筆一筆的白浪：冒出來、順風漂一下、再消失（一個 InstancedMesh，用縮放做出現／消失）
+  var NC = 120, crests = [], r = rng(41), tries = 0;
+  while (crests.length < NC && tries++ < 6000){
+    var a2 = r() * 6.28, d = 1.4 + Math.pow(r(), .8) * 16, gx = C[0] + Math.cos(a2) * (islandR(a2) + d), gy = C[1] + Math.sin(a2) * (islandR(a2) + d);
+    if (farEdge(gx, gy) < 1.2 || farBridgeDist(gx, gy) < 1.2) continue;
+    crests.push({x:gx, z:gy, rot:-.6 + (r() - .5) * .9, len:1.1 + r() * 1.3, ph:r(), per:4.5 + r() * 4});
+  }
+  var cg = new T3.PlaneGeometry(1, .3); cg.rotateX(-Math.PI / 2);
+  var cm = new T3.MeshBasicMaterial({map:strokeTex('crest'), transparent:true, depthWrite:false, opacity:.9});
+  var cmesh = new T3.InstancedMesh(cg, cm, crests.length); cmesh.raycast = noPick; cmesh.renderOrder = 2; cmesh.frustumCulled = false; scene.add(cmesh);
+  var m4 = new T3.Matrix4(), q = new T3.Quaternion(), e = new T3.Euler(), sc = new T3.Vector3(), ps = new T3.Vector3();
+  O.anim.push(function(tm){
+    var night = O.wind ? O.wind.dk : 0;
+    st.offset.x = tm * .012; st.offset.y = Math.sin(tm * .9) * .16;                    // 浪花一進一退
+    shoreM.opacity = (.8 + .2 * Math.sin(tm * .9 + 1.2)) * (1 - night * .55);
+    cm.opacity = .9 * (1 - night * .6);
+    crests.forEach(function(c, i){
+      var u = ((tm / c.per + c.ph) % 1), env = u < .22 ? smooth(0, .22, u) : u > .7 ? 1 - smooth(.7, 1, u) : 1;
+      e.set(0, c.rot, 0); q.setFromEuler(e);
+      sc.set(c.len * (.35 + .65 * env), 1, (.6 + .4 * env) * c.len); ps.set(c.x + u * .5, SEA + .07, c.z - u * .25);
+      m4.compose(ps, q, sc); cmesh.setMatrixAt(i, m4);
+    });
+    cmesh.instanceMatrix.needsUpdate = true;
+  });
+}
+function animateClouds(){
+  // 每顆雲球記下原本的大小與位置，之後慢慢鼓起、縮回、往上翻湧；地平線的入道雲整圈極慢地繞
+  function seed(g){ g.children.forEach(function(b, i){ b.userData.b = {s:b.scale.clone(), p:b.position.clone(), ph:(i * 1.37 + g.id * .61) % 6.28}; }); }
+  O.farClouds.forEach(function(g, i){ seed(g); g.userData.ang = Math.atan2(g.position.z - C[1], g.position.x - C[0]); g.userData.rad = Math.hypot(g.position.x - C[0], g.position.z - C[1]); g.userData.sp = .003 + (i % 4) * .001; });
+  O.clouds.forEach(seed);
+  function morph(g, tm, k){
+    g.children.forEach(function(b){
+      var B = b.userData.b; if (!B) return;
+      var top = B.p.y > .1 ? 1 : .5, f = 1 + k * top * Math.sin(tm * .13 + B.ph) + k * .5 * Math.sin(tm * .071 + B.ph * 2);
+      b.scale.set(B.s.x * f, B.s.y * (1 + (f - 1) * 1.4), B.s.z * f);
+      b.position.set(B.p.x + Math.sin(tm * .05 + B.ph) * B.s.x * .12, B.p.y + Math.max(0, Math.sin(tm * .09 + B.ph)) * B.s.y * .35 * top, B.p.z);
+    });
+  }
+  O.anim.push(function(tm, dt){
+    O.farClouds.forEach(function(g){
+      var u = g.userData; u.ang += u.sp * dt;
+      g.position.set(C[0] + Math.cos(u.ang) * u.rad, -1.5, C[1] + Math.sin(u.ang) * u.rad); g.lookAt(C[0], -1.5, C[1]);
+      morph(g, tm, .14);
+    });
+    O.clouds.forEach(function(g){ morph(g, tm, .1); });
+  });
+}
+
 /* ---------- 接力線 ---------- */
 function buildLinks(){
   if (!built) return;
@@ -1803,7 +1892,7 @@ function build(){
   var sc = sun.shadow.camera; sc.left = -16; sc.right = 16; sc.top = 16; sc.bottom = -16; sc.near = 1; sc.far = 70; sun.shadow.bias = -.0004; sun.shadow.normalBias = .02;
   scene.add(sun); scene.add(sun.target);
   raycaster = new T3.Raycaster(); ndc = new T3.Vector2(); V = new T3.Vector3();
-  buildTerrain(); buildWater(); buildRoads(); TOOLS.forEach(buildBuilding); buildDecor(); buildZoneMarks(); buildTrees(); buildFlowers(); buildWind(); buildSkyStuff(); buildScenery(); buildLabels(); buildFar();
+  buildTerrain(); buildWater(); buildRoads(); TOOLS.forEach(buildBuilding); buildDecor(); buildZoneMarks(); buildTrees(); buildFlowers(); buildWind(); buildSkyStuff(); buildScenery(); if (THEME.ghibli){ buildGhibliSea(); animateClouds(); } buildLabels(); buildFar();
   O.ring = new T3.Mesh(new T3.RingGeometry(.42, .5, 40), new T3.MeshBasicMaterial({color:'#ff6f59', transparent:true, opacity:.9, side:T3.DoubleSide, depthWrite:false}));
   O.ring.rotation.x = -Math.PI / 2; scene.add(O.ring);
   built = true;

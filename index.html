@@ -1121,6 +1121,15 @@ function buildMap(){
   var pat = el('pattern', {id:'waves', width:60, height:30, patternUnits:'userSpaceOnUse'}, defs);
   el('path', {d:'M4 18 q8 -6 16 0 M34 8 q8 -6 16 0', stroke:'rgba(255,255,255,.18)', 'stroke-width':1.6, fill:'none', 'stroke-linecap':'round'}, pat);
   el('rect', {x:-5000, y:-4000, width:10000, height:9000, fill:'url(#waves)'}, svg);
+  L.crests = el('g', {'pointer-events':'none'}, svg);             // 海面一筆一筆的白浪：冒出來再消失
+  (function(){ var r = rng(41), n = 0, tries = 0;
+    while (n < 34 && tries++ < 3000){ var a = r() * 6.28, d = 1.5 + r() * 9, gx = C[0] + Math.cos(a) * (islandR(a) + d), gy = C[1] + Math.sin(a) * (islandR(a) + d);
+      if (typeof farEdge === 'function' && farEdge(gx, gy) < 1.2) continue;
+      var p = iso(gx, gy), w = 14 + r() * 12, cg = el('g', {transform:'translate(' + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ')', opacity:0}, L.crests);
+      el('path', {d:'M0 0 Q' + (w * .5) + ' ' + (-w * .32) + ' ' + w + ' 0 q4 -5 0 -7', fill:'none', stroke:'#ffffff', 'stroke-width':2.2, 'stroke-linecap':'round'}, cg);
+      el('path', {d:'M' + (w * .3) + ' 4 Q' + (w * .6) + ' 1 ' + (w * .85) + ' 4', fill:'none', stroke:'#ffffff', 'stroke-width':1.4, 'stroke-linecap':'round', opacity:.7}, cg);
+      cg._ph = r() * 6.28; cg._sp = .35 + r() * .3; n++; }
+  })();
   L.boats = el('g', {}, svg);
   L.far = el('g', {class:'farland', tabindex:0, role:'link', 'aria-label':'前往' + FAR.name}, svg); drawFar(L.far);
   var ground = el('g', {}, svg);
@@ -1136,6 +1145,10 @@ function buildMap(){
   // 淺水環：跟立體水面一樣岸邊淺、外海深（--lagoon＝立體 THEME.shallow）
   [[1.3, .35]].forEach(function(L2){ var lg = []; for (var j = 0; j < 96; j++){ var a2 = j / 96 * Math.PI * 2, r2 = islandR(a2) + L2[0]; lg.push(iso(C[0] + Math.cos(a2) * r2, C[1] + Math.sin(a2) * r2)); }
     el('polygon', {points:pts(lg), fill:'var(--lagoon)', opacity:L2[1]}, ground); });
+  L.shoreFoam = [[.62, '15 8 4 10', 2.4, .8], [1.05, '9 16 3 14', 1.8, .5]].map(function(F){   // 岸邊手繪浪花：兩條斷續白線，一進一退
+    var fl = []; for (var j = 0; j <= 160; j++){ var a3 = j / 160 * Math.PI * 2, r3 = islandR(a3) + F[0]; fl.push(iso(C[0] + Math.cos(a3) * r3, C[1] + Math.sin(a3) * r3)); }
+    return el('path', {d:polyD(fl), fill:'none', stroke:'#ffffff', 'stroke-width':F[2], 'stroke-dasharray':F[1], 'stroke-linecap':'round', opacity:F[3]}, ground);
+  });
   el('polygon', {points:pts(beach.map(function(p){ return [p[0], p[1] + 10]; })), fill:'var(--foam)', opacity:.45}, ground);
   el('polygon', {points:pts(beach.map(function(p){ return [p[0], p[1] + 22]; })), fill:'var(--cliff)'}, ground);
   el('polygon', {points:pts(beach), fill:'var(--sand)', stroke:'rgba(0,0,0,.18)', 'stroke-width':1}, ground);
@@ -1696,8 +1709,13 @@ function tick(ts){
   if (L.tramBody){ var tq = iso(tram.u, TRACK_SUM - tram.u); L.tramBody.setAttribute('transform', 'translate('+tq[0].toFixed(1)+','+tq[1].toFixed(1)+')' + (tram.s < 0 ? ' scale(-1,1)' : '')); }
   Array.prototype.forEach.call(L.clouds.children, function(cg, i){
     var x = ((elapsed * (10 + i*3) + i * 300) % 1400) - 700, y = -40 + i * 110;
-    cg.setAttribute('transform', 'translate('+x.toFixed(1)+','+y+')');
+    var sx = 1 + .08 * Math.sin(elapsed * .13 + i * 1.7), sy = 1 + .14 * Math.sin(elapsed * .1 + i * 2.3);   // 積雲慢慢鼓起、縮回
+    cg.setAttribute('transform', 'translate('+x.toFixed(1)+','+y+') scale('+sx.toFixed(3)+','+sy.toFixed(3)+')');
   });
+  if (!state.paused){
+    Array.prototype.forEach.call(L.crests.children, function(cg){ var v = Math.sin(elapsed * cg._sp + cg._ph); cg.setAttribute('opacity', (v > 0 ? v * v * .85 : 0).toFixed(2)); });
+    if (L.shoreFoam){ L.shoreFoam[0].setAttribute('stroke-dashoffset', (Math.sin(elapsed * .9) * 6 + elapsed * 2).toFixed(1)); L.shoreFoam[1].setAttribute('stroke-dashoffset', (-Math.sin(elapsed * .9 + 1) * 8 - elapsed * 1.5).toFixed(1)); L.shoreFoam[1].setAttribute('opacity', (.35 + .25 * Math.sin(elapsed * .9)).toFixed(2)); }
+  }
   requestAnimationFrame(tick);
 }
 

@@ -104,3 +104,7 @@
 - **手繪紙質紋理**：`#paper` 疊在地圖與立體上方（z-index 4，名牌與介面之下），`mix-blend-mode:multiply`、opacity .6，紋理由程式產生（暖色雜訊＋纖維線）。
 - 2D 雲改成圓滾積雲＋藍灰平底。創業島那邊的鄰島（2D `drawFar()`、3D `buildFar()` 的 harbor 分支）也改成紅瓦灰泥＋新草地色。
 - SW 快取 v8→v9（創業島 v10→v11）。驗證：Playwright 平面、立體近景／鳥瞰／低角度（草叢與絨毛）／夜晚、375px 無橫向溢出、創業島看對岸小鎮，除刻意連不上的 presence 外無 console 錯誤。
+- **會飄會長的積雲＋手繪白浪（2026-11-02 追加，使用者要求）**：`island3d.js`「手繪動畫風」區塊，`THEME.ghibli` 時在 `buildScenery()` 後呼叫 `buildGhibliSea()`、`animateClouds()`。
+  - `animateClouds()`：每顆雲球記下原始 scale／position（`userData.b`），之後慢慢鼓起、縮回、上半部往上翻湧；地平線入道雲整圈以 .003–.006 rad/s 繞島（約 17–35 分鐘一圈）。天空的近雲同樣變形。
+  - `buildGhibliSea()`：`strokeTex()` 程式畫兩頭尖的手繪筆觸。岸邊一條貼水面的帶子（岸外 .04～.85 格，SEA+.07，`renderOrder 2`）貼斷續浪花，`offset.y` 一進一退、`offset.x` 慢慢移；舊的管狀浪花 `O.foam` 隱藏。海面 120 筆白浪是一個 InstancedMesh，用縮放做冒出→順風漂→消失（避開鄰島與跨海大橋）。夜晚透明度降低。低角度看岸邊浪花很薄是正常的（平貼水面）。
+  - 平面地圖同步：岸邊兩條白色虛線（`L.shoreFoam`，`stroke-dashoffset` 一進一退）、海面 34 個浪痕（`L.crests`，透明度依 sin 冒出消失）、2D 雲 `scale` 慢慢鼓縮；「靜止」時不動。SW v9→v10。
