@@ -1326,6 +1326,7 @@ function buildMap(){
   }
   svg.insertBefore(L.clouds, L.links);   // 雲在建築之上、接力線與標籤之下，不擋字
   drawLinks();
+  buildCreatures2D();
 }
 
 // 公布欄（平面）：兩根柱子＋看板，上方有醒目的「📋 公布欄」標籤；內容換了就重畫
@@ -1688,6 +1689,189 @@ function buildBoats(){
   });
   buildFish();
 }
+// 本鎮配色：史萊姆走粉彩系（創業島是鮮豔原色系，兩邊刻意不同）；飛龍藍灰／古銅／青綠
+var SLIME_COLORS = ['#ffa8d4', '#b9a0ff', '#7fe3d2', '#fff3d6', '#ffbf9a'];
+var DRAGON_LOOKS = [
+  {body:'#4f6d8f', belly:'#e8d9b0', wing:'#7393b8', wingDark:'#2c3e57', horn:'#f3ead2', size:.62},
+  {body:'#a0673a', belly:'#f1d39a', wing:'#c08350', wingDark:'#5e3a1e', horn:'#fff1d6', size:.54},
+  {body:'#2f7a74', belly:'#e3e0a8', wing:'#52a69c', wingDark:'#1c4b47', horn:'#f3ead2', size:.58}
+];
+/* ---------- 飛龍與史萊姆：天上盤旋的中古歐洲飛龍、地上一跳一跳的史萊姆 ----------
+ * 位置只在這裡模擬一次（平面 tick 每格都跑），立體檢視 island3d.js 讀同一份 SLIMES／DRAGONS 來畫，兩種檢視看到的位置一致。
+ * 史萊姆：只在本島可走的地方跳（fineOK），不上跨海大橋、不到對岸；跳一下＝蹲→騰空→落地壓扁，到目的地休息一下再換地方。
+ * 飛龍：繞島飛大圈、上下起伏、拍翅膀，偶爾噴一小口火；地面有淡淡的影子。 */
+var SLIMES = [], DRAGONS = [];
+function slimeOK(gx, gy){
+  if (typeof fineCells === 'undefined' || !fineCells) return false;
+  if (!fineOK(gx, gy) || farBridgeDist(gx, gy) < .8 || onFarIsland(gx, gy)) return false;
+  return Math.hypot(gx - C[0], gy - C[1]) < islandR(Math.atan2(gy - C[1], gx - C[0])) - .9;
+}
+function slimeLine(x0, y0, x1, y1){
+  var n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / .18));
+  for (var i = 1; i <= n; i++) if (!slimeOK(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n)) return false;
+  return true;
+}
+function slimeTarget(s){
+  for (var k = 0; k < 24; k++){
+    var a = Math.random() * 6.283, r = .7 + Math.random() * 2.4, x = s.hx + Math.cos(a) * r, y = s.hy + Math.sin(a) * r;
+    if (slimeOK(x, y) && slimeLine(s.gx, s.gy, x, y)){ s.tx = x; s.ty = y; return; }
+  }
+  if (slimeLine(s.gx, s.gy, s.hx, s.hy)){ s.tx = s.hx; s.ty = s.hy; } else { s.tx = s.gx; s.ty = s.gy; }
+}
+function spawnCreatures(){
+  var tries = 0, n = SLIME_COLORS.length * 2 + 2;
+  while (SLIMES.length < n && tries++ < 4000){
+    var a = Math.random() * 6.283, r = Math.sqrt(Math.random()) * 11.5, x = C[0] + Math.cos(a) * r, y = C[1] + Math.sin(a) * r;
+    if (!slimeOK(x, y) || SLIMES.some(function(o){ return Math.hypot(o.gx - x, o.gy - y) < 1.7; })) continue;
+    var i = SLIMES.length;
+    SLIMES.push({gx:x, gy:y, hx:x, hy:y, tx:x, ty:y, sx:x, sy:y, ex:x, ey:y, c:SLIME_COLORS[i % SLIME_COLORS.length],
+      size:.8 + (i % 3) * .14, k:0, hopping:false, rest:Math.random() * 3, dur:.75 + Math.random() * .3, ang:Math.random() * 6.283, h:0, sq:1, ph:Math.random() * 9});
+  }
+  DRAGON_LOOKS.forEach(function(lk, i){
+    DRAGONS.push({lk:lk, a:i * 2.1, sp:(i % 2 ? -1 : 1) * (.075 + i * .012), rx:7.5 + i * 1.6, ry:6 + (i % 2) * 2.2, alt:5.2 + i * .8, ph:i * 1.9,
+      gx:C[0], gy:C[1], y:0, hd:0, flap:0, fire:0, fireIn:6 + i * 5, face:1, tilt:0});
+  });
+  buildCreatures2D();
+}
+function stepCreatures(dt){
+  if (!SLIMES.length){ if (typeof fineCells === 'undefined' || !fineCells) return; spawnCreatures(); }
+  var run = !state.paused;
+  SLIMES.forEach(function(s){
+    if (!run) return;
+    if (!s.hopping){
+      s.h = 0; s.sq = 1 + Math.sin(elapsed * 4 + s.ph) * .035;            // 休息時軟軟地晃
+      s.rest -= dt;
+      var md = Math.hypot(walker.gx - s.gx, walker.gy - s.gy);
+      if (md < 1.6) s.ang = Math.atan2(walker.gy - s.gy, walker.gx - s.gx);  // 人走近就轉頭看
+      if (s.rest > 0) return;
+      if (Math.hypot(s.tx - s.gx, s.ty - s.gy) < .05) slimeTarget(s);
+      var dx = s.tx - s.gx, dy = s.ty - s.gy, d = Math.hypot(dx, dy);
+      if (d < .05){ s.rest = .8 + Math.random() * 2; return; }
+      var L1 = Math.min(d, .42 * s.size + .1);
+      s.sx = s.gx; s.sy = s.gy; s.ex = s.gx + dx / d * L1; s.ey = s.gy + dy / d * L1; s.ang = Math.atan2(dy, dx);
+      s.hopping = true; s.k = 0;
+    }
+    s.k += dt / s.dur;
+    var k = Math.min(1, s.k);
+    if (k < .2){ s.h = 0; s.sq = 1 - .3 * (k / .2); }                                         // 蹲
+    else if (k < .8){ var u = (k - .2) / .6; s.h = Math.sin(Math.PI * u) * .32 * s.size; s.sq = 1 + .2 * Math.sin(Math.PI * Math.min(1, u * 1.6));
+      s.gx = s.sx + (s.ex - s.sx) * u; s.gy = s.sy + (s.ey - s.sy) * u; }                       // 騰空
+    else { var v = (k - .8) / .2; s.h = 0; s.gx = s.ex; s.gy = s.ey; s.sq = 1 - .24 * Math.sin(Math.PI * v); }  // 落地壓扁
+    if (s.k >= 1){
+      s.hopping = false; s.sq = 1;
+      if (Math.hypot(s.tx - s.gx, s.ty - s.gy) < .05) s.rest = .6 + Math.random() * 2.6;
+      else s.rest = .05 + Math.random() * .25;
+    }
+  });
+  DRAGONS.forEach(function(D){
+    if (run){
+      D.a += D.sp * dt;
+      D.fireIn -= dt;
+      if (D.fireIn < 0){ D.fire += dt / 1.3; if (D.fire >= 1){ D.fire = 0; D.fireIn = 9 + Math.random() * 12; } }
+    }
+    var wob = Math.sin(elapsed * .21 + D.ph) * .9;
+    D.gx = C[0] + Math.cos(D.a) * (D.rx + wob); D.gy = C[1] + Math.sin(D.a) * (D.ry - wob * .6);
+    D.y = D.alt + Math.sin(elapsed * .7 + D.ph) * .45;
+    var vx = -Math.sin(D.a) * D.rx * D.sp, vy = Math.cos(D.a) * D.ry * D.sp;
+    D.hd = Math.atan2(vy, vx);
+    D.flap = Math.sin(elapsed * 4.2 + D.ph);
+    var sdx = (vx - vy) * HW, sdy = (vx + vy) * HH - Math.cos(elapsed * .7 + D.ph) * .45 * .7 * 30;
+    D.face = sdx >= 0 ? 1 : -1;
+    D.tilt = Math.max(-18, Math.min(18, Math.atan2(sdy, Math.abs(sdx)) * 180 / Math.PI));
+  });
+  drawCreatures2D();
+}
+function buildCreatures2D(){
+  if (!L.blds || !L.links) return;
+  var svg = L.links.ownerSVGElement || L.links.parentNode;
+  if (L.dShadow) L.dShadow.remove();
+  if (L.dragons) L.dragons.remove();
+  L.dShadow = el('g', {'pointer-events':'none'}, svg); svg.insertBefore(L.dShadow, L.blds);   // 飛龍影子：在地面、建築之下
+  L.dragons = el('g', {'pointer-events':'none'}, svg); svg.insertBefore(L.dragons, L.links); // 飛龍：在雲與建築之上、接力線與標籤之下，不擋字
+  SLIMES.forEach(function(s){
+    if (s.g && s.g.parentNode) s.g.remove();
+    var ink = mix(s.c, '#14303d', .5);
+    s.g = el('g', {'pointer-events':'none'}, L.blds); s.g._d = s.gx + s.gy;
+    s.shadow = el('ellipse', {cx:0, cy:0, rx:9, ry:3.4, fill:'rgba(20,48,61,.2)'}, s.g);
+    s.body = el('g', {}, s.g);
+    el('path', {d:'M-10 0 C-11 -6 -7 -14 0 -14 C7 -14 11 -6 10 0 Q0 2.6 -10 0 Z', fill:s.c, stroke:ink, 'stroke-width':1.1, 'stroke-linejoin':'round'}, s.body);
+    el('path', {d:'M-9 -1.5 Q0 1.6 9 -1.5 Q8.6 -4 6 -3.6 Q0 -2 -6 -3.6 Q-8.6 -4 -9 -1.5 Z', fill:ink, opacity:.22}, s.body);
+    el('ellipse', {cx:-4.6, cy:-9.6, rx:2.7, ry:1.6, fill:'#ffffff', opacity:.85, transform:'rotate(-28 -4.6 -9.6)'}, s.body);
+    el('circle', {cx:-1.6, cy:-11.8, r:.9, fill:'#ffffff', opacity:.85}, s.body);
+    s.eyes = el('g', {}, s.body);
+    [1.6, 6].forEach(function(x){
+      el('ellipse', {cx:x, cy:-6.6, rx:1.15, ry:1.7, fill:'#2a2230'}, s.eyes);
+      el('circle', {cx:x + .4, cy:-7.3, r:.45, fill:'#ffffff'}, s.eyes);
+    });
+    el('ellipse', {cx:-.4, cy:-4.2, rx:1.4, ry:.75, fill:'#ff7f96', opacity:.55}, s.body);
+    el('ellipse', {cx:8, cy:-4.2, rx:1.2, ry:.7, fill:'#ff7f96', opacity:.55}, s.body);
+    el('path', {d:'M2.8 -4.3 Q3.8 -3.1 4.8 -4.3', fill:'none', stroke:'#2a2230', 'stroke-width':.8, 'stroke-linecap':'round'}, s.body);
+  });
+  DRAGONS.forEach(function(D){
+    var lk = D.lk;
+    D.shadow = el('ellipse', {cx:0, cy:0, rx:26, ry:9, fill:'rgba(20,48,61,.12)'}, L.dShadow);
+    D.g = el('g', {}, L.dragons);
+    D.inner = el('g', {}, D.g);
+    var stroke = mix(lk.body, '#14303d', .55), sw = {stroke:stroke, 'stroke-width':1.1, 'stroke-linejoin':'round'};
+    function wing(parent, fill){
+      var w = el('g', {}, parent);
+      el('path', Object.assign({d:'M0 0 L5 -28 L-36 -36 Q-27 -28 -31 -19 Q-23 -15 -23 -7 Q-12 -6 0 0 Z', fill:fill}, sw), w);
+      ['M5 -28 L-36 -36', 'M5 -28 L-31 -19', 'M5 -28 L-23 -7'].forEach(function(d){ el('path', {d:d, fill:'none', stroke:stroke, 'stroke-width':1, opacity:.7}, w); });
+      el('path', {d:'M5 -28 L8 -31 L6 -27 Z', fill:lk.horn, stroke:stroke, 'stroke-width':.6}, w);
+      return w;
+    }
+    D.farWing = wing(D.inner, lk.wingDark);
+    D.tail = el('g', {}, D.inner);
+    el('path', Object.assign({d:'M-12 -3 C-26 -2 -38 -9 -54 -2 L-56 3 C-40 -3 -28 7 -12 6 Z', fill:lk.body}, sw), D.tail);
+    el('path', Object.assign({d:'M-54 -2 L-68 -7 L-62 1 L-67 9 L-56 3 Z', fill:lk.wingDark}, sw), D.tail);
+    [[-22, -3], [-32, -5], [-42, -6]].forEach(function(p){ el('path', {d:'M'+(p[0]-3)+' '+p[1]+' L'+p[0]+' '+(p[1]-5)+' L'+(p[0]+3)+' '+p[1]+' Z', fill:lk.horn, stroke:stroke, 'stroke-width':.6}, D.tail); });
+    el('path', Object.assign({d:'M-8 5 L-11 13 L-6 13 L-3 6 Z', fill:lk.body}, sw), D.inner);
+    el('path', Object.assign({d:'M10 -4 C18 -8 21 -18 27 -23 L33 -18 C27 -12 22 -2 14 5 Z', fill:lk.body}, sw), D.inner);
+    el('ellipse', Object.assign({cx:0, cy:0, rx:18, ry:9, fill:lk.body}, sw), D.inner);
+    el('path', {d:'M-13 4 Q0 10.5 15 3 Q14 7 6 8.4 Q-4 9.6 -13 4 Z', fill:lk.belly}, D.inner);
+    [[-10, -7.4], [-3, -8.8], [4, -8.6], [12, -9], [18, -14], [22, -19]].forEach(function(p){ el('path', {d:'M'+(p[0]-2.6)+' '+(p[1]+1)+' L'+p[0]+' '+(p[1]-4.4)+' L'+(p[0]+2.6)+' '+(p[1]+1)+' Z', fill:lk.horn, stroke:stroke, 'stroke-width':.6}, D.inner); });
+    el('path', Object.assign({d:'M7 5 L9 13 L14 13 L12 6 Z', fill:lk.body}, sw), D.inner);
+    el('path', Object.assign({d:'M27 -21 L20 -33 L31 -26 Z', fill:lk.horn}, sw), D.inner);
+    el('path', Object.assign({d:'M30 -24 L27 -37 L35 -26 Z', fill:lk.horn}, sw), D.inner);
+    el('path', Object.assign({d:'M25 -24 C31 -30 40 -29 47 -24 L48 -19.5 C42 -17.5 34 -16 29 -15.5 C25 -17 23.5 -21 25 -24 Z', fill:lk.body}, sw), D.inner);
+    el('path', {d:'M33 -18.2 Q40 -17.6 47.6 -19.6', fill:'none', stroke:stroke, 'stroke-width':.8}, D.inner);
+    el('circle', {cx:35, cy:-24, r:1.9, fill:'#ffd84a', stroke:stroke, 'stroke-width':.6}, D.inner);
+    el('ellipse', {cx:35.5, cy:-24, rx:.5, ry:1.4, fill:'#2a2230'}, D.inner);
+    el('circle', {cx:45.6, cy:-22.6, r:.6, fill:stroke}, D.inner);
+    D.fireG = el('g', {transform:'translate(48,-20)', opacity:0}, D.inner);
+    el('ellipse', {cx:14, cy:1, rx:16, ry:6, fill:'#ff6a2b', opacity:.85}, D.fireG);
+    el('ellipse', {cx:10, cy:.6, rx:10, ry:3.8, fill:'#ffb12b'}, D.fireG);
+    el('ellipse', {cx:6, cy:.3, rx:5, ry:2, fill:'#fff3b0'}, D.fireG);
+    D.nearWing = wing(D.inner, lk.wing);
+  });
+}
+function drawCreatures2D(){
+  if (!L.dragons || !SLIMES.length || !SLIMES[0].g) return;
+  var blink = function(s){ return ((elapsed + s.ph) % 4.3) < .13; };
+  SLIMES.forEach(function(s){
+    var p = up(iso(s.gx, s.gy), groundAt(s.gx, s.gy)), sc = s.size * 1.3;
+    s.g.setAttribute('transform', 'translate(' + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ') scale(' + sc.toFixed(2) + ')');
+    var face = (Math.cos(s.ang) - Math.sin(s.ang)) >= 0 ? 1 : -1, sy = s.sq, sx = 1 + (1 - sy) * .9;
+    s.body.setAttribute('transform', 'translate(0,' + (-s.h * 30 / sc).toFixed(1) + ') scale(' + (sx * face).toFixed(3) + ',' + sy.toFixed(3) + ')');
+    var shs = 1 - Math.min(.45, s.h * 1.4);
+    s.shadow.setAttribute('transform', 'scale(' + shs.toFixed(2) + ')');
+    s.eyes.setAttribute('transform', blink(s) ? 'translate(0,-6.6) scale(1,.15) translate(0,6.6)' : '');
+    var d = s.gx + s.gy;
+    if (Math.abs(d - s.g._d) > .02){ s.g._d = d; placeDepth(s.g, d); }
+  });
+  DRAGONS.forEach(function(D){
+    var g0 = iso(D.gx, D.gy), sc = D.lk.size;
+    D.shadow.setAttribute('transform', 'translate(' + g0[0].toFixed(1) + ',' + g0[1].toFixed(1) + ') scale(' + sc + ')');
+    D.g.setAttribute('transform', 'translate(' + g0[0].toFixed(1) + ',' + (g0[1] - D.y * 30).toFixed(1) + ') scale(' + (sc * D.face).toFixed(2) + ',' + sc + ') rotate(' + D.tilt.toFixed(1) + ')');
+    var f = .25 + .75 * D.flap;
+    D.nearWing.setAttribute('transform', 'translate(2,-6) scale(1,' + f.toFixed(3) + ')');
+    D.farWing.setAttribute('transform', 'translate(7,-8) scale(.92,' + (f * .9 + .05).toFixed(3) + ')');
+    D.tail.setAttribute('transform', 'rotate(' + (Math.sin(elapsed * 2.1 + D.ph) * 7).toFixed(1) + ' -12 1)');
+    var fi = D.fire > 0 ? Math.sin(Math.PI * D.fire) : 0;
+    D.fireG.setAttribute('opacity', fi.toFixed(2));
+    D.fireG.setAttribute('transform', 'translate(48,-20) scale(' + (.3 + fi * .8).toFixed(2) + ',' + (.5 + fi * .5).toFixed(2) + ')');
+  });
+}
 var lastFrame = 0, elapsed = 0;
 function tick(ts){
   var dt = Math.min(.05, (ts - lastFrame) / 1000 || 0); lastFrame = ts;
@@ -1700,6 +1884,7 @@ function tick(ts){
   farTick();
   stepPeers(dt);
   netTick(ts);
+  stepCreatures(dt);
   boats.forEach(function(b){
     var p = iso(b.u, b.lane - b.u), bob = Math.sin(elapsed*1.6 + b.lane) * (b.kind === 'tug' ? 1.4 : .7);
     b.g.setAttribute('transform', 'translate('+p[0].toFixed(1)+','+(p[1]+bob).toFixed(1)+')' + (b.s < 0 ? ' scale(-1,1)' : ''));

@@ -992,6 +992,103 @@ function buildSkyStuff(){
   }
 }
 
+/* ---------- 飛龍與史萊姆（立體）：位置讀 index.html 的 SLIMES／DRAGONS（平面 tick 在模擬），這裡只負責長相與姿勢 ---------- */
+function buildSlime3(s){
+  var g = new T3.Group(), b = new T3.Group(); g.add(b);
+  var prof = [[0, 0], [.15, 0], [.175, .035], [.17, .09], [.14, .155], [.085, .205], [0, .225]].map(function(p){ return new T3.Vector2(p[0], p[1]); });
+  var body = new T3.Mesh(new T3.LatheGeometry(prof, 22), std(s.c, {transparent:true, opacity:.9})); b.add(body);
+  var ink = new T3.Group(); ink.add(body); b.add(ink); inkAll(ink, .008);
+  var eyeM = std('#2a2230'), whiteM = new T3.MeshBasicMaterial({color:'#ffffff'}), blushM = new T3.MeshBasicMaterial({color:'#ff8fa3', transparent:true, opacity:.6});
+  var eyes = new T3.Group(); b.add(eyes);
+  [-1, 1].forEach(function(sd){
+    var e = new T3.Mesh(new T3.SphereGeometry(.022, 10, 8), eyeM); e.scale.set(.6, 1.35, 1); e.position.set(.142, .115, sd * .048); eyes.add(e);
+    var gl = new T3.Mesh(new T3.SphereGeometry(.008, 6, 4), whiteM); gl.position.set(.152, .128, sd * .044); eyes.add(gl);
+    var bl = new T3.Mesh(new T3.SphereGeometry(.02, 8, 6), blushM); bl.scale.set(.3, .5, 1); bl.position.set(.15, .075, sd * .085); b.add(bl);
+  });
+  var hl = new T3.Mesh(new T3.SphereGeometry(.03, 8, 6), new T3.MeshBasicMaterial({color:'#ffffff', transparent:true, opacity:.8}));
+  hl.scale.set(1, .6, 1.5); hl.position.set(.02, .19, -.06); b.add(hl);
+  body.castShadow = true;
+  g.scale.setScalar(s.size * 1.25);
+  g.userData = {b:b, eyes:eyes};
+  scene.add(g); return g;
+}
+function dragonWing(lk, side){
+  var sh = new T3.Shape();
+  sh.moveTo(0, 0); sh.lineTo(.16, .62); sh.lineTo(-.46, 1.12);
+  sh.quadraticCurveTo(-.34, .86, -.5, .66); sh.quadraticCurveTo(-.36, .46, -.46, .26); sh.quadraticCurveTo(-.24, .2, -.22, 0); sh.lineTo(0, 0);
+  var geo = new T3.ShapeGeometry(sh); geo.rotateX(Math.PI / 2);          // 形狀平面 (x,y) → 水平 (x,z)，翼展朝 +z
+  if (side < 0) geo.scale(1, 1, -1);
+  var m = new T3.Mesh(geo, std(lk.wing, {side:T3.DoubleSide})); m.castShadow = true; m.userData.noInk = true;
+  var bm = std(lk.wingDark), piv = new T3.Group(); piv.add(m);
+  [[-.46, 1.12], [-.5, .66], [-.46, .26]].forEach(function(t){                 // 翼骨：從手腕伸到每個翼尖
+    var a = new T3.Vector3(.16, 0, .62 * side), z = new T3.Vector3(t[0], 0, t[1] * side), len = a.distanceTo(z);
+    var bone = new T3.Mesh(new T3.CylinderGeometry(.012, .02, len, 5), bm); bone.userData.noInk = true;
+    bone.position.copy(a).add(z).multiplyScalar(.5); bone.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), z.clone().sub(a).normalize()); piv.add(bone);
+  });
+  var arm = new T3.Mesh(new T3.CylinderGeometry(.02, .03, .64, 6), bm); arm.userData.noInk = true;
+  arm.position.set(.08, 0, .31 * side); arm.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), new T3.Vector3(.16, 0, .62 * side).normalize()); piv.add(arm);
+  return piv;
+}
+function buildDragon3(D){
+  var lk = D.lk, g = new T3.Group(), body = new T3.Group(); g.add(body); g.rotation.order = 'YXZ';
+  var bm = std(lk.body), belly = std(lk.belly), horn = std(lk.horn);
+  var torso = new T3.Mesh(new T3.SphereGeometry(.26, 18, 12), bm); torso.scale.set(1.55, .78, .8); body.add(torso);
+  var bl = new T3.Mesh(new T3.SphereGeometry(.22, 16, 10), belly); bl.scale.set(1.5, .55, .7); bl.position.set(.04, -.08, 0); body.add(bl);
+  var neck = new T3.Mesh(new T3.CylinderGeometry(.075, .13, .5, 10), bm); neck.position.set(.46, .2, 0); neck.rotation.z = -.85; body.add(neck);
+  var head = new T3.Group(); head.position.set(.66, .4, 0); body.add(head);
+  var skull = new T3.Mesh(new T3.SphereGeometry(.12, 14, 10), bm); skull.scale.set(1.2, .85, .9); head.add(skull);
+  var snout = new T3.Mesh(new T3.BoxGeometry(.22, .09, .13), bm); snout.position.set(.15, -.03, 0); head.add(snout);
+  [-1, 1].forEach(function(sd){
+    var hn = new T3.Mesh(new T3.ConeGeometry(.028, .2, 6), horn); hn.position.set(-.08, .12, sd * .055); hn.rotation.z = .95; hn.rotation.x = sd * -.25; head.add(hn);
+    var ey = new T3.Mesh(new T3.SphereGeometry(.026, 8, 6), new T3.MeshBasicMaterial({color:'#ffd84a'})); ey.position.set(.05, .04, sd * .085); head.add(ey);
+    var leg = new T3.Mesh(new T3.CylinderGeometry(.03, .025, .2, 6), bm); leg.position.set(.18, -.2, sd * .1); leg.rotation.z = .9; body.add(leg);
+    var leg2 = leg.clone(); leg2.position.set(-.2, -.18, sd * .11); body.add(leg2);
+  });
+  for (var sp = 0; sp < 5; sp++){ var spk = new T3.Mesh(new T3.ConeGeometry(.03, .09, 5), horn); spk.position.set(-.3 + sp * .14, .21 - Math.abs(sp - 2) * .015, 0); body.add(spk); }
+  // 尾巴：一節接一節，擺動時會一路傳到尾端
+  var segs = [], parent = body, r0 = .12;
+  for (var i = 0; i < 6; i++){
+    var seg = new T3.Group(); seg.position.set(i ? -.2 : -.36, i ? 0 : -.02, 0); parent.add(seg);
+    var r1 = r0 * .78, piece = new T3.Mesh(new T3.CylinderGeometry(r1, r0, .22, 8), bm); piece.rotation.z = Math.PI / 2; piece.position.x = -.1; seg.add(piece);
+    if (i % 2){ var ts = new T3.Mesh(new T3.ConeGeometry(.022, .07, 5), horn); ts.position.set(-.1, r0 * .9, 0); seg.add(ts); }
+    segs.push(seg); parent = seg; r0 = r1;
+  }
+  var spade = new T3.Mesh(new T3.ConeGeometry(.09, .2, 4), std(lk.wingDark)); spade.rotation.z = Math.PI / 2; spade.scale.z = .3; spade.position.x = -.28; parent.add(spade);
+  inkAll(body, .012);
+  var wl = dragonWing(lk, 1), wr = dragonWing(lk, -1); wl.position.set(.06, .14, .1); wr.position.set(.06, .14, -.1); g.add(wl); g.add(wr);
+  var fire = new T3.Mesh(new T3.ConeGeometry(.1, .6, 10, 1, true), new T3.MeshBasicMaterial({color:'#ff8a2b', transparent:true, opacity:.85, blending:T3.AdditiveBlending, depthWrite:false, side:T3.DoubleSide}));
+  fire.rotation.z = Math.PI / 2; fire.position.set(.56, -.03, 0); fire.visible = false; head.add(fire);
+  var core = new T3.Mesh(new T3.ConeGeometry(.05, .36, 8, 1, true), new T3.MeshBasicMaterial({color:'#fff1a8', transparent:true, opacity:.9, blending:T3.AdditiveBlending, depthWrite:false, side:T3.DoubleSide}));
+  core.position.y = .1; fire.add(core);
+  shadowAll(g);
+  g.scale.setScalar(lk.size * 1.25);
+  g.userData = {wl:wl, wr:wr, segs:segs, fire:fire};
+  scene.add(g); return g;
+}
+function syncCreatures(){
+  if (typeof SLIMES === 'undefined' || !SLIMES.length) return;
+  if (!O.slimes){ O.slimes = SLIMES.map(buildSlime3); O.dragons = DRAGONS.map(buildDragon3); }
+  SLIMES.forEach(function(s, i){
+    var g = O.slimes[i], u = g.userData, sy = s.sq, sx = 1 + (1 - sy) * .9;
+    g.position.set(s.gx, standY(s.gx, s.gy) + s.h * .7, s.gy);
+    g.rotation.y = -s.ang;
+    u.b.scale.set(sx, sy, sx);
+    u.eyes.scale.y = ((tm + s.ph) % 4.3) < .13 ? .15 : 1;
+  });
+  DRAGONS.forEach(function(D, i){
+    var g = O.dragons[i], u = g.userData;
+    g.position.set(D.gx, LAND + D.y, D.gy);
+    g.rotation.y = -D.hd;
+    g.rotation.x = (D.sp > 0 ? -1 : 1) * .22;                       // 轉彎時身體往圓心傾
+    g.rotation.z = Math.sin(tm * .7 + D.ph) * .08;
+    var f = D.flap * .75 + .12;
+    u.wl.rotation.x = -f; u.wr.rotation.x = f;
+    u.segs.forEach(function(sg, k){ sg.rotation.y = Math.sin(tm * 2.1 + D.ph - k * .5) * .16; });
+    var fi = D.fire > 0 ? Math.sin(Math.PI * D.fire) : 0;
+    u.fire.visible = fi > .02; u.fire.scale.set(.4 + fi * .8, .4 + fi, .4 + fi * .8); u.fire.position.x = .3 + .3 * fi;
+  });
+}
+
 /* ---------- 景色主題：兩座島共用這段程式，外觀差異全部由檔案開頭的 THEME 決定 ----------
  * tropic（創業島）：熱帶潟湖——淺水翠綠漸層、海底珊瑚、白沙灘陽傘、彩虹、熱氣球、蝴蝶。
  * harbor（創作者小鎮）：港邊倉庫的黃金時刻——暖色薄霧、深青港灣與金色波光、街道串燈、煙囪炊煙、夜晚天燈與探照燈。 */
@@ -1814,6 +1911,7 @@ function frame(ts){
   else O.ring.visible = false;
   TOOLS.forEach(function(t){ O.blds[t.id].flag.visible = !!state.seen[t.id]; });
   syncAvatars(dt);
+  syncCreatures();
   camApply(dt);
   O.dome.position.copy(camera.position);
   fadeOccluders(dt);
