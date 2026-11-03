@@ -1012,57 +1012,108 @@ function buildSlime3(s){
   g.userData = {b:b, eyes:eyes};
   scene.add(g); return g;
 }
+// 卡通飛龍（立體）：大頭大眼、圓胖身體＋條紋肚皮、彎角＋耳鰭、兩段式蝙蝠翼（翼骨＋翼膜，外段會跟著捲）、9 節圓滾尾巴＋黑桃尾尖
+function dShape(pts){                                  // [[x,y], ['q',cx,cy,x,y], ...] → Shape
+  var sh = new T3.Shape(); sh.moveTo(pts[0][0], pts[0][1]);
+  for (var i = 1; i < pts.length; i++){ var p = pts[i]; if (p[0] === 'q') sh.quadraticCurveTo(p[1], p[2], p[3], p[4]); else sh.lineTo(p[0], p[1]); }
+  return sh;
+}
+function dFlat(sh, side, mat){                         // 形狀平面 (x,y) → 水平 (x,z)，翼展朝 side 那一側
+  var geo = new T3.ShapeGeometry(sh, 8); geo.rotateX(Math.PI / 2); if (side < 0) geo.scale(1, 1, -1);
+  var m = new T3.Mesh(geo, mat); m.castShadow = true; m.userData.noInk = true; return m;
+}
+function dBone(a, b, r0, r1, mat){                     // 從 a 到 b 的圓錐骨頭（有描邊）
+  var len = a.distanceTo(b), m = new T3.Mesh(new T3.CylinderGeometry(r1, r0, len, 7), mat);
+  m.position.copy(a).add(b).multiplyScalar(.5); m.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), b.clone().sub(a).normalize()); return m;
+}
 function dragonWing(lk, side){
-  var sh = new T3.Shape();
-  sh.moveTo(0, 0); sh.lineTo(.16, .62); sh.lineTo(-.46, 1.12);
-  sh.quadraticCurveTo(-.34, .86, -.5, .66); sh.quadraticCurveTo(-.36, .46, -.46, .26); sh.quadraticCurveTo(-.24, .2, -.22, 0); sh.lineTo(0, 0);
-  var geo = new T3.ShapeGeometry(sh); geo.rotateX(Math.PI / 2);          // 形狀平面 (x,y) → 水平 (x,z)，翼展朝 +z
-  if (side < 0) geo.scale(1, 1, -1);
-  var m = new T3.Mesh(geo, std(lk.wing, {side:T3.DoubleSide})); m.castShadow = true; m.userData.noInk = true;
-  var bm = std(lk.wingDark), piv = new T3.Group(); piv.add(m);
-  [[-.46, 1.12], [-.5, .66], [-.46, .26]].forEach(function(t){                 // 翼骨：從手腕伸到每個翼尖
-    var a = new T3.Vector3(.16, 0, .62 * side), z = new T3.Vector3(t[0], 0, t[1] * side), len = a.distanceTo(z);
-    var bone = new T3.Mesh(new T3.CylinderGeometry(.012, .02, len, 5), bm); bone.userData.noInk = true;
-    bone.position.copy(a).add(z).multiplyScalar(.5); bone.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), z.clone().sub(a).normalize()); piv.add(bone);
-  });
-  var arm = new T3.Mesh(new T3.CylinderGeometry(.02, .03, .64, 6), bm); arm.userData.noInk = true;
-  arm.position.set(.08, 0, .31 * side); arm.quaternion.setFromUnitVectors(new T3.Vector3(0, 1, 0), new T3.Vector3(.16, 0, .62 * side).normalize()); piv.add(arm);
+  var mem = std(lk.wing, {side:T3.DoubleSide}), bone = std(lk.wingDark), claw = std(lk.horn);
+  var V = function(x, z){ return new T3.Vector3(x, 0, z * side); };
+  var piv = new T3.Group(), outer = new T3.Group();
+  // 內段：肩膀→手肘，後緣兩道弧
+  piv.add(dFlat(dShape([[0, 0], [.14, .55], [-.34, .55], ['q', -.26, .36, -.4, .24], ['q', -.28, .12, -.32, 0], [0, 0]]), side, mem));
+  piv.add(dBone(V(0, 0), V(.14, .55), .045, .035, bone));
+  var elbow = new T3.Mesh(new T3.SphereGeometry(.04, 10, 8), bone); elbow.position.copy(V(.14, .55)); piv.add(elbow);
+  outer.position.copy(V(.14, .55)); piv.add(outer);
+  // 外段（以手肘為原點）：前臂→手腕，三根指骨撐開翼膜，指尖之間是扇貝形缺口
+  var W = [.06, .42], tips = [[-.22, .92], [-.5, .66], [-.56, .28]];
+  outer.add(dFlat(dShape([[0, 0], W, tips[0], ['q', -.27, .66, tips[1][0], tips[1][1]], ['q', -.42, .44, tips[2][0], tips[2][1]], ['q', -.42, .12, -.48, 0], [0, 0]]), side, mem));
+  outer.add(dBone(V(0, 0), V(W[0], W[1]), .035, .028, bone));
+  var wrist = new T3.Mesh(new T3.SphereGeometry(.032, 10, 8), bone); wrist.position.copy(V(W[0], W[1])); outer.add(wrist);
+  tips.forEach(function(t){ outer.add(dBone(V(W[0], W[1]), V(t[0], t[1]), .024, .008, bone)); });
+  var thumb = new T3.Mesh(new T3.ConeGeometry(.022, .09, 6), claw); thumb.position.copy(V(W[0] + .04, W[1] + .02)); thumb.rotation.z = -1.2; outer.add(thumb);
+  inkAll(piv, .01);
+  piv.userData.outer = outer;
   return piv;
 }
 function buildDragon3(D){
   var lk = D.lk, g = new T3.Group(), body = new T3.Group(); g.add(body); g.rotation.order = 'YXZ';
-  var bm = std(lk.body), belly = std(lk.belly), horn = std(lk.horn);
-  var torso = new T3.Mesh(new T3.SphereGeometry(.26, 18, 12), bm); torso.scale.set(1.55, .78, .8); body.add(torso);
-  var bl = new T3.Mesh(new T3.SphereGeometry(.22, 16, 10), belly); bl.scale.set(1.5, .55, .7); bl.position.set(.04, -.08, 0); body.add(bl);
-  var neck = new T3.Mesh(new T3.CylinderGeometry(.075, .13, .5, 10), bm); neck.position.set(.46, .2, 0); neck.rotation.z = -.85; body.add(neck);
-  var head = new T3.Group(); head.position.set(.66, .4, 0); body.add(head);
-  var skull = new T3.Mesh(new T3.SphereGeometry(.12, 14, 10), bm); skull.scale.set(1.2, .85, .9); head.add(skull);
-  var snout = new T3.Mesh(new T3.BoxGeometry(.22, .09, .13), bm); snout.position.set(.15, -.03, 0); head.add(snout);
-  [-1, 1].forEach(function(sd){
-    var hn = new T3.Mesh(new T3.ConeGeometry(.028, .2, 6), horn); hn.position.set(-.08, .12, sd * .055); hn.rotation.z = .95; hn.rotation.x = sd * -.25; head.add(hn);
-    var ey = new T3.Mesh(new T3.SphereGeometry(.026, 8, 6), new T3.MeshBasicMaterial({color:'#ffd84a'})); ey.position.set(.05, .04, sd * .085); head.add(ey);
-    var leg = new T3.Mesh(new T3.CylinderGeometry(.03, .025, .2, 6), bm); leg.position.set(.18, -.2, sd * .1); leg.rotation.z = .9; body.add(leg);
-    var leg2 = leg.clone(); leg2.position.set(-.2, -.18, sd * .11); body.add(leg2);
+  var bm = std(lk.body), belly = std(lk.belly), bellyLine = std(hexMix(lk.belly, lk.body, .45)), horn = std(lk.horn), fin = std(lk.wing, {side:T3.DoubleSide}), dark = std('#2a2230');
+  var white = new T3.MeshBasicMaterial({color:'#ffffff'});
+  function ball(r, x, y, z, sx, sy, sz, m, parent){ var o = new T3.Mesh(new T3.SphereGeometry(r, 18, 14), m || bm); o.position.set(x, y, z); o.scale.set(sx || 1, sy || 1, sz || 1); (parent || body).add(o); return o; }
+  // 身體：圓胖，肚皮一圈一圈的條紋
+  ball(.27, 0, 0, 0, 1.3, .95, .95);
+  ball(.24, .05, -.08, 0, 1.2, .8, .82, belly);
+  [-.14, -.03, .08, .18].forEach(function(x){
+    var k = Math.sqrt(Math.max(.05, 1 - Math.pow((x - .05) / .3, 2))), st = new T3.Mesh(new T3.TorusGeometry(.19 * k, .009, 5, 18, Math.PI), bellyLine);
+    st.rotation.set(Math.PI, Math.PI / 2, 0); st.position.set(x, -.075, 0); st.scale.set(1, .98, 1.05); st.userData.noInk = true; body.add(st);
   });
-  for (var sp = 0; sp < 5; sp++){ var spk = new T3.Mesh(new T3.ConeGeometry(.03, .09, 5), horn); spk.position.set(-.3 + sp * .14, .21 - Math.abs(sp - 2) * .015, 0); body.add(spk); }
-  // 尾巴：一節接一節，擺動時會一路傳到尾端
-  var segs = [], parent = body, r0 = .12;
-  for (var i = 0; i < 6; i++){
-    var seg = new T3.Group(); seg.position.set(i ? -.2 : -.36, i ? 0 : -.02, 0); parent.add(seg);
-    var r1 = r0 * .78, piece = new T3.Mesh(new T3.CylinderGeometry(r1, r0, .22, 8), bm); piece.rotation.z = Math.PI / 2; piece.position.x = -.1; seg.add(piece);
-    if (i % 2){ var ts = new T3.Mesh(new T3.ConeGeometry(.022, .07, 5), horn); ts.position.set(-.1, r0 * .9, 0); seg.add(ts); }
-    segs.push(seg); parent = seg; r0 = r1;
+  // 脖子：三顆球接到頭
+  [[.27, .13, .16], [.38, .24, .14], [.47, .33, .125]].forEach(function(p){ ball(p[2], p[0], p[1], 0); });
+  ball(.1, .38, .16, 0, 1, 1, .9, belly);
+  // 頭：大頭、圓鼻子、大眼睛、彎角、耳鰭
+  var head = new T3.Group(); head.position.set(.6, .44, 0); body.add(head);
+  ball(.2, 0, 0, 0, 1.08, .95, 1, bm, head);
+  ball(.14, .19, -.05, 0, 1.2, .75, .9, bm, head);
+  ball(.1, .2, -.1, 0, 1.15, .45, .8, belly, head);
+  var smile = new T3.Mesh(new T3.TorusGeometry(.07, .008, 6, 16, Math.PI * .8), dark); smile.position.set(.25, -.07, 0); smile.rotation.set(Math.PI / 2, 0, Math.PI * 1.1); smile.rotation.order = 'ZXY'; smile.userData.noInk = true; head.add(smile);
+  [-1, 1].forEach(function(sd){
+    var ns = ball(.016, .34, -.02, sd * .045, 1, 1, 1, dark, head); ns.userData.noInk = true;
+    var ew = ball(.07, .1, .06, sd * .115, .75, 1, .9, white, head);
+    var pu = ball(.042, .145, .06, sd * .135, .7, 1, .9, dark, head); pu.userData.noInk = true;
+    var gl = ball(.014, .17, .085, sd * .14, 1, 1, 1, white, head); gl.userData.noInk = true;
+    var brow = new T3.Mesh(new T3.CapsuleGeometry(.018, .07, 4, 8), bm); brow.position.set(.1, .135, sd * .1); brow.rotation.set(sd * .3, 0, 1.75); head.add(brow);
+    var h1 = new T3.Group(); h1.position.set(-.06, .14, sd * .08); h1.rotation.set(sd * -.35, 0, .85); head.add(h1);       // 彎角：兩節，越往後越細並往上翹
+    var hc = new T3.Mesh(new T3.CylinderGeometry(.026, .038, .14, 8), horn); hc.position.y = .07; h1.add(hc);
+    var h2 = new T3.Group(); h2.position.y = .14; h2.rotation.z = -.55; h1.add(h2);
+    var ht = new T3.Mesh(new T3.ConeGeometry(.026, .14, 8), horn); ht.position.y = .07; h2.add(ht);
+    var ear = dFlat(dShape([[0, 0], [-.16, .06], ['q', -.1, .1, -.17, .16], ['q', -.06, .14, 0, .06], [0, 0]]), sd, fin);     // 耳鰭
+    ear.position.set(-.1, .03, sd * .15); ear.rotation.x = sd * .5; head.add(ear);
+    var ch = ball(.03, .2, -.02, sd * .115, .4, .6, 1, new T3.MeshBasicMaterial({color:'#ff8fa3', transparent:true, opacity:.55}), head); ch.userData.noInk = true;
+    // 前腳（縮在胸前）＋後腳（往後伸）
+    ball(.06, .2, -.17, sd * .12);
+    body.add(dBone(new T3.Vector3(.2, -.17, sd * .12), new T3.Vector3(.3, -.25, sd * .1), .04, .03, bm));
+    for (var c = 0; c < 3; c++){ var cl = new T3.Mesh(new T3.ConeGeometry(.012, .04, 5), horn); cl.position.set(.32, -.27, sd * (.08 + c * .02)); cl.rotation.z = Math.PI * .75; body.add(cl); }
+    ball(.11, -.18, -.12, sd * .15, 1.2, 1, .9);
+    body.add(dBone(new T3.Vector3(-.2, -.17, sd * .15), new T3.Vector3(-.36, -.24, sd * .14), .05, .035, bm));
+    ball(.045, -.39, -.25, sd * .14, 1.5, .7, 1);
+    for (var c2 = 0; c2 < 3; c2++){ var cl2 = new T3.Mesh(new T3.ConeGeometry(.013, .045, 5), horn); cl2.position.set(-.45, -.26, sd * (.12 + c2 * .02)); cl2.rotation.z = Math.PI / 2; body.add(cl2); }
+  });
+  // 背刺：從頭頂一路到背
+  [[.48, .64, .05], [.41, .5, .05], [.31, .4, .055], [.16, .3, .06], [0, .29, .06], [-.16, .26, .055], [-.3, .2, .05]].forEach(function(p){
+    var s = new T3.Mesh(new T3.ConeGeometry(p[2] * .7, p[2] * 1.6, 6), std(lk.wingDark)); s.position.set(p[0], p[1], 0); s.rotation.z = .25; body.add(s);
+  });
+  // 尾巴：9 顆漸小的球一節套一節，靜止姿勢是往下再往上捲的 S 形；擺動在 syncCreatures
+  var segs = [], parent = body, r = .14;
+  for (var i = 0; i < 9; i++){
+    var seg = new T3.Group(); seg.position.set(i ? -r * 1.25 : -.33, i ? 0 : -.04, 0); seg.userData.rz = [.18, .12, .05, -.05, -.12, -.16, -.2, -.22, -.2][i]; seg.rotation.z = seg.userData.rz; parent.add(seg);
+    var nr = r * .86; ball(nr, -nr * .6, 0, 0, 1.2, 1, 1, bm, seg);
+    if (i < 8 && i % 2 === 0){ var ts = new T3.Mesh(new T3.ConeGeometry(nr * .35, nr * .8, 5), std(lk.wingDark)); ts.position.set(-nr * .6, nr * .95, 0); ts.rotation.z = .3; seg.add(ts); }
+    segs.push(seg); parent = seg; r = nr;
   }
-  var spade = new T3.Mesh(new T3.ConeGeometry(.09, .2, 4), std(lk.wingDark)); spade.rotation.z = Math.PI / 2; spade.scale.z = .3; spade.position.x = -.28; parent.add(spade);
-  inkAll(body, .012);
-  var wl = dragonWing(lk, 1), wr = dragonWing(lk, -1); wl.position.set(.06, .14, .1); wr.position.set(.06, .14, -.1); g.add(wl); g.add(wr);
-  var fire = new T3.Mesh(new T3.ConeGeometry(.1, .6, 10, 1, true), new T3.MeshBasicMaterial({color:'#ff8a2b', transparent:true, opacity:.85, blending:T3.AdditiveBlending, depthWrite:false, side:T3.DoubleSide}));
-  fire.rotation.z = Math.PI / 2; fire.position.set(.56, -.03, 0); fire.visible = false; head.add(fire);
-  var core = new T3.Mesh(new T3.ConeGeometry(.05, .36, 8, 1, true), new T3.MeshBasicMaterial({color:'#fff1a8', transparent:true, opacity:.9, blending:T3.AdditiveBlending, depthWrite:false, side:T3.DoubleSide}));
-  core.position.y = .1; fire.add(core);
+  var sp = new T3.Mesh(new T3.ExtrudeGeometry(dShape([[0, 0], [-.1, .1], ['q', -.14, .04, -.24, 0], ['q', -.14, -.04, -.1, -.1], [0, 0]]), {depth:.025, bevelEnabled:true, bevelThickness:.012, bevelSize:.012, bevelSegments:2}), std(lk.wingDark));
+  sp.geometry.translate(0, 0, -.0125); sp.position.x = -r * 1.1; parent.add(sp);
+  inkAll(body, .011);
+  // 翅膀：肩膀在背上，比身體大很多
+  var wl = dragonWing(lk, 1), wr = dragonWing(lk, -1); wl.position.set(.08, .2, .12); wr.position.set(.08, .2, -.12); wl.scale.setScalar(1.3); wr.scale.setScalar(1.3); g.add(wl); g.add(wr);
+  // 噴火
+  var fire = new T3.Mesh(new T3.ConeGeometry(.12, .7, 12, 1, true), new T3.MeshBasicMaterial({color:'#ff7a2b', transparent:true, opacity:.85, blending:T3.AdditiveBlending, depthWrite:false, side:T3.DoubleSide}));
+  fire.rotation.z = Math.PI / 2; fire.position.set(.68, -.06, 0); fire.visible = false; head.add(fire);
+  var core = new T3.Mesh(new T3.ConeGeometry(.06, .42, 10, 1, true), new T3.MeshBasicMaterial({color:'#fff1a8', transparent:true, opacity:.9, blending:T3.AdditiveBlending, depthWrite:false, side:T3.DoubleSide}));
+  core.position.y = .12; fire.add(core);
   shadowAll(g);
-  g.scale.setScalar(lk.size * 1.25);
-  g.userData = {wl:wl, wr:wr, segs:segs, fire:fire};
+  g.scale.setScalar(lk.size * 1.55);
+  g.userData = {wl:wl, wr:wr, segs:segs, fire:fire, head:head};
   scene.add(g); return g;
 }
 function syncCreatures(){
@@ -1081,11 +1132,13 @@ function syncCreatures(){
     g.rotation.y = -D.hd;
     g.rotation.x = (D.sp > 0 ? -1 : 1) * .22;                       // 轉彎時身體往圓心傾
     g.rotation.z = Math.sin(tm * .7 + D.ph) * .08;
-    var f = D.flap * .75 + .12;
+    var f = D.flap * .7 + .15, fo = Math.sin(tm * 4.2 + D.ph - .7) * .45 + .05;     // 外段翼晚一點跟上，拍下時往下捲
     u.wl.rotation.x = -f; u.wr.rotation.x = f;
-    u.segs.forEach(function(sg, k){ sg.rotation.y = Math.sin(tm * 2.1 + D.ph - k * .5) * .16; });
+    u.wl.userData.outer.rotation.x = -fo; u.wr.userData.outer.rotation.x = fo;
+    u.segs.forEach(function(sg, k){ sg.rotation.y = Math.sin(tm * 2.1 + D.ph - k * .45) * .13; sg.rotation.z = sg.userData.rz + Math.sin(tm * 1.5 + D.ph - k * .4) * .05; });
+    u.head.rotation.z = Math.sin(tm * 1.1 + D.ph) * .08 - (D.fire > 0 ? .12 : 0);
     var fi = D.fire > 0 ? Math.sin(Math.PI * D.fire) : 0;
-    u.fire.visible = fi > .02; u.fire.scale.set(.4 + fi * .8, .4 + fi, .4 + fi * .8); u.fire.position.x = .3 + .3 * fi;
+    u.fire.visible = fi > .02; u.fire.scale.set(.4 + fi * .8, .4 + fi, .4 + fi * .8); u.fire.position.x = .4 + .32 * fi;
   });
 }
 

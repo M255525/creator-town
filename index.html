@@ -1807,42 +1807,66 @@ function buildCreatures2D(){
     el('ellipse', {cx:8, cy:-4.2, rx:1.2, ry:.7, fill:'#ff7f96', opacity:.55}, s.body);
     el('path', {d:'M2.8 -4.3 Q3.8 -3.1 4.8 -4.3', fill:'none', stroke:'#2a2230', 'stroke-width':.8, 'stroke-linecap':'round'}, s.body);
   });
-  DRAGONS.forEach(function(D){
-    var lk = D.lk;
-    D.shadow = el('ellipse', {cx:0, cy:0, rx:26, ry:9, fill:'rgba(20,48,61,.12)'}, L.dShadow);
+  DRAGONS.forEach(function(D, di){
+    var lk = D.lk, id = 'dg' + di + '_';
+    D.shadow = el('ellipse', {cx:0, cy:0, rx:30, ry:10, fill:'rgba(20,48,61,.13)'}, L.dShadow);
     D.g = el('g', {}, L.dragons);
+    // 漸層：身體用左上打光的放射漸層、翅膀用線性漸層，看起來有體積
+    var defs = el('defs', {}, D.g);
+    function rg(name, c){ var r = el('radialGradient', {id:id + name, cx:'.35', cy:'.3', r:'.75'}, defs);
+      el('stop', {offset:'0', 'stop-color':mix(c, '#ffffff', .45)}, r); el('stop', {offset:'.55', 'stop-color':c}, r); el('stop', {offset:'1', 'stop-color':mix(c, '#14303d', .35)}, r); }
+    function lg(name, c, c2){ var r = el('linearGradient', {id:id + name, x1:'0', y1:'1', x2:'.3', y2:'0'}, defs);
+      el('stop', {offset:'0', 'stop-color':c}, r); el('stop', {offset:'1', 'stop-color':c2}, r); }
+    rg('b', lk.body); rg('y', lk.belly);
+    lg('w', mix(lk.wing, '#ffffff', .25), mix(lk.wing, '#14303d', .15)); lg('f', mix(lk.wingDark, lk.wing, .4), lk.wingDark);
+    var B = 'url(#' + id + 'b)', Y = 'url(#' + id + 'y)';
     D.inner = el('g', {}, D.g);
-    var stroke = mix(lk.body, '#14303d', .55), sw = {stroke:stroke, 'stroke-width':1.1, 'stroke-linejoin':'round'};
-    function wing(parent, fill){
+    var stroke = mix(lk.body, '#14303d', .6), sw = {stroke:stroke, 'stroke-width':1.2, 'stroke-linejoin':'round', 'stroke-linecap':'round'};
+    function wing(parent, fill, boneC){
       var w = el('g', {}, parent);
-      el('path', Object.assign({d:'M0 0 L5 -28 L-36 -36 Q-27 -28 -31 -19 Q-23 -15 -23 -7 Q-12 -6 0 0 Z', fill:fill}, sw), w);
-      ['M5 -28 L-36 -36', 'M5 -28 L-31 -19', 'M5 -28 L-23 -7'].forEach(function(d){ el('path', {d:d, fill:'none', stroke:stroke, 'stroke-width':1, opacity:.7}, w); });
-      el('path', {d:'M5 -28 L8 -31 L6 -27 Z', fill:lk.horn, stroke:stroke, 'stroke-width':.6}, w);
+      el('path', Object.assign({d:'M0 0 L4 -24 L-4 -38 L-40 -40 Q-31 -32 -36 -24 Q-27 -21 -29 -13 Q-19 -12 -17 -4 Q-8 -3 0 0 Z', fill:fill}, sw), w);
+      el('path', {d:'M4 -24 L-4 -38 M-4 -38 L-40 -40 M-4 -38 L-36 -24 M-4 -38 L-29 -13 M4 -24 L-17 -4', fill:'none', stroke:boneC, 'stroke-width':1.6, 'stroke-linecap':'round'}, w);
+      el('path', {d:'M0 0 L4 -24 L-4 -38', fill:'none', stroke:boneC, 'stroke-width':2.6, 'stroke-linecap':'round', 'stroke-linejoin':'round'}, w);
+      el('path', {d:'M-4 -38 L-1 -43 L0 -37 Z', fill:lk.horn, stroke:stroke, 'stroke-width':.6}, w);
       return w;
     }
-    D.farWing = wing(D.inner, lk.wingDark);
+    D.farWing = wing(D.inner, 'url(#' + id + 'f)', mix(lk.wingDark, '#14303d', .3));
+    // 尾巴：粗→細往後捲，尾端黑桃
     D.tail = el('g', {}, D.inner);
-    el('path', Object.assign({d:'M-12 -3 C-26 -2 -38 -9 -54 -2 L-56 3 C-40 -3 -28 7 -12 6 Z', fill:lk.body}, sw), D.tail);
-    el('path', Object.assign({d:'M-54 -2 L-68 -7 L-62 1 L-67 9 L-56 3 Z', fill:lk.wingDark}, sw), D.tail);
-    [[-22, -3], [-32, -5], [-42, -6]].forEach(function(p){ el('path', {d:'M'+(p[0]-3)+' '+p[1]+' L'+p[0]+' '+(p[1]-5)+' L'+(p[0]+3)+' '+p[1]+' Z', fill:lk.horn, stroke:stroke, 'stroke-width':.6}, D.tail); });
-    el('path', Object.assign({d:'M-8 5 L-11 13 L-6 13 L-3 6 Z', fill:lk.body}, sw), D.inner);
-    el('path', Object.assign({d:'M10 -4 C18 -8 21 -18 27 -23 L33 -18 C27 -12 22 -2 14 5 Z', fill:lk.body}, sw), D.inner);
-    el('ellipse', Object.assign({cx:0, cy:0, rx:18, ry:9, fill:lk.body}, sw), D.inner);
-    el('path', {d:'M-13 4 Q0 10.5 15 3 Q14 7 6 8.4 Q-4 9.6 -13 4 Z', fill:lk.belly}, D.inner);
-    [[-10, -7.4], [-3, -8.8], [4, -8.6], [12, -9], [18, -14], [22, -19]].forEach(function(p){ el('path', {d:'M'+(p[0]-2.6)+' '+(p[1]+1)+' L'+p[0]+' '+(p[1]-4.4)+' L'+(p[0]+2.6)+' '+(p[1]+1)+' Z', fill:lk.horn, stroke:stroke, 'stroke-width':.6}, D.inner); });
-    el('path', Object.assign({d:'M7 5 L9 13 L14 13 L12 6 Z', fill:lk.body}, sw), D.inner);
-    el('path', Object.assign({d:'M27 -21 L20 -33 L31 -26 Z', fill:lk.horn}, sw), D.inner);
-    el('path', Object.assign({d:'M30 -24 L27 -37 L35 -26 Z', fill:lk.horn}, sw), D.inner);
-    el('path', Object.assign({d:'M25 -24 C31 -30 40 -29 47 -24 L48 -19.5 C42 -17.5 34 -16 29 -15.5 C25 -17 23.5 -21 25 -24 Z', fill:lk.body}, sw), D.inner);
-    el('path', {d:'M33 -18.2 Q40 -17.6 47.6 -19.6', fill:'none', stroke:stroke, 'stroke-width':.8}, D.inner);
-    el('circle', {cx:35, cy:-24, r:1.9, fill:'#ffd84a', stroke:stroke, 'stroke-width':.6}, D.inner);
-    el('ellipse', {cx:35.5, cy:-24, rx:.5, ry:1.4, fill:'#2a2230'}, D.inner);
-    el('circle', {cx:45.6, cy:-22.6, r:.6, fill:stroke}, D.inner);
-    D.fireG = el('g', {transform:'translate(48,-20)', opacity:0}, D.inner);
-    el('ellipse', {cx:14, cy:1, rx:16, ry:6, fill:'#ff6a2b', opacity:.85}, D.fireG);
-    el('ellipse', {cx:10, cy:.6, rx:10, ry:3.8, fill:'#ffb12b'}, D.fireG);
-    el('ellipse', {cx:6, cy:.3, rx:5, ry:2, fill:'#fff3b0'}, D.fireG);
-    D.nearWing = wing(D.inner, lk.wing);
+    el('path', Object.assign({d:'M-10 -6 C-26 -6 -36 4 -48 2 C-56 0 -60 -6 -64 -8 L-63 -3 C-58 0 -55 6 -48 8 C-34 11 -24 6 -10 7 Z', fill:B}, sw), D.tail);
+    el('path', Object.assign({d:'M-63 -6 L-75 -14 Q-72 -6 -78 -1 Q-70 -1 -64 -2 Z', fill:lk.wingDark}, sw), D.tail);
+    [[-24, -5.5], [-36, -2], [-48, -1.2]].forEach(function(p){ el('path', {d:'M'+(p[0]-3)+' '+p[1]+' L'+p[0]+' '+(p[1]-5)+' L'+(p[0]+3)+' '+p[1]+' Z', fill:lk.wingDark, stroke:stroke, 'stroke-width':.6}, D.tail); });
+    // 後腳
+    el('path', Object.assign({d:'M-12 4 C-18 6 -20 12 -24 15 L-18 16 C-14 13 -10 10 -6 8 Z', fill:B}, sw), D.inner);
+    // 身體＋條紋肚皮
+    el('ellipse', Object.assign({cx:0, cy:0, rx:18, ry:12.5, fill:B}, sw), D.inner);
+    el('path', Object.assign({d:'M-12 6 Q0 15 16 4 Q15 -1 11 1 Q0 6 -10 3 Z', fill:Y}, sw), D.inner);
+    ['M-6 5 Q-5 9 -4 11', 'M0 6 Q1 10 1.5 12', 'M6 5 Q7 9 7.5 10.5', 'M11 3.5 Q12 6.5 12.5 8'].forEach(function(d){ el('path', {d:d, fill:'none', stroke:mix(lk.belly, lk.body, .5), 'stroke-width':1, 'stroke-linecap':'round'}, D.inner); });
+    // 背刺
+    [[-12, -9], [-5, -11.5], [2, -12.2], [9, -11.5]].forEach(function(p){ el('path', {d:'M'+(p[0]-2.8)+' '+(p[1]+1.4)+' L'+p[0]+' '+(p[1]-4.6)+' L'+(p[0]+2.8)+' '+(p[1]+1.4)+' Z', fill:lk.wingDark, stroke:stroke, 'stroke-width':.6}, D.inner); });
+    // 前腳（縮在胸前）
+    el('path', Object.assign({d:'M10 6 C13 9 15 11 18 11 L18 7.5 C16 7 14 5 13 3 Z', fill:B}, sw), D.inner);
+    // 脖子＋頭
+    el('path', Object.assign({d:'M10 -7 C15 -12 17 -16 20 -20 L29 -14 C24 -9 20 -3 15 3 Z', fill:B}, sw), D.inner);
+    el('path', Object.assign({d:'M14 1 C17 -4 20 -8 24 -12 L26 -10 C22 -6 19 -1 16 3 Z', fill:Y, stroke:'none'}, {}), D.inner);
+    el('path', Object.assign({d:'M18 -26 Q11 -28 9 -36 Q15 -33 21 -30 Z', fill:lk.wing}, sw), D.inner);               // 耳鰭
+    el('path', Object.assign({d:'M21 -27 C19 -33 15 -37 10 -38 C16 -39 21 -35 24 -29 Z', fill:lk.horn}, sw), D.inner);  // 彎角
+    el('path', Object.assign({d:'M25 -28 C24 -34 22 -38 18 -41 C24 -41 28 -36 28 -29 Z', fill:lk.horn}, sw), D.inner);
+    el('circle', Object.assign({cx:25, cy:-20, r:11, fill:B}, sw), D.inner);
+    el('ellipse', Object.assign({cx:35.5, cy:-15.5, rx:9.5, ry:6.8, fill:B}, sw), D.inner);
+    el('ellipse', {cx:36, cy:-12.6, rx:7.5, ry:3.4, fill:Y}, D.inner);
+    el('path', {d:'M31 -12.8 Q36 -9.5 42 -12.5', fill:'none', stroke:stroke, 'stroke-width':1, 'stroke-linecap':'round'}, D.inner);
+    el('circle', {cx:42.3, cy:-17.6, r:.9, fill:stroke}, D.inner);
+    el('ellipse', {cx:27.5, cy:-22, rx:4.6, ry:5.4, fill:'#ffffff', stroke:stroke, 'stroke-width':.8}, D.inner);
+    el('ellipse', {cx:29, cy:-21.4, rx:2.7, ry:3.4, fill:'#2a2230'}, D.inner);
+    el('circle', {cx:30, cy:-23, r:1.1, fill:'#ffffff'}, D.inner);
+    el('path', {d:'M23 -28.5 Q27.5 -30.5 32 -27.8', fill:'none', stroke:stroke, 'stroke-width':1.3, 'stroke-linecap':'round'}, D.inner);
+    el('ellipse', {cx:31.5, cy:-14.5, rx:2.2, ry:1.2, fill:'#ff7f96', opacity:.5}, D.inner);
+    D.fireG = el('g', {transform:'translate(44,-14)', opacity:0}, D.inner);
+    el('ellipse', {cx:15, cy:1, rx:17, ry:6.5, fill:'#ff6a2b', opacity:.85}, D.fireG);
+    el('ellipse', {cx:11, cy:.6, rx:11, ry:4, fill:'#ffb12b'}, D.fireG);
+    el('ellipse', {cx:6, cy:.3, rx:5.5, ry:2.2, fill:'#fff3b0'}, D.fireG);
+    D.nearWing = wing(D.inner, 'url(#' + id + 'w)', lk.wingDark);
   });
 }
 function drawCreatures2D(){
@@ -1864,12 +1888,12 @@ function drawCreatures2D(){
     D.shadow.setAttribute('transform', 'translate(' + g0[0].toFixed(1) + ',' + g0[1].toFixed(1) + ') scale(' + sc + ')');
     D.g.setAttribute('transform', 'translate(' + g0[0].toFixed(1) + ',' + (g0[1] - D.y * 30).toFixed(1) + ') scale(' + (sc * D.face).toFixed(2) + ',' + sc + ') rotate(' + D.tilt.toFixed(1) + ')');
     var f = .25 + .75 * D.flap;
-    D.nearWing.setAttribute('transform', 'translate(2,-6) scale(1,' + f.toFixed(3) + ')');
-    D.farWing.setAttribute('transform', 'translate(7,-8) scale(.92,' + (f * .9 + .05).toFixed(3) + ')');
+    D.nearWing.setAttribute('transform', 'translate(2,-9) scale(1,' + f.toFixed(3) + ')');
+    D.farWing.setAttribute('transform', 'translate(8,-12) scale(.92,' + (f * .9 + .05).toFixed(3) + ')');
     D.tail.setAttribute('transform', 'rotate(' + (Math.sin(elapsed * 2.1 + D.ph) * 7).toFixed(1) + ' -12 1)');
     var fi = D.fire > 0 ? Math.sin(Math.PI * D.fire) : 0;
     D.fireG.setAttribute('opacity', fi.toFixed(2));
-    D.fireG.setAttribute('transform', 'translate(48,-20) scale(' + (.3 + fi * .8).toFixed(2) + ',' + (.5 + fi * .5).toFixed(2) + ')');
+    D.fireG.setAttribute('transform', 'translate(44,-14) scale(' + (.3 + fi * .8).toFixed(2) + ',' + (.5 + fi * .5).toFixed(2) + ')');
   });
 }
 var lastFrame = 0, elapsed = 0;
