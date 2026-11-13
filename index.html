@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>創作者小鎮 · 走進港邊倉庫，把靈感做成作品</title>
-<meta name="description" content="把 27 個 AI 內容創作工具放進一座港邊倉庫小鎮：手繪動畫風的紅瓦灰泥倉庫、貨櫃屋、運河、鐵道與碼頭，靈感草坪、提示詞看台、影音片場、插畫碼頭等九個地點、作品接力線、創作者的一天與兩年創作之路時間軸。">
+<meta name="description" content="把 28 個 AI 內容創作工具放進一座港邊倉庫小鎮：手繪動畫風的紅瓦灰泥倉庫、貨櫃屋、運河、鐵道與碼頭，靈感草坪、提示詞看台、影音片場、插畫碼頭等九個地點、作品接力線、創作者的一天與兩年創作之路時間軸。">
 <meta name="theme-color" content="#16566f">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -604,7 +604,7 @@ body.view-time .talk-card{bottom:216px}
 var ZONES = [
   {id:'idea',     name:'靈感草坪', en:'INSPIRATION LAWN', color:'#f4b942', ground:'var(--park)', label:[-1.6,12.9,0], desc:'倉庫之間的大草坪與貨櫃咖啡屋：躺在草地上，把一個念頭展開成很多種內容角度。'},
   {id:'strategy', name:'提示詞看台', en:'PROMPT STEPS',   color:'#9d8cf2', ground:null, label:[6.4,4.3,13],          desc:'坐上階梯看台把話說清楚：寫出 AI 聽得懂的提示詞，再整理成可以重複用的技能。'},
-  {id:'school',   name:'創作學院', en:'CREATOR ACADEMY',  color:'#6672e0', ground:'var(--yard)', extra:[7.15,-.35,11.85,2.95], desc:'舊倉庫改建的教室與露天舞台：用卡牌遊戲練提示詞框架，課堂練習也在這裡查。'},
+  {id:'school',   name:'創作學院', en:'CREATOR ACADEMY',  color:'#6672e0', ground:'var(--yard)', extra:[7.15,-.35,11.85,2.95], desc:'舊倉庫改建的教室與露天舞台：用卡牌遊戲練提示詞框架、用模擬遊戲當一年小編，課堂練習也在這裡查。'},
   {id:'calc',     name:'影音片場', en:'STUDIO LOT',       color:'#2ec4b6', ground:'var(--paving)', extra:[12.45,1.75,17.15,5.15], desc:'挑高的鐵皮倉庫改成攝影棚：影片提示詞、配音合成、剪輯上字幕。'},
   {id:'fund',     name:'聲音廣場', en:'SOUND PLAZA',      color:'#f08a4b', ground:'var(--paving)', extra:[15.4,10.7,16.6,11.9], desc:'紅瓦倉庫圍起的廣場：旁白配音和配樂都在這裡做。'},
   {id:'brand',    name:'社群大街', en:'SOCIAL AVENUE',    color:'#ef6b8a', ground:'var(--paving)', desc:'灰泥店面一字排開：規劃方向、排內容檔期、寫貼文、發文前健診。'},
@@ -639,6 +639,8 @@ var TOOLS = [
    role:'卡牌配對遊戲，練熟 CO-STAR 提示詞框架。', input:'不需準備', output:'提示詞結構手感'},
   {id:'practice-submission-lookup', zone:'school', short:'練習存摺', name:'課堂練習存摺', hour:[21,22], month:[0,12],
    role:'輸入學號，查自己在課堂上交過哪些練習。', input:'學號', output:'練習紀錄'},
+  {id:'social-editor-sim', zone:'school', short:'小編經營記', name:'小編經營記（社群經營模擬）', hour:[20,22], month:[0,3],
+   role:'先在遊戲裡當一年小編：選平台、定語氣、排內容、控預算、撐體力，應付演算法改版與炎上，每一關都連到小鎮上的真實工具。', input:'不需準備', output:'KPI 評等與經營心得'},
 
   {id:'ai-video-prompt-studio', zone:'calc', short:'短影片提示詞', name:'AI 短影片提示詞產生器', lic:true, hour:[13,15], month:[8,15],
    role:'替 Sora、Veo、Runway、Kling 各寫一份影片生成提示詞。', input:'影片構想', output:'影片提示詞'},
@@ -701,6 +703,7 @@ var LINKS = [
   {id:'c16', name:'講稿 → 簡報',        chain:['text-organizer-studio','slide-style-yaml-studio'], desc:'整理好的講稿，套上簡報風格。'},
   {id:'c17', name:'練習 → 存摺',        star:['practice-submission-lookup','crispe-game','costar-game'], desc:'課堂練習做完，到存摺查有沒有記錄到。'},
   {id:'c18', name:'內容工作流一條龍',   star:['content-workflow-studio-cf','SocialPost','social-post-grader'], desc:'工作流把貼文產生與健診串成一條線，每天自己跑。'},
+  {id:'c20', name:'模擬當小編 → 內容規劃 → 寫貼文', chain:['social-editor-sim','coffee-ig-planner','SocialPost'], desc:'先在遊戲裡經營一年粉專，知道自己適合什麼平台和內容，再用真的工具排內容、寫貼文。'},
   {id:'c19', name:'自製節點 → 工作流',  chain:['node-pack-designer-cf','content-workflow-studio-cf'], desc:'設計好的節點補充包，裝進內容工作流就能用。'}
 ];
 
@@ -855,7 +858,7 @@ var WATERS = [{at:[.9,9.9], r:.75}, {at:[16.0,11.3], r:.5}];          // 公園�
 var POS = {
   'mandala-thinking':[-.6,8.0], 'scamper-thinking-generator':[1.1,7.9], 'six-thinking-hats-generator':[2.6,8.6], 'innovation-matrix-studio':[2.5,10.6],
   'mentors-panel':[3.0,3.0], 'ai-prompt-generator':[4.6,3.0], 'prompt-console':[3.0,4.6], 'skill-prompt-studio':[4.6,4.6],
-  'crispe-game':[7.9,.4], 'costar-game':[9.4,.4], 'practice-submission-lookup':[7.9,2.2],
+  'crispe-game':[7.9,.4], 'costar-game':[9.4,.4], 'practice-submission-lookup':[7.9,2.2], 'social-editor-sim':[9.4,2.2],
   'ai-video-prompt-studio':[13.2,2.5], 'ai-video-studio-play':[14.9,2.5], 'video-editor':[16.4,2.5],
   'content-workflow-studio-cf':[10.9,7.6], 'node-pack-designer-cf':[12.3,7.4],
   'ai-voice-generator-play':[15.2,9.6], 'ai-music-prompt-studio':[16.9,9.6],
