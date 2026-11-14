@@ -1,5 +1,5 @@
 // 僅供「加入主畫面」安裝需求使用：network-first + 同源快取備援。
-const CACHE_NAME = 'creator-town-shell-v15';
+const CACHE_NAME = 'creator-town-shell-v16';
 const SHELL_FILES = [
   './',
   './index.html',
