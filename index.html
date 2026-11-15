@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>創作者小鎮 · 走進港邊倉庫，把靈感做成作品</title>
-<meta name="description" content="把 32 個 AI 內容創作工具放進一座港邊倉庫小鎮：手繪動畫風的紅瓦灰泥倉庫、貨櫃屋、運河、鐵道與碼頭，靈感草坪、提示詞看台、影音片場、插畫碼頭等九個地點、作品接力線、創作者的一天與兩年創作之路時間軸。">
+<meta name="description" content="把 33 個 AI 內容創作工具放進一座港邊倉庫小鎮：手繪動畫風的紅瓦灰泥倉庫、貨櫃屋、運河、鐵道與碼頭，靈感草坪、提示詞看台、影音片場、插畫碼頭等九個地點、作品接力線、創作者的一天與兩年創作之路時間軸。">
 <meta name="theme-color" content="#16566f">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -745,6 +745,8 @@ var TOOLS = [
   {id:'slide-style-yaml-studio', zone:'ops', short:'簡報風格', name:'簡報風格工坊', hour:[11,12], month:[4,18],
    role:'挑選或產生 NotebookLM 簡報風格 YAML，讓簡報一次換好造型。', input:'簡報主題、喜歡的風格', output:'簡報風格 YAML'},
 
+  {id:'ai-tool-navigator', zone:'hub', short:'AI 工具導航', name:'AI 工具導航', hour:[8,9], month:[0,24],
+   role:'不知道該用哪個工具時，說出想做的事，它從所有線上工具和常用 AI 服務中排出使用順序，像捷運路線一樣一站一站走。', input:'一句話：你想做什麼', output:'建議路線與要用的工具'},
   {id:'content-workflow-studio-cf', zone:'hub', short:'內容工作流', name:'內容工作流工作室', lic:true, hour:[20,22], month:[15,24],
    url:'https://content-workflow-studio-cf.content-workflow.workers.dev/',
    role:'把多個內容工具串成一條會自己跑的流程。', input:'主題', output:'整條流程的產出'},
@@ -777,6 +779,7 @@ var LINKS = [
   {id:'c22', name:'招牌聲音 → 片頭曲 → 影片片尾', chain:['sonic-logo-studio','ai-music-prompt-studio','video-editor'], desc:'先做一段 3～5 個音的品牌招牌聲音，再用音樂提示詞把它延伸成片頭曲，最後放進每支影片的片頭片尾。'},
   {id:'c23', name:'旁白 → 背景音 → 剪輯', chain:['ai-voice-generator-play','ambient-sound-mixer','video-editor'], desc:'先產生旁白配音，再混一段雨聲或咖啡廳的無縫循環背景音墊底，一起帶進編輯器剪輯。'},
   {id:'c24', name:'節慶題材 → 排檔期 → 寫貼文', chain:['taiwan-temple-festival-calendar','annual-marketing-calendar','SocialPost'], desc:'先在廟會月曆找到今年的遶境、蜂炮、中元祭日期，排進全年內容檔期，再寫成貼文。'},
+  {id:'c25', name:'不知道用哪個 → 問導航 → 拍短影片', chain:['ai-tool-navigator','ai-video-prompt-studio','ai-video-studio-play'], desc:'先在 AI 工具導航說出想做的事，照它排的路線走，例如做短影片就接影片提示詞與影音工坊。'},
   {id:'c21', name:'整理講義 → 印成桌遊 → 課堂練習', chain:['text-organizer-studio','printable-game-maker','practice-submission-lookup'], desc:'先把講義草稿整理好，挑出名詞和流程印成紙上桌遊在課堂玩，課後學生再到練習存摺查自己的繳交。'},
   {id:'c19', name:'自製節點 → 工作流',  chain:['node-pack-designer-cf','content-workflow-studio-cf'], desc:'設計好的節點補充包，裝進內容工作流就能用。'}
 ];
@@ -936,15 +939,16 @@ var POS = {
   'mentors-panel':[3.0,3.0], 'ai-prompt-generator':[4.6,3.0], 'prompt-console':[3.0,4.6], 'skill-prompt-studio':[4.6,4.6],
   'crispe-game':[7.9,.4], 'costar-game':[9.4,.4], 'practice-submission-lookup':[7.9,2.2], 'social-editor-sim':[9.4,2.2], 'printable-game-maker':[8.65,4.1],
   'ai-video-prompt-studio':[13.2,2.5], 'ai-video-studio-play':[14.9,2.5], 'video-editor':[16.4,2.5],
+  'ai-tool-navigator':[12.3,11.4],
   'content-workflow-studio-cf':[10.9,7.6], 'node-pack-designer-cf':[12.3,7.4],
   'ai-voice-generator-play':[15.2,9.6], 'ai-music-prompt-studio':[16.9,9.6], 'sonic-logo-studio':[14.7,11.6], 'ambient-sound-mixer':[17.4,11.4],
   'coffee-ig-planner':[6.1,12.4], 'annual-marketing-calendar':[8.5,12.4], 'SocialPost':[6.1,14.6], 'social-post-grader':[8.5,14.6], 'taiwan-temple-festival-calendar':[7.3,16.2],
   'ai-image-prompt-studio':[11.0,16.0], 'comic-prompt-studio':[12.6,16.0], 'line-sticker-studio':[11.0,17.7],
   'text-organizer-studio':[1.9,13.4], 'slide-style-yaml-studio':[3.4,13.4]
 };
-var FREE = {};
+var FREE = {'ai-tool-navigator':true};                                 // 不併入發布塔地塊（雅典娜南邊的導航燈塔）
 var STYLE = {idea:'container', strategy:'brick', school:'brick', calc:'warehouse', fund:'brick', brand:'shop', ecom:'container', ops:'brick', hub:'office'};
-var SPECIAL = {'mentors-panel':'observatory', 'content-workflow-studio-cf':'spire', 'node-pack-designer-cf':'warehouse'};
+var SPECIAL = {'mentors-panel':'observatory', 'ai-tool-navigator':'lighthouse', 'content-workflow-studio-cf':'spire', 'node-pack-designer-cf':'warehouse'};
 var SHAPE = {   // s 足跡半寬、h 牆高、roof 屋頂高（px）
   pavilion:{s:.36, h:14, roof:14}, house:{s:.4, h:16, roof:12}, warehouse:{s:.55, h:20, roof:12}, school:{s:.55, h:30, roof:0},
   civic:{s:.55, h:30, roof:0}, shop:{s:.42, h:22, roof:0}, tower:{s:.42, h:46, roof:0}, office:{s:.46, h:28, roof:0},
@@ -3369,6 +3373,7 @@ function merlinFlagText(){
  * 規則式：只用本頁的 TOOLS／ZONES／LINKS 回答，不連 AI、問題不會送到任何地方。
  * 判斷順序：打招呼 → 自我介紹 → 鎮上怎麼玩 → 序號 → 工具總覽 → 點名工具（功能／位置／前後一步）→ 場地 → 從哪開始 → 隨機 → 主題關鍵字打分 → 答不出來 */
 var M_ALIAS = {
+  'ai-tool-navigator':['導航', '工具導航', '用哪個', '哪個工具', '推薦工具', '工具推薦', '該用什麼', '不知道用什麼'],
   'mandala-thinking':['曼陀羅思考', '九宮格'], 'scamper-thinking-generator':['scamper', '奔馳法'], 'six-thinking-hats-generator':['思考帽', '六帽'], 'innovation-matrix-studio':['打版', '創新矩陣'],
   'ai-prompt-generator':['提示詞產生', '寫提示詞'], 'prompt-console':['crispe控制台', '控制台'], 'skill-prompt-studio':['技能', 'skill', 'gpts', 'gem', '逆向'], 'mentors-panel':['顧問團', '人物顧問'],
   'crispe-game':['crispe'], 'costar-game':['costar', 'co-star'], 'practice-submission-lookup':['練習存摺', '繳交', '作業'], 'social-editor-sim':['小編', '社群模擬', '經營模擬'], 'printable-game-maker':['桌遊', '列印', '賓果', '骰子', '教材'],
