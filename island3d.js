@@ -774,62 +774,122 @@ function farLabel(text, y){
   d.addEventListener('click', function(e){ e.stopPropagation(); farGoClick(); }); d.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   labRoot.appendChild(d); O.zoneTags.push({el:d, x:FAR.at[0], z:FAR.at[1], y:LAND + y});
 }
-function flatM(c){ return new T3.MeshBasicMaterial({color:c}); }   // 完全不受光：眼白、瞳孔、嘴（梅林用；小鎮沒有紙紋材質）
-// 智者梅林（立體）：紫色星星長袍、尖帽、白鬍子、手杖頂端發光水晶；會轉身面向你，點他就開問答（index.html openMerlin）
+function flatM(c){ return new T3.MeshBasicMaterial({color:c}); }   // 完全不受光：眼白、瞳孔、嘴（雅典娜用；小鎮沒有紙紋材質）
+// 智慧女神雅典娜（立體）：修長的高腰象牙白長裙（車床曲線）＋上層短摺、青綠披風隨風擺、金項鍊與臂環；
+// 俐落的層次短髮＋旁分瀏海、大眼睛長睫毛、甜甜的笑；往後推的金戰盔＋紅色馬鬃盔冠、左肩貓頭鷹（轉頭眨眼）、左手橄欖枝、右手金矛矛尖發光；
+// 會轉身面向你，點她就開問答（index.html openMerlin）。內部仍沿用 merlin 這組變數／函式名稱（和創業島同一套行為程式），只換外型與文案。
 function buildMerlin(){
   var x0 = MERLIN_AT[0], z0 = MERLIN_AT[1], g = new T3.Group(); g.position.set(x0, landY(x0, z0) - .01, z0); scene.add(g);
   var body = new T3.Group(); g.add(body);
-  var robe = std('#5b3fc4'), robe2 = std('#4a32a8'), gold = std('#f7c948', {emissive:'#f7c948', emissiveIntensity:.18}), skin = std('#f6d2b8'), beardM = std('#fbfaff'), wood = std('#8a5a2b');
-  mesh(new T3.CylinderGeometry(.13, .27, .56, 24), robe, 0, .28, 0, body);                          // 長袍
-  mesh(new T3.TorusGeometry(.268, .022, 8, 32), gold, 0, .025, 0, body).rotation.x = Math.PI / 2;     // 下擺金邊
-  mesh(new T3.CylinderGeometry(.188, .192, .045, 24), gold, 0, .36, 0, body);                        // 腰帶
-  for (var i = 0; i < 9; i++){                                                                     // 袍子上的小星星
-    var a = i * 2.4 + .3, y = .08 + (i % 3) * .1 + (i * .013), r = .27 - .14 * (y / .56) + .006;
-    var st = mesh(new T3.OctahedronGeometry(.024, 0), gold, Math.sin(a) * r, y, Math.cos(a) * r, body); st.userData.noInk = true;
+  var ivory = std('#fbf6e9'), ivory2 = std('#e6d9b8'), teal = std('#2b8a7e'), gold = std('#e8b23a', {emissive:'#e8b23a', emissiveIntensity:.2}), skin = std('#f8dcc6'), hair = std('#3a2620'), crestM = std('#c8453a'), shaftM = std('#b0822e'), leafM = std('#6f8f4a');
+  var V2 = function(a){ return a.map(function(q){ return new T3.Vector2(q[0], q[1]); }); };
+  mesh(new T3.LatheGeometry(V2([[0, 0], [.235, 0], [.228, .035], [.19, .14], [.145, .26], [.104, .37], [.084, .44], [.092, .5], [.1, .54], [.075, .585], [0, .595]]), 36), ivory, 0, 0, 0, body);   // 修長高腰長裙
+  mesh(new T3.LatheGeometry(V2([[.082, .44], [.1, .35], [.138, .312], [.146, .325], [.116, .4], [.086, .455]]), 36), ivory, 0, 0, 0, body);   // 上層短摺
+  mesh(new T3.TorusGeometry(.142, .007, 6, 36), gold, 0, .318, 0, body).rotation.x = Math.PI / 2;
+  for (var i = 0; i < 12; i++){                                                                     // 裙褶（貼著裙面）
+    var a = i / 12 * Math.PI * 2, pl = mesh(new T3.CylinderGeometry(.005, .009, .27, 5), ivory2, Math.sin(a) * .188, .155, Math.cos(a) * .188, body);
+    pl.rotation.x = -Math.cos(a) * .34; pl.rotation.z = Math.sin(a) * .34; pl.userData.noInk = true;
   }
-  [-1, 1].forEach(function(s){                                                                     // 袖子＋手
-    var sl = mesh(new T3.CylinderGeometry(.05, .085, .27, 12), robe2, s * .17, .42, .05, body); sl.rotation.z = s * .55; sl.rotation.x = -.35;
-    mesh(new T3.SphereGeometry(.045, 12, 10), skin, s * .245, .33, .12, body);
-  });
-  mesh(new T3.SphereGeometry(.12, 22, 18), skin, 0, .67, 0, body);                                   // 頭
-  var beard = mesh(new T3.ConeGeometry(.105, .34, 18), beardM, 0, .5, .07, body); beard.rotation.x = Math.PI + .25;   // 長白鬍子
-  mesh(new T3.SphereGeometry(.07, 14, 10), beardM, 0, .62, .085, body).scale.set(1.4, .55, .8);       // 八字鬍
-  mesh(new T3.SphereGeometry(.028, 10, 8), std('#eab49a'), 0, .665, .118, body);                     // 鼻子
+  mesh(new T3.TorusGeometry(.232, .016, 8, 36), gold, 0, .02, 0, body).rotation.x = Math.PI / 2;      // 金邊下擺
+  mesh(new T3.TorusGeometry(.088, .013, 8, 28), gold, 0, .445, 0, body).rotation.x = Math.PI / 2;     // 高腰金腰帶
+  var sash = mesh(new T3.BoxGeometry(.035, .2, .018), teal, -.01, .51, .088, body); sash.rotation.z = .85; sash.rotation.x = -.12;   // 斜披帶
+  var cape = new T3.Group(); cape.position.set(0, .575, -.07); body.add(cape);                       // 背後披風（從肩膀垂下，會隨風擺）
+  var capeM = mesh(new T3.CylinderGeometry(.11, .2, .56, 18, 1, true, Math.PI * .6, Math.PI * .8), teal, 0, -.28, -.02, cape); capeM.material = capeM.material.clone(); capeM.material.side = T3.DoubleSide;
+  [-1, 1].forEach(function(s){ var cl = mesh(new T3.SphereGeometry(.022, 10, 8), gold, s * .085, .565, .02, body); cl.userData.noInk = true; });   // 肩上金別針
+  mesh(new T3.CylinderGeometry(.028, .032, .08, 12), skin, 0, .615, 0, body);                       // 脖子
+  var neck = mesh(new T3.TorusGeometry(.04, .0075, 6, 22), gold, 0, .598, .006, body); neck.rotation.x = Math.PI / 2 - .25; neck.userData.noInk = true;   // 金項鍊
+  var pend = mesh(new T3.SphereGeometry(.011, 8, 6), gold, 0, .582, .045, body); pend.userData.noInk = true;
+  mesh(new T3.SphereGeometry(.094, 18, 12), ivory, 0, .55, 0, body).scale.set(1.18, .5, .78);        // 肩線
+  var armR = mesh(new T3.CylinderGeometry(.022, .026, .23, 10), skin, .13, .48, .055, body); armR.rotation.z = .62; armR.rotation.x = -.55;   // 右手（握矛）
+  var armL = mesh(new T3.CylinderGeometry(.022, .026, .21, 10), skin, -.115, .48, .05, body); armL.rotation.z = -.42; armL.rotation.x = -.75;   // 左手（拿橄欖枝）
+  [armR, armL].forEach(function(arm){ var ab = mesh(new T3.TorusGeometry(.027, .006, 6, 16), gold, 0, .05, 0, arm); ab.rotation.x = Math.PI / 2; ab.userData.noInk = true; });   // 金臂環
+  mesh(new T3.SphereGeometry(.028, 12, 10), skin, .205, .39, .13, body);
+  mesh(new T3.SphereGeometry(.027, 12, 10), skin, -.155, .405, .135, body);
+  var olive = new T3.Group(); olive.position.set(-.16, .41, .14); olive.rotation.set(-.4, 0, .55); body.add(olive);   // 橄欖枝
+  var twig = mesh(new T3.CylinderGeometry(.004, .006, .2, 5), std('#6b4b2a'), 0, .09, 0, olive); twig.userData.noInk = true;
+  for (var j = 0; j < 7; j++){
+    var side = j % 2 ? 1 : -1, lf = mesh(new T3.SphereGeometry(.02, 8, 6), leafM, side * .016, .04 + j * .022, 0, olive);
+    lf.scale.set(.45, 1.25, .22); lf.rotation.z = side * -.8; lf.userData.noInk = true;
+  }
+  var ov = mesh(new T3.SphereGeometry(.011, 8, 6), std('#4a5a2a'), .012, .1, .012, olive); ov.userData.noInk = true;
+  var HY = .7, HR = .106;
+  mesh(new T3.SphereGeometry(HR, 24, 18), skin, 0, HY, 0, body).scale.set(1, 1.04, .96);            // 頭（臉略小、下巴收）
+  function fz(x, y){ return Math.sqrt(Math.max(0, HR * HR - x * x - (y - HY) * (y - HY) / 1.08)) * .96 + .004; }
+  mesh(new T3.SphereGeometry(.116, 22, 16), hair, 0, .712, -.02, body).scale.set(1.07, 1, 1);         // 層次短髮：後腦
+  mesh(new T3.SphereGeometry(.09, 16, 12), hair, 0, .645, -.055, body).scale.set(1.15, .78, .85);      // 後頸髮尾
   [-1, 1].forEach(function(s){
-    var e = mesh(new T3.CapsuleGeometry(.011, .03, 4, 8), flatM('#3b2f3a'), s * .045, .7, .105, body); e.rotation.z = Math.PI / 2; e.userData.noInk = true;   // 瞇瞇眼
-    var br = mesh(new T3.CapsuleGeometry(.016, .05, 4, 8), beardM, s * .05, .735, .1, body); br.rotation.z = Math.PI / 2 + s * .25;                       // 白眉毛
+    var sd = mesh(new T3.SphereGeometry(.06, 14, 10), hair, s * .094, .658, -.005, body); sd.scale.set(.5, 1.2, 1); sd.rotation.z = s * .12;   // 兩側到下巴的髮尾
+    var tip = mesh(new T3.ConeGeometry(.024, .05, 8), hair, s * .088, .6, .03, body); tip.rotation.z = s * -.35; tip.rotation.x = .3;   // 往內收的髮尖
   });
-  var hat = new T3.Group(); hat.position.y = .76; body.add(hat);
-  mesh(new T3.CylinderGeometry(.215, .215, .028, 28), robe2, 0, 0, 0, hat);                         // 帽簷
-  var cone = mesh(new T3.ConeGeometry(.135, .46, 22), robe, 0, .23, -.02, hat); cone.rotation.x = -.22;
-  mesh(new T3.TorusGeometry(.128, .02, 8, 26), gold, 0, .035, 0, hat).rotation.x = Math.PI / 2;     // 帽帶
-  var hs = mesh(new T3.OctahedronGeometry(.04, 0), gold, 0, .17, .09, hat); hs.userData.noInk = true;
-  var staff = new T3.Group(); staff.position.set(.27, 0, .1); body.add(staff);                      // 手杖＋水晶
-  mesh(new T3.CylinderGeometry(.017, .022, 1.08, 8), wood, 0, .54, 0, staff);
-  mesh(new T3.TorusGeometry(.05, .014, 6, 14), wood, 0, 1.1, 0, staff);
-  var orb = mesh(new T3.SphereGeometry(.065, 18, 14), glow('#9fe8ff', .7, 2.2), 0, 1.15, 0, staff); orb.userData.noInk = true;
-  var halo = new T3.Sprite(new T3.SpriteMaterial({map:glowTex('rgba(190,240,255,.9)', 'rgba(150,120,255,0)'), transparent:true, depthWrite:false, blending:T3.AdditiveBlending}));
-  halo.scale.set(.42, .42, 1); halo.position.y = 1.15; halo.raycast = noPick; staff.add(halo);
-  g.scale.setScalar(1.15);
+  var bang = mesh(new T3.SphereGeometry(.1, 20, 12), hair, .018, .763, .052, body); bang.scale.set(1.08, .42, .62); bang.rotation.z = -.28;   // 旁分瀏海
+  var bang2 = mesh(new T3.SphereGeometry(.05, 12, 10), hair, -.06, .738, .07, body); bang2.scale.set(.75, .9, .45); bang2.rotation.z = .5;
+  var faceParts = [];
+  [-1, 1].forEach(function(s){
+    var ex = s * .038, ey = .693;
+    var e = mesh(new T3.CapsuleGeometry(.014, .02, 4, 10), flatM('#2a1d1a'), ex, ey, fz(ex, ey), body); e.rotation.z = s * .08; faceParts.push(e);   // 大眼睛
+    var hl = mesh(new T3.SphereGeometry(.0055, 6, 5), flatM('#ffffff'), ex + .005, ey + .008, fz(ex, ey) + .009, body); faceParts.push(hl);
+    var hl2 = mesh(new T3.SphereGeometry(.003, 6, 5), flatM('#ffffff'), ex - .004, ey - .007, fz(ex, ey) + .009, body); faceParts.push(hl2);
+    var lash = mesh(new T3.TorusGeometry(.019, .003, 4, 12, Math.PI * .8), flatM('#2a1d1a'), ex, ey + .004, fz(ex, ey + .004) + .002, body); lash.rotation.z = Math.PI * .1; faceParts.push(lash);   // 睫毛（眼尾微翹）
+    var flick = mesh(new T3.BoxGeometry(.01, .0035, .004), flatM('#2a1d1a'), ex + s * .02, ey + .017, fz(ex + s * .02, ey + .017) + .001, body); flick.rotation.z = s * .5; faceParts.push(flick);
+    var br = mesh(new T3.CapsuleGeometry(.0035, .026, 3, 6), flatM('#3a2620'), ex, ey + .045, fz(ex, ey + .045) + .002, body); br.rotation.z = Math.PI / 2 + s * .1; faceParts.push(br);   // 細眉
+    var bl = mesh(new T3.CircleGeometry(.016, 12), new T3.MeshBasicMaterial({color:'#f2a99a', transparent:true, opacity:.6}), s * .062, .664, fz(s * .062, .664) - .002, body); bl.rotation.y = s * .6; faceParts.push(bl);
+  });
+  var nose = mesh(new T3.SphereGeometry(.007, 8, 6), std('#efc3a8'), 0, .672, fz(0, .672), body); faceParts.push(nose);
+  var mouth = mesh(new T3.TorusGeometry(.017, .0035, 4, 12, Math.PI), flatM('#c0605a'), 0, .655, fz(0, .655) - .001, body); mouth.rotation.z = Math.PI; faceParts.push(mouth);   // 甜甜的笑
+  faceParts.forEach(function(m){ m.userData.noInk = true; m.raycast = noPick; });
+  var helm = new T3.Group(); helm.position.set(0, .755, -.025); helm.rotation.x = -.42; body.add(helm);   // 金戰盔（往後推、戴在短髮上，露出整張臉）
+  mesh(new T3.SphereGeometry(.112, 24, 14, 0, Math.PI * 2, 0, Math.PI * .5), gold, 0, 0, 0, helm);
+  mesh(new T3.TorusGeometry(.111, .012, 8, 30), gold, 0, .004, 0, helm).rotation.x = Math.PI / 2;
+  var visor = mesh(new T3.BoxGeometry(.13, .02, .03), gold, 0, .01, .1, helm); visor.rotation.x = .3;   // 推上去的面甲
+  var crest = new T3.Group(); crest.position.set(0, .092, -.01); helm.add(crest);                    // 紅色馬鬃盔冠（薄扇形＋往後飄的尾巴）
+  mesh(new T3.BoxGeometry(.026, .02, .2), gold, 0, .008, 0, crest);
+  var cr = mesh(new T3.CylinderGeometry(.13, .13, .036, 24, 1, false, 0, Math.PI), crestM, 0, .014, -.01, crest); cr.rotation.z = Math.PI / 2;
+  var tailC = mesh(new T3.ConeGeometry(.034, .22, 10), crestM, 0, -.04, -.16, crest); tailC.rotation.x = -2.3;
+  var owl = new T3.Group(); owl.position.set(-.135, .585, -.02); owl.scale.setScalar(.82); body.add(owl);   // 左肩上的貓頭鷹
+  var owlB = mesh(new T3.SphereGeometry(.065, 16, 12), std('#a77b4f'), 0, .06, 0, owl); owlB.scale.set(1, 1.2, .95);
+  mesh(new T3.SphereGeometry(.045, 14, 10), std('#ecd6ae'), 0, .05, .032, owl).scale.set(1, 1.15, .6);
+  [-1, 1].forEach(function(s){ var w = mesh(new T3.SphereGeometry(.04, 10, 8), std('#8a6238'), s * .058, .05, -.005, owl); w.scale.set(.45, 1.15, .9); });
+  var owlH = new T3.Group(); owlH.position.y = .135; owl.add(owlH);
+  mesh(new T3.SphereGeometry(.052, 16, 12), std('#a77b4f'), 0, 0, 0, owlH).scale.set(1.1, .92, 1);
+  var owlEyes = [];
+  [-1, 1].forEach(function(s){
+    var tuft = mesh(new T3.ConeGeometry(.016, .045, 6), std('#8a6238'), s * .034, .052, -.005, owlH); tuft.rotation.z = s * -.35;
+    var ew = mesh(new T3.SphereGeometry(.02, 10, 8), flatM('#fff6c8'), s * .022, .005, .042, owlH); ew.userData.noInk = true;
+    var ep = mesh(new T3.SphereGeometry(.011, 8, 6), flatM('#2a2230'), s * .022, .005, .059, owlH); ep.userData.noInk = true; owlEyes.push(ew, ep);
+  });
+  var beak = mesh(new T3.ConeGeometry(.011, .025, 6), std('#e79a3a'), 0, -.02, .055, owlH); beak.rotation.x = Math.PI / 2 + .5; beak.userData.noInk = true;
+  var staff = new T3.Group(); staff.position.set(.215, 0, .135); body.add(staff);                     // 金矛＋發光矛尖
+  mesh(new T3.CylinderGeometry(.012, .016, 1.14, 8), shaftM, 0, .57, 0, staff);
+  mesh(new T3.CylinderGeometry(.024, .019, .035, 10), gold, 0, 1.14, 0, staff);
+  var orb = mesh(new T3.OctahedronGeometry(.05, 0), glow('#ffe7a0', .6, 2), 0, 1.22, 0, staff); orb.scale.set(.72, 1.7, .4); orb.userData.noInk = true;
+  var ribbon = mesh(new T3.BoxGeometry(.01, .12, .04), teal, .018, 1.08, .025, staff); ribbon.rotation.z = -.3;
+  var halo = new T3.Sprite(new T3.SpriteMaterial({map:glowTex('rgba(255,236,170,.9)', 'rgba(232,178,58,0)'), transparent:true, depthWrite:false, blending:T3.AdditiveBlending}));
+  halo.scale.set(.4, .4, 1); halo.position.y = 1.22; halo.raycast = noPick; staff.add(halo);
+  g.scale.setScalar(1.18);
   inkAll(shadowAll(g), .01);
   g.traverse(function(m){ if (m.isMesh && !m.userData.ink){ m.userData.id = '__merlin'; O.pick.push(m); } });
-  var ring = mesh(new T3.RingGeometry(.36, .43, 40), new T3.MeshBasicMaterial({color:'#9b7bff', transparent:true, opacity:.75, depthWrite:false}), x0, landY(x0, z0) + .03, z0);   // 腳下脈動光圈
+  var ring = mesh(new T3.RingGeometry(.36, .43, 40), new T3.MeshBasicMaterial({color:'#e8b23a', transparent:true, opacity:.75, depthWrite:false}), x0, landY(x0, z0) + .03, z0);   // 腳下脈動金色光圈
   ring.rotation.x = -Math.PI / 2; ring.raycast = noPick; scene.add(ring);
   O.merlin = {g:g};
+  var blinkAt = 2;
   O.anim.push(function(tm, dt){                                   // 位置由 index.html 的 merlinMove() 模擬，這裡只負責畫
     var gy0 = standY(merlin.gx, merlin.gy) - .01;
     g.position.set(merlin.gx, gy0, merlin.gy); ring.position.set(merlin.gx, gy0 + .04, merlin.gy);
     var want = merlin.moving ? Math.atan2(merlin.dirX, merlin.dirY) : Math.atan2(walker.gx - merlin.gx, walker.gy - merlin.gy), d = want - g.rotation.y;
     d = Math.atan2(Math.sin(d), Math.cos(d)); g.rotation.y += d * Math.min(1, (dt || .016) * (merlin.moving ? 6 : 3));
-    if (merlin.moving){ body.position.y = Math.abs(Math.sin(merlin.phase)) * .045; body.rotation.z = Math.sin(merlin.phase) * .06; staff.rotation.x = Math.sin(merlin.phase) * .15; }
-    else { body.position.y = Math.sin(tm * 1.6) * .012; body.rotation.z = Math.sin(tm * .8) * .025; staff.rotation.x *= .9; }
-    orb.scale.setScalar(1 + Math.sin(tm * 3) * .12); halo.material.opacity = .6 + Math.sin(tm * 3) * .3;
-    hs.rotation.y = tm * 2;
+    if (merlin.moving){ body.position.y = Math.abs(Math.sin(merlin.phase)) * .035; body.rotation.z = Math.sin(merlin.phase) * .035; staff.rotation.x = Math.sin(merlin.phase) * .1; cape.rotation.x = .18 + Math.abs(Math.sin(merlin.phase)) * .14; }
+    else { body.position.y = Math.sin(tm * 1.6) * .01; body.rotation.z = Math.sin(tm * .8) * .015; staff.rotation.x *= .9; cape.rotation.x = .06 + Math.sin(tm * 1.3) * .035; }
+    cape.rotation.z = Math.sin(tm * 1.1) * .03;
+    crest.rotation.x = Math.sin(tm * 2.1) * .04; olive.rotation.y = Math.sin(tm * 1.7) * .15;
+    owlH.rotation.y = Math.sin(tm * .7) * .9 + Math.sin(tm * 2.3) * .15;                             // 貓頭鷹東張西望
+    blinkAt -= (dt || .016); var shut = blinkAt < 0 && blinkAt > -.14; if (blinkAt < -.14) blinkAt = 2 + Math.random() * 3;
+    owlEyes.forEach(function(m){ m.scale.y = shut ? .15 : 1; });
+    orb.rotation.y = tm * 1.5; halo.material.opacity = .55 + Math.sin(tm * 3) * .3;
     var k = 1 + (Math.sin(tm * 3.2) * .5 + .5) * .22; ring.scale.set(k, k, 1); ring.material.opacity = .85 - (k - 1) * 2.4;
   });
 }
 function buildZoneMarks(){
-  O.glows = O.glows || []; O.markSpots = [[MERLIN_AT[0], MERLIN_AT[1], .7]];   // 梅林的位置先占好，地標、樹、花都會讓開
+  O.glows = O.glows || []; O.markSpots = [[MERLIN_AT[0], MERLIN_AT[1], .7]];   // 雅典娜的位置先占好，地標、樹、花都會讓開
   var hub = zoneById.hub, gates = [];
   ZONES.forEach(function(z){
     if (z.id === 'hub') return;
@@ -1767,7 +1827,7 @@ function buildLabels(){
   var bd = document.createElement('button'); bd.type = 'button'; bd.className = 'tag3 board3'; bd.textContent = '📋 公布欄';   // 看板的醒目標籤
   bd.addEventListener('click', function(e){ e.stopPropagation(); openBoard(); }); bd.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   labRoot.appendChild(bd); O.zoneTags.push({el:bd, x:BOARD_AT[0], z:BOARD_AT[1], y:landY(BOARD_AT[0], BOARD_AT[1]) + 2.5});
-  var mt = document.createElement('button'); mt.type = 'button'; mt.className = 'tag3 merlin3'; mt.textContent = '🧙 智者梅林';   // 梅林的醒目標籤；走近時改成「點我發問」
+  var mt = document.createElement('button'); mt.type = 'button'; mt.className = 'tag3 merlin3'; mt.textContent = '🦉 智慧女神雅典娜';   // 雅典娜的醒目標籤；走近時改成「點我發問」
   mt.addEventListener('click', function(e){ e.stopPropagation(); openMerlin(); }); mt.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
   labRoot.appendChild(mt); O.merlinTagO = {el:mt, x:MERLIN_AT[0], z:MERLIN_AT[1], y:landY(MERLIN_AT[0], MERLIN_AT[1]) + 1.6}; O.zoneTags.push(O.merlinTagO); O.merlinTag = mt;
   var rv = document.createElement('div'); rv.className = 'zone3 decor'; rv.innerHTML = '<b>倉庫運河</b>'; labRoot.appendChild(rv);
@@ -1795,7 +1855,7 @@ function placeLabels(){
     put(o.el, o.b.t.gx, o.b.top + .15, o.b.t.gy, 13, 30, .55);
     o.el.classList.toggle('sel', state.sel === o.b.t.id); o.el.classList.toggle('dim', !!dim);
   });
-  if (O.merlinTagO){ var mo = O.merlinTagO; mo.x = merlin.gx; mo.z = merlin.gy; mo.y = standY(merlin.gx, merlin.gy) + 1.6; var mtx = merlinLabel(); if (O.merlinTag.textContent !== mtx) O.merlinTag.textContent = mtx; }   // 梅林會走動、會說話
+  if (O.merlinTagO){ var mo = O.merlinTagO; mo.x = merlin.gx; mo.z = merlin.gy; mo.y = standY(merlin.gx, merlin.gy) + 1.6; var mtx = merlinLabel(); if (O.merlinTag.textContent !== mtx) O.merlinTag.textContent = mtx; }   // 雅典娜會走動、會說話
   O.zoneTags.forEach(function(o){ put(o.el, o.x, o.y, o.z, 30, 60, .7); });
   var nowMs = Date.now();
   Object.keys(O.avs).forEach(function(id){
@@ -2207,11 +2267,11 @@ function drawMini(){
   x.fillStyle = '#ffd23f'; x.strokeStyle = INK; x.lineWidth = 2; roundRect(x, bp[0] - 30, bp[1] - 44 + bob, 60, 26, 12); x.fill(); x.stroke();
   x.beginPath(); x.moveTo(bp[0] - 5, bp[1] - 19 + bob); x.lineTo(bp[0], bp[1] - 11 + bob); x.lineTo(bp[0] + 5, bp[1] - 19 + bob); x.fill();
   x.fillStyle = INK; x.font = '700 15px "Noto Sans TC", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('📋 公布欄', bp[0], bp[1] - 31 + bob); x.textBaseline = 'alphabetic';
-  var mp = miniP(merlin.gx, merlin.gy);                                       // 梅林：紫色標籤
-  x.beginPath(); x.arc(mp[0], mp[1], 8 + Math.sin(now * 4 + 1) * 2, 0, Math.PI * 2); x.fillStyle = 'rgba(124,92,240,.5)'; x.fill();
-  x.fillStyle = '#6c4bd8'; x.strokeStyle = INK; x.lineWidth = 2; roundRect(x, mp[0] - 34, mp[1] - 44 - bob, 68, 26, 12); x.fill(); x.stroke();
+  var mp = miniP(merlin.gx, merlin.gy);                                       // 雅典娜：青綠標籤
+  x.beginPath(); x.arc(mp[0], mp[1], 8 + Math.sin(now * 4 + 1) * 2, 0, Math.PI * 2); x.fillStyle = 'rgba(232,178,58,.55)'; x.fill();
+  x.fillStyle = '#1d7a70'; x.strokeStyle = INK; x.lineWidth = 2; roundRect(x, mp[0] - 40, mp[1] - 44 - bob, 80, 26, 12); x.fill(); x.stroke();
   x.beginPath(); x.moveTo(mp[0] - 5, mp[1] - 19 - bob); x.lineTo(mp[0], mp[1] - 11 - bob); x.lineTo(mp[0] + 5, mp[1] - 19 - bob); x.fill();
-  x.fillStyle = '#ffffff'; x.font = '700 15px "Noto Sans TC", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('🧙 梅林', mp[0], mp[1] - 31 - bob); x.textBaseline = 'alphabetic';
+  x.fillStyle = '#ffffff'; x.font = '700 15px "Noto Sans TC", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('🦉 雅典娜', mp[0], mp[1] - 31 - bob); x.textBaseline = 'alphabetic';
   if (state.sel && toolById[state.sel]){ var t = toolById[state.sel], sp = miniP(t.gx, t.gy); x.beginPath(); x.arc(sp[0], sp[1], 11 + Math.sin(now * 5) * 2, 0, Math.PI * 2); x.strokeStyle = '#ff6f59'; x.lineWidth = 3; x.stroke(); }
   if (active && !cam.overview){                                   // 鏡頭看的方向（扇形）
     var me0 = miniP(walker.gx, walker.gy), fx = -Math.sin(cam.yaw), fz = -Math.cos(cam.yaw);

@@ -90,7 +90,7 @@ a{color:inherit}
 .board-flag{animation:bob 1.8s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translate(0,-74px)}50%{transform:translate(0,-79px)}}
 .paused .board .ring,.paused .board-flag{animation-play-state:paused}
-/* 智者梅林（平面）＋對話抽屜 */
+/* 智慧女神雅典娜（平面）＋對話抽屜 */
 .merlin{cursor:pointer}
 .merlin .hit{fill:transparent}
 .merlin:focus{outline:none}
@@ -100,41 +100,41 @@ a{color:inherit}
 .merlin .orb{animation:orb 2.2s ease-in-out infinite}
 @keyframes orb{50%{opacity:.35}}
 .paused .merlin .ring,.paused .merlin-flag,.paused .merlin .orb{animation-play-state:paused}
-.merlin:hover .merlin-flag rect,.merlin:focus .merlin-flag rect{fill:#7d5cf0}
-.toolbar button.tb-merlin{background:#6c4bd8;color:#fff;font-weight:700}
-.toolbar button.tb-merlin:hover,.toolbar button.tb-merlin[aria-pressed="true"]{background:#5536c0;color:#fff}
-.tag3.merlin3{background:#6c4bd8;color:#fff;border:2px solid #2a1b5e;font-size:14px;padding:4px 12px;box-shadow:0 0 0 4px rgba(124,92,240,.35),0 3px 10px rgba(12,48,64,.25)}
+.merlin:hover .merlin-flag rect,.merlin:focus .merlin-flag rect{fill:#2a9a8c}
+.toolbar button.tb-merlin{background:#1d7a70;color:#fff;font-weight:700}
+.toolbar button.tb-merlin:hover,.toolbar button.tb-merlin[aria-pressed="true"]{background:#155f57;color:#fff}
+.tag3.merlin3{background:#1d7a70;color:#fff;border:2px solid #183c3a;font-size:14px;padding:4px 12px;box-shadow:0 0 0 4px rgba(232,178,58,.35),0 3px 10px rgba(12,48,64,.25)}
 .merlin-drawer .body{flex:1;min-height:0}
 .m-intro{display:flex;gap:10px;align-items:flex-start;margin:4px 0 10px}
-.m-intro .m-face{flex:none;width:44px;height:44px;border-radius:50%;background:#ece6ff;display:grid;place-items:center;font-size:26px}
-.m-intro h2{font-family:var(--f-display);font-weight:400;font-size:21px;margin:0 0 2px;color:#5536c0}
+.m-intro .m-face{flex:none;width:44px;height:44px;border-radius:50%;background:#e3f3ef;display:grid;place-items:center;font-size:26px}
+.m-intro h2{font-family:var(--f-display);font-weight:400;font-size:21px;margin:0 0 2px;color:#155f57}
 .m-intro p{margin:0;font-size:12.5px;color:var(--ink-dim);line-height:1.6}
 .m-log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .m-log li{font-size:13.5px;line-height:1.7;padding:9px 12px;border-radius:14px;max-width:92%;overflow-wrap:anywhere}
-.m-log li.m-say{background:#f1ecff;border:1px solid #d9ccff;align-self:flex-start;border-top-left-radius:4px}
+.m-log li.m-say{background:#edf7f4;border:1px solid #bfe3da;align-self:flex-start;border-top-left-radius:4px}
 .m-log li.m-you{background:var(--panel-2);align-self:flex-end;border-top-right-radius:4px}
-.m-log li.m-wait{color:#7d6bb8;letter-spacing:3px}
+.m-log li.m-wait{color:#5d9a90;letter-spacing:3px}
 .m-cards{display:flex;flex-direction:column;gap:6px;margin-top:8px}
-.m-card{background:var(--panel);border:1px solid #d9ccff;border-radius:10px;padding:8px 10px}
+.m-card{background:var(--panel);border:1px solid #bfe3da;border-radius:10px;padding:8px 10px}
 .m-card b{display:block;font-size:13.5px}
 .m-card small{display:block;color:var(--ink-dim);font-size:12px;line-height:1.55;margin:2px 0 6px}
 .m-card .zone-chip{font-size:11px;padding:1px 8px;margin-bottom:4px}
 .m-card .m-acts{display:flex;gap:6px;flex-wrap:wrap}
-.m-card .m-acts a,.m-card .m-acts button{font-size:12px;border-radius:999px;padding:3px 10px;cursor:pointer;text-decoration:none;border:1px solid #6c4bd8}
-.m-card .m-acts button{background:#6c4bd8;color:#fff}
-.m-card .m-acts a{background:var(--panel);color:#5536c0}
+.m-card .m-acts a,.m-card .m-acts button{font-size:12px;border-radius:999px;padding:3px 10px;cursor:pointer;text-decoration:none;border:1px solid #1d7a70}
+.m-card .m-acts button{background:#1d7a70;color:#fff}
+.m-card .m-acts a{background:var(--panel);color:#155f57}
 .m-foot{padding:8px 16px 14px;border-top:1px solid var(--line)}
 .m-sugg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-.m-sugg button{border:1px solid #d9ccff;background:#f7f4ff;color:#4a33a8;border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer}
-.m-sugg button:hover{background:#ece6ff}
+.m-sugg button{border:1px solid #bfe3da;background:#f3faf8;color:#17665e;border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer}
+.m-sugg button:hover{background:#e3f3ef}
 .m-form{display:flex;gap:6px}
 .m-form input{flex:1;min-width:0;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;background:var(--panel);color:var(--ink)}
-.talk-card.merlin-card{bottom:132px;flex-wrap:wrap;max-width:min(520px,calc(100vw - 32px));box-shadow:0 0 0 3px rgba(124,92,240,.45),var(--shadow)}
+.talk-card.merlin-card{bottom:132px;flex-wrap:wrap;max-width:min(520px,calc(100vw - 32px));box-shadow:0 0 0 3px rgba(232,178,58,.45),var(--shadow)}
 .talk-card.merlin-card .msg{white-space:normal;overflow:visible;flex:1 1 260px;line-height:1.6}
 .merlin-card .acts{display:flex;gap:6px;margin-left:auto}
-.talk-card.merlin-card button.main{background:#6c4bd8;border-color:#6c4bd8;color:#fff}
+.talk-card.merlin-card button.main{background:#1d7a70;border-color:#1d7a70;color:#fff}
 body.view-time .talk-card.merlin-card{bottom:270px}
-.m-form button{border:0;background:#6c4bd8;color:#fff;border-radius:999px;padding:0 16px;font-weight:700;cursor:pointer}
+.m-form button{border:0;background:#1d7a70;color:#fff;border-radius:999px;padding:0 16px;font-weight:700;cursor:pointer}
 
 .board-lines{margin:0 0 12px;padding:12px 12px 12px 30px;background:var(--panel-2);border-radius:12px;font-size:14px;font-weight:500}
 .board-lines li{margin:3px 0}
@@ -522,7 +522,7 @@ body.view-time .talk-card{bottom:216px}
     <div class="clock"><span>鎮上時間</span><b id="clockNow">--:--</b><span id="clockNote"></span></div>
     <div class="clock"><span>你已探索</span><b id="seenCount">0</b><span>棟建築</span></div>
     <div class="clock"><span>鎮上現在</span><b id="onlineN">1</b><span>人<span class="room-tag" id="roomTag"></span>（其他訪客也看得到你走動）</span></div>
-    <div class="clock"><span>不知道用哪個？</span><button type="button" class="tc-toggle" id="tcMerlin">🧙 問鎮上的智者梅林</button></div>
+    <div class="clock"><span>不知道用哪個？</span><button type="button" class="tc-toggle" id="tcMerlin">🦉 問鎮上的智慧女神雅典娜</button></div>
     <button type="button" class="go3d" id="go3d" data-view="3d">走進立體小鎮 →</button>
     <div class="clock"><span>你是</span><b id="meName" class="me-name"></b><button type="button" class="tc-toggle" id="reroll">改名字</button></div>
   </section>
@@ -530,7 +530,7 @@ body.view-time .talk-card{bottom:216px}
   <div class="list-view" id="listView"></div>
 
   <nav class="card toolbar" id="toolbar" aria-label="地圖工具">
-    <button type="button" id="tbMerlin" class="tb-merlin" aria-pressed="false" aria-controls="merlinDrawer" title="找智者梅林問鎮上的工具">🧙 問梅林</button>
+    <button type="button" id="tbMerlin" class="tb-merlin" aria-pressed="false" aria-controls="merlinDrawer" title="找智慧女神雅典娜問鎮上的工具">🦉 問雅典娜</button>
     <button type="button" id="tbTags" aria-pressed="true"><span class="dot"></span>標籤</button>
     <button type="button" id="tbPan" aria-pressed="true"><span class="dot"></span>拖曳</button>
     <button type="button" id="tbLinks" aria-pressed="false" aria-expanded="false"><span class="dot"></span>接力線</button>
@@ -557,15 +557,15 @@ body.view-time .talk-card{bottom:216px}
     <div class="body" id="dBody"></div>
   </aside>
 
-  <aside class="card drawer merlin-drawer" id="merlinDrawer" aria-label="智者梅林">
-    <div class="head"><span class="eyebrow">Wise Merlin</span><button type="button" class="x" data-close="merlinDrawer" aria-label="關閉">×</button></div>
+  <aside class="card drawer merlin-drawer" id="merlinDrawer" aria-label="智慧女神雅典娜">
+    <div class="head"><span class="eyebrow">Athena · Goddess of Wisdom</span><button type="button" class="x" data-close="merlinDrawer" aria-label="關閉">×</button></div>
     <div class="body" id="mBody">
-      <div class="m-intro"><span class="m-face" aria-hidden="true">🧙</span><div><h2>智者梅林</h2><p>鎮上每一棟建築我都去過。問我工具能做什麼、在哪裡、下一步該用什麼。</p></div></div>
+      <div class="m-intro"><span class="m-face" aria-hidden="true">🦉</span><div><h2>智慧女神雅典娜</h2><p>我守護這座創作者小鎮，每一棟建築我都去過。問我工具能做什麼、在哪裡、下一步該用什麼。</p></div></div>
       <ol class="m-log" id="mLog" aria-live="polite"></ol>
     </div>
     <div class="m-foot">
       <div class="m-sugg" id="mSugg"></div>
-      <form class="m-form" id="mForm" autocomplete="off"><input id="mInput" maxlength="60" placeholder="例如：想做一支短影片要用哪個？" aria-label="問梅林的問題"><button type="submit">問</button></form>
+      <form class="m-form" id="mForm" autocomplete="off"><input id="mInput" maxlength="60" placeholder="例如：想做一支短影片要用哪個？" aria-label="問雅典娜的問題"><button type="submit">問</button></form>
     </div>
   </aside>
 
@@ -869,7 +869,7 @@ var HILLS = [
 var BOARD_SHEET = '1reL32KcSUL-YNh4ICVxm-fROcjBzRiKVLjy05t7q_bs', KEY_BOARD = 'creatorTownBoard';
 var FAR = {self:'creator', shape:'circle', bridge:[[20.0, 6.4], [23.25, 6.4]], sign:'🏝️ 創業島 →', at:[24.6, 6.4], r:1.6, url:'https://m255525.github.io/startup-island/', name:'創業島', host:'另一個網站', emoji:'🏝️'};
 var BOARD_AT = [18.55, 5.6];
-var MERLIN_AT = [12.4, 9.8];          // 智者梅林：出生點旁的空地（離路 1.16、離河 2.27、離建築 1.85），一進鎮就看得到
+var MERLIN_AT = [12.4, 9.8];          // 智慧女神雅典娜：出生點旁的空地（離路 1.16、離河 2.27、離建築 1.85），一進鎮就看得到
 var merlin = {gx:MERLIN_AT[0], gy:MERLIN_AT[1], elev:0, path:[], phase:0, dirX:1, dirY:0, moving:false, mode:'idle', wait:3, born:0, near:false, face:1, lastCheck:0, say:'', sayUntil:0, label:''};   // 會四處走，MERLIN_AT 是家
 var BOARD_FIELDS = [   // [程式用 key, 試算表 A 欄名稱, 字數上限]
   ['title', '標題', 8], ['sub', '副標', 16], ['l1', '內容1', 14], ['l2', '內容2', 14], ['l3', '內容3', 14],
@@ -2977,7 +2977,7 @@ function hoverTip(e){
   showTip(toolById[g.getAttribute('data-id')], e.clientX, e.clientY - 12);
 }
 function showMerlinTip(x, y){
-  var tip = $('tip'); tip.textContent = '🧙 智者梅林：點我問鎮上的工具';
+  var tip = $('tip'); tip.textContent = '🦉 智慧女神雅典娜：點我問鎮上的工具';
   tip.style.left = Math.min(window.innerWidth - tip.offsetWidth - 8, Math.max(8, x - tip.offsetWidth/2)) + 'px';
   tip.style.top = Math.max(8, y - 34) + 'px';
   tip.classList.add('show');
@@ -3274,43 +3274,71 @@ $('sNext').addEventListener('click', function(){ if (storyI < STORY.length - 1){
 $('sPrev').addEventListener('click', function(){ if (storyI > 0){ storyI--; showStep(); } });
 $('sSkip').addEventListener('click', function(){ endStory(); setView('map'); birdview(); });
 
-// 智者梅林（平面）：紫色星星長袍、尖帽、白鬍子、拿著發光水晶的手杖；上方浮動紫色名牌「🧙 智者梅林」
+// 智慧女神雅典娜（平面）：修長的高腰象牙白長裙＋上層短摺、青綠披風、金項鍊與臂環；俐落的層次短髮＋旁分瀏海、大眼睛甜笑；
+// 往後推的金戰盔＋紅色馬鬃盔冠、左肩貓頭鷹、左手橄欖枝、右手金矛；上方浮動青綠名牌「🦉 智慧女神雅典娜」
+// 內部仍沿用 merlin 這組變數／函式名稱（和創業島同一套行為程式），只換外型與文案。
 function drawMerlin2D(){
   if (!L.blds) return;
   if (L.merlin) L.merlin.remove();
   if (L.merlinTop) L.merlinTop.remove();
   if (!merlin.elev) merlin.elev = groundAt(merlin.gx, merlin.gy);
   var p = up(iso(merlin.gx, merlin.gy), merlin.elev);
-  var g = el('g', {class:'merlin', tabindex:0, role:'button', 'aria-label':'智者梅林：問鎮上的工具', transform:'translate(' + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ')'}, L.blds);
+  var g = el('g', {class:'merlin', tabindex:0, role:'button', 'aria-label':'智慧女神雅典娜：問鎮上的工具', transform:'translate(' + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ')'}, L.blds);
   g._d = merlin.gx + merlin.gy; merlin.face = 1;
-  var INKC = '#2a1b5e', ROBE = '#5b3fc4', ROBE2 = '#4a32a8', GOLD = '#f7c948', SKIN = '#f6d2b8';
-  el('ellipse', {class:'ring', cx:0, cy:0, rx:30, ry:14, fill:'none', stroke:'#9b7bff', 'stroke-width':3}, g);
-  el('ellipse', {cx:2, cy:1, rx:18, ry:6, fill:'rgba(0,0,0,.18)'}, g);
+  var INKC = '#183c3a', IVORY = '#fbf6e9', IVORY2 = '#e6d9b8', TEAL = '#2b8a7e', GOLD = '#e8b23a', SKIN = '#f8dcc6', HAIR = '#3a2620', CREST = '#c8453a', LEAF = '#6f8f4a', LIP = '#c0605a';
+  el('ellipse', {class:'ring', cx:0, cy:0, rx:30, ry:14, fill:'none', stroke:GOLD, 'stroke-width':3}, g);
+  el('ellipse', {cx:2, cy:1, rx:17, ry:5.5, fill:'rgba(0,0,0,.16)'}, g);
   var b0 = el('g', {transform:'scale(1.25)'}, g), b = el('g', {}, b0);
-  el('path', {d:'M-15 0 C-14 -14 -11 -30 -8 -42 L8 -42 C11 -30 14 -14 15 0 Q0 4 -15 0 Z', fill:ROBE, stroke:INKC, 'stroke-width':1.4}, b);
-  el('path', {d:'M-15 0 Q0 4 15 0 L14.4 -3 Q0 1 -14.4 -3 Z', fill:GOLD}, b);
-  el('rect', {x:-10, y:-27, width:20, height:3.2, rx:1.5, fill:GOLD}, b);
-  [[-8, -12, 7], [6, -7, 6], [-4, -34, 5.5], [8, -18, 5]].forEach(function(s){ el('text', {x:s[0], y:s[1], 'font-size':s[2], fill:GOLD, 'text-anchor':'middle'}, b).textContent = '✦'; });
-  el('line', {x1:16, y1:3, x2:17.5, y2:-63, stroke:'#8a5a2b', 'stroke-width':3.2, 'stroke-linecap':'round'}, b);
-  el('ellipse', {cx:10, cy:-31, rx:5, ry:8.5, fill:ROBE2, stroke:INKC, 'stroke-width':1.2, transform:'rotate(-25 10 -31)'}, b);
-  el('circle', {cx:15.5, cy:-25, r:3.2, fill:SKIN, stroke:INKC, 'stroke-width':1}, b);
-  el('circle', {class:'orb', cx:17.5, cy:-68, r:9.5, fill:'#9fe8ff', opacity:.55}, b);
-  el('circle', {cx:17.5, cy:-68, r:5, fill:'#d6f7ff', stroke:'#3b7fa8', 'stroke-width':1.2}, b);
-  el('circle', {cx:16, cy:-69.6, r:1.5, fill:'#fff'}, b);
-  el('circle', {cx:0, cy:-50, r:9, fill:SKIN, stroke:INKC, 'stroke-width':1.2}, b);
-  el('path', {d:'M-8.5 -49 Q-9.5 -36 -3 -23 Q0 -19 2.5 -23 Q9.5 -36 8.5 -49 Q4 -44.5 0 -45.5 Q-4 -44.5 -8.5 -49 Z', fill:'#ffffff', stroke:'#b9b2cc', 'stroke-width':1}, b);
-  el('path', {d:'M-6 -46 Q-2 -48.5 0 -46.5 Q2 -48.5 6 -46 Q3 -44 0 -45 Q-3 -44 -6 -46 Z', fill:'#f1eef7', stroke:'#b9b2cc', 'stroke-width':.8}, b);
-  el('path', {d:'M-5.5 -52 q2 -2.2 4 0 M1.5 -52 q2 -2.2 4 0', fill:'none', stroke:'#3b2f3a', 'stroke-width':1.4, 'stroke-linecap':'round'}, b);
-  el('path', {d:'M-7 -55 q3 -2.4 5 -.4 M2 -55.4 q2 -2 5 .4', fill:'none', stroke:'#ffffff', 'stroke-width':2, 'stroke-linecap':'round'}, b);
-  el('circle', {cx:1.6, cy:-48.6, r:2, fill:'#eab49a'}, b);
-  el('ellipse', {cx:0, cy:-58, rx:14.5, ry:4.2, fill:ROBE2, stroke:INKC, 'stroke-width':1.2}, b);
-  el('path', {d:'M-9 -59.5 Q-6 -72 -1 -84 Q4 -91 11 -88 Q4 -84.5 3 -76 Q5.5 -67 9 -59.5 Z', fill:ROBE, stroke:INKC, 'stroke-width':1.3, 'stroke-linejoin':'round'}, b);
-  el('path', {d:'M-8.6 -61.5 Q0 -58.5 8.6 -61.5', fill:'none', stroke:GOLD, 'stroke-width':3}, b);
-  el('text', {x:.5, y:-67, 'font-size':8, fill:GOLD, 'text-anchor':'middle'}, b).textContent = '★';
+  el('path', {d:'M-5.5 -42 Q-15 -22 -16 -1.5 Q-9 1.5 -3 -.5 Z', fill:TEAL, stroke:INKC, 'stroke-width':1.1, 'stroke-linejoin':'round'}, b);   // 背後飄動的披風
+  el('path', {d:'M5.5 -42 Q13.5 -22 14.5 -3 Q10 -1.5 5 -2 Z', fill:TEAL, stroke:INKC, 'stroke-width':1.1, 'stroke-linejoin':'round'}, b);
+  el('path', {d:'M-12 0 C-11 -10 -7 -22 -5.3 -32 Q-6.4 -38 -5.5 -42 L5.5 -42 Q6.4 -38 5.3 -32 C7 -22 11 -10 12 0 Q0 3.5 -12 0 Z', fill:IVORY, stroke:INKC, 'stroke-width':1.3}, b);   // 修長高腰長裙
+  [-6.5, -2.2, 2.2, 6.5].forEach(function(x){ el('path', {d:'M' + (x * .45) + ' -21 Q' + (x * .8) + ' -10 ' + (x * 1.15) + ' 1', fill:'none', stroke:IVORY2, 'stroke-width':1}, b); });   // 裙褶
+  el('path', {d:'M-12 0 Q0 3.5 12 0 L11.5 -2.4 Q0 1 -11.5 -2.4 Z', fill:GOLD}, b);                       // 金邊下擺
+  el('path', {d:'M-5.6 -34.5 Q-8.4 -27 -9 -21.5 Q0 -19 9 -21.5 Q8.4 -27 5.6 -34.5 Z', fill:IVORY, stroke:INKC, 'stroke-width':1}, b);   // 上層短摺
+  el('path', {d:'M-9 -21.5 Q0 -19 9 -21.5', fill:'none', stroke:GOLD, 'stroke-width':1.2}, b);
+  el('rect', {x:-5.8, y:-36, width:11.6, height:2.2, rx:1, fill:GOLD}, b);                                // 高腰金腰帶
+  el('path', {d:'M-5.5 -42 L-2.2 -42 L5.8 -35.6 L2.6 -35.6 Z', fill:TEAL}, b);                              // 斜披帶
+  el('line', {x1:15.4, y1:4, x2:16.4, y2:-80, stroke:'#b0822e', 'stroke-width':2.3, 'stroke-linecap':'round'}, b);   // 金矛
+  el('circle', {class:'orb', cx:16.5, cy:-84, r:7, fill:'#ffe58a', opacity:.42}, b);
+  el('path', {d:'M16.5 -91 L19.2 -80 L16.4 -77.2 L13.6 -80 Z', fill:'#fbe7a6', stroke:'#8a6420', 'stroke-width':1, 'stroke-linejoin':'round'}, b);
+  el('path', {d:'M16.3 -76.5 q4 2 3 7 q-3 -3 -3 -7 Z', fill:TEAL}, b);
+  el('path', {d:'M5.4 -41 Q11 -38 14.6 -30', fill:'none', stroke:SKIN, 'stroke-width':3, 'stroke-linecap':'round'}, b);   // 右手（握矛）
+  el('path', {d:'M9.4 -38.6 l1.6 1.4', stroke:GOLD, 'stroke-width':2.2}, b);                                // 臂環
+  el('circle', {cx:15.3, cy:-30, r:2.3, fill:SKIN, stroke:INKC, 'stroke-width':.9}, b);
+  el('path', {d:'M-5.4 -41 Q-9.5 -37 -9.4 -31.5', fill:'none', stroke:SKIN, 'stroke-width':3, 'stroke-linecap':'round'}, b);   // 左手（拿橄欖枝）
+  el('path', {d:'M-9.2 -31 Q-13.5 -35 -15.5 -40.5', fill:'none', stroke:'#6b4b2a', 'stroke-width':1.1, 'stroke-linecap':'round'}, b);
+  [[-11.4, -33, -40], [-13, -35.6, 30], [-14.2, -37.4, -45], [-15.4, -40.4, 10], [-12.4, -35.2, -70]].forEach(function(l){ el('ellipse', {cx:l[0], cy:l[1], rx:2.3, ry:.95, fill:LEAF, transform:'rotate(' + l[2] + ' ' + l[0] + ' ' + l[1] + ')'}, b); });
+  el('circle', {cx:-13.8, cy:-34.2, r:.9, fill:'#4a5a2a'}, b);
+  el('circle', {cx:-9.3, cy:-31, r:2.2, fill:SKIN, stroke:INKC, 'stroke-width':.9}, b);
+  el('rect', {x:-1.5, y:-45, width:3, height:4, fill:SKIN}, b);                                             // 脖子
+  el('path', {d:'M-3.2 -42.3 Q0 -40.2 3.2 -42.3', fill:'none', stroke:GOLD, 'stroke-width':1.1}, b);        // 金項鍊
+  el('circle', {cx:0, cy:-40.9, r:.9, fill:GOLD}, b);
+  el('path', {d:'M-9.4 -45 Q-10.6 -56 -6 -59.6 Q0 -62 6 -59.6 Q10.6 -56 9.4 -45 Q7.6 -43.6 5.6 -45 L-5.6 -45 Q-7.6 -43.6 -9.4 -45 Z', fill:HAIR, stroke:INKC, 'stroke-width':1}, b);   // 層次短髮（後）
+  el('circle', {cx:0, cy:-51, r:7.4, fill:SKIN, stroke:INKC, 'stroke-width':1.1}, b);                     // 臉
+  el('path', {d:'M-7.4 -53 Q-8.6 -48 -8.3 -45.4 Q-6.8 -45.6 -6 -46.8 Q-6.7 -50 -5.9 -53 Z M7.4 -53 Q8.6 -48 8.3 -45.4 Q6.8 -45.6 6 -46.8 Q6.7 -50 5.9 -53 Z', fill:HAIR}, b);   // 兩側髮尾
+  el('path', {d:'M-7.6 -53.4 Q-6 -58.6 1 -58.6 Q7.6 -58 7.7 -52.8 Q5 -55.4 2 -54.2 Q-2 -55.6 -4.6 -52.4 Q-6 -53.4 -7.6 -53.4 Z', fill:HAIR}, b);   // 旁分瀏海
+  [-1, 1].forEach(function(s){
+    el('ellipse', {cx:s * 3, cy:-50, rx:1.25, ry:1.85, fill:'#2a1d1a'}, b);                              // 大眼睛
+    el('circle', {cx:s * 3 + .45, cy:-50.7, r:.55, fill:'#fff'}, b);
+    el('path', {d:'M' + (s * 1.8) + ' -51.4 Q' + (s * 3) + ' -52.7 ' + (s * 4.3) + ' -51.6 l' + (s * .7) + ' -.5', fill:'none', stroke:'#2a1d1a', 'stroke-width':.7, 'stroke-linecap':'round'}, b);   // 睫毛
+    el('ellipse', {cx:s * 5, cy:-47.4, rx:1.5, ry:.9, fill:'#f2a99a', opacity:.7}, b);
+  });
+  el('path', {d:'M-1.9 -46.6 Q0 -44.6 1.9 -46.6', fill:'none', stroke:LIP, 'stroke-width':1.1, 'stroke-linecap':'round'}, b);   // 甜甜的笑
+  el('path', {d:'M-7.6 -57.2 Q-8 -64.6 0 -65.6 Q8 -64.6 7.6 -57.2 Q0 -59.8 -7.6 -57.2 Z', fill:GOLD, stroke:INKC, 'stroke-width':1.1, 'stroke-linejoin':'round'}, b);   // 往後推的金戰盔
+  el('path', {d:'M-7.6 -57.2 Q0 -59.8 7.6 -57.2', fill:'none', stroke:'#fbe7a6', 'stroke-width':1.2}, b);
+  el('path', {d:'M-6 -63.6 Q-3 -76.5 6 -75.2 Q13 -73.4 14.2 -62.6 Q10 -67.2 5 -67.6 Q-1 -67.6 -6 -63.6 Z', fill:CREST, stroke:INKC, 'stroke-width':1.1, 'stroke-linejoin':'round'}, b);   // 紅色馬鬃盔冠
+  el('path', {d:'M-3 -67 L-3.8 -69.6 M1 -68.6 L.8 -71.4 M5.4 -69 L5.8 -71.8 M9.6 -67.4 L10.6 -69.8', fill:'none', stroke:'#8f2a22', 'stroke-width':.9}, b);
+  var ow = el('g', {transform:'translate(-11,-44.5) scale(.88)'}, b);                                     // 左肩上的貓頭鷹
+  el('ellipse', {cx:0, cy:-3.5, rx:4.6, ry:5.6, fill:'#a77b4f', stroke:INKC, 'stroke-width':1}, ow);
+  el('ellipse', {cx:0, cy:-2, rx:2.8, ry:3.6, fill:'#ecd6ae'}, ow);
+  el('path', {d:'M-4 -7.5 L-4.4 -11 L-1.8 -8.6 Z M4 -7.5 L4.4 -11 L1.8 -8.6 Z', fill:'#8a6238', stroke:INKC, 'stroke-width':.7}, ow);
+  el('circle', {cx:-1.8, cy:-6, r:1.7, fill:'#fff6c8', stroke:INKC, 'stroke-width':.6}, ow); el('circle', {cx:1.8, cy:-6, r:1.7, fill:'#fff6c8', stroke:INKC, 'stroke-width':.6}, ow);
+  el('circle', {cx:-1.6, cy:-6, r:.8, fill:'#2a2230'}, ow); el('circle', {cx:2, cy:-6, r:.8, fill:'#2a2230'}, ow);
+  el('path', {d:'M-.7 -4.6 L.7 -4.6 L0 -3.2 Z', fill:'#e79a3a'}, ow);
   var top = el('g', {class:'merlin', transform:'translate(' + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ')'}, L.boardTag);   // 名牌放最上層，不會被後面的高樓擋住（外層定位、內層浮動）
-  var tg = el('g', {class:'merlin-flag', transform:'translate(0,-118)'}, top);
-  var fr = el('rect', {x:-46, y:-12, width:92, height:22, rx:11, fill:'#6c4bd8', stroke:INKC, 'stroke-width':1.4}, tg);
-  el('path', {d:'M-4 10 L0 15 L4 10 Z', fill:'#6c4bd8', stroke:INKC, 'stroke-width':1.2}, tg);
+  var tg = el('g', {class:'merlin-flag', transform:'translate(0,-128)'}, top);
+  var fr = el('rect', {x:-46, y:-12, width:92, height:22, rx:11, fill:'#1d7a70', stroke:INKC, 'stroke-width':1.4}, tg);
+  el('path', {d:'M-4 10 L0 15 L4 10 Z', fill:'#1d7a70', stroke:INKC, 'stroke-width':1.2}, tg);
   var ft = el('text', {x:0, y:4, 'text-anchor':'middle', 'font-size':12, 'font-weight':700, fill:'#fff', 'font-family':'var(--f-body)'}, tg);
   el('polygon', {class:'hit', points:'-36,8 36,8 36,-122 -36,-122'}, g);
   L.merlin = g; L.merlinTop = top; L.merlinBody = b; L.merlinFlag = ft; L.merlinFlagBox = fr;
@@ -3325,7 +3353,7 @@ function merlinFlagText(){
   L.merlinFlagBox.setAttribute('x', (-w / 2).toFixed(1)); L.merlinFlagBox.setAttribute('width', w.toFixed(1));
 }
 
-/* ---------- 智者梅林：鎮上工具問答 ----------
+/* ---------- 智慧女神雅典娜：鎮上工具問答 ----------
  * 規則式：只用本頁的 TOOLS／ZONES／LINKS 回答，不連 AI、問題不會送到任何地方。
  * 判斷順序：打招呼 → 自我介紹 → 鎮上怎麼玩 → 序號 → 工具總覽 → 點名工具（功能／位置／前後一步）→ 場地 → 從哪開始 → 隨機 → 主題關鍵字打分 → 答不出來 */
 var M_ALIAS = {
@@ -3412,12 +3440,12 @@ function merlinAnswer(raw){
   var wantWhere = /在哪|哪裡|怎麼去|怎麼走|帶我/.test(q);
   if (!tools.length && mState.last && /它|這個|那個|這棟|那棟|這工具/.test(q)) tools = [toolById[mState.last]];
   if (!tools.length && mState.last && wantNext && q.length <= 8) tools = [toolById[mState.last]];
-  if (/^(你好|您好|嗨|哈囉|hi|hello|hey|安安|早安|午安|晚安|梅林)/.test(q) && q.length <= 8 && !tools.length){
-    r.text = name + '，你好呀。我是智者梅林，這座小鎮上 ' + TOOLS.length + ' 棟建築我都走過。告訴我你想做什麼，我幫你找該去哪一棟。'; return r; }
+  if (/^(你好|您好|嗨|哈囉|hi|hello|hey|安安|早安|午安|晚安|雅典娜|女神)/.test(q) && q.length <= 8 && !tools.length){
+    r.text = name + '，你好呀。我是智慧女神雅典娜，這座小鎮上 ' + TOOLS.length + ' 棟建築我都走過。告訴我你想做什麼，我幫你找該去哪一棟。'; return r; }
   if (/謝|感謝|thank|3q/.test(q) && q.length <= 10){ r.text = '不客氣。路上有疑問，隨時回來找我，我一直站在小鎮中央。'; return r; }
   if (/再見|掰|bye|下次見/.test(q) && q.length <= 8){ r.text = '一路順風。別忘了，每一棟建築都只是工具，真正的答案在你走過的路上。'; return r; }
-  if (/你是誰|梅林是誰|你叫|你會什麼|你能做什麼|你可以做什麼/.test(q)){
-    r.text = '我是鎮上的智者梅林。我能告訴你：每個工具能做什麼、要帶什麼進去、會帶出什麼、在哪個地點、用完下一步接什麼，還有哪些要序號。我只看得懂鎮上的工具，你問的問題不會傳到別的地方。'; return r; }
+  if (/你是誰|雅典娜是誰|女神是誰|你叫|你會什麼|你能做什麼|你可以做什麼/.test(q)){
+    r.text = '我是鎮上的智慧女神雅典娜。我能告訴你：每個工具能做什麼、要帶什麼進去、會帶出什麼、在哪個地點、用完下一步接什麼，還有哪些要序號。我只看得懂鎮上的工具，你問的問題不會傳到別的地方。'; return r; }
   if (/怎麼玩|怎麼操作|怎麼移動|這座小鎮|這個小鎮|地圖怎麼|立體|小地圖|聊天|足跡|小旗/.test(q) && !tools.length && !zone){
     r.text = '點空地，你的角色就會走過去；點建築會打開說明，再按「前往工具」就會開新分頁。工具列有「接力線」看工具之間的建議順序、「時間軸」看一天和兩年裡什麼時候用、「立體」可以走進 3D 小鎮。去過的建築會插小旗，紀錄在「足跡」。也可以按「聊天」和鎮上其他人說話。'; return r; }
   if (/免費|不用序號|不需序號|不要序號|不必序號|不用錢|免序號/.test(q)){
@@ -3485,7 +3513,7 @@ function merlinAsk(text){
   text = Array.from(String(text || '').replace(/[\u0000-\u001f]/g, '').trim()).slice(0, 60).join('');
   if (!text || mState.busy) return;
   mAppend('m-you', escHtml(text));
-  if (!mState.asked++) addLog('向智者梅林請教：' + Array.from(text).slice(0, 16).join(''));
+  if (!mState.asked++) addLog('向智慧女神雅典娜請教：' + Array.from(text).slice(0, 16).join(''));
   var r = merlinAnswer(text), wait = mAppend('m-say m-wait', '…');
   mState.busy = true;
   setTimeout(function(){ wait.className = 'm-say'; wait.innerHTML = mRender(r); mState.busy = false; mSuggest(); var b = $('mBody'); b.scrollTop = b.scrollHeight; }, REDUCED ? 0 : 420);
@@ -3515,9 +3543,9 @@ function merlinTick(ts){                       // 每 0.3 秒：你走近時名�
   merlin.near = near;
   if (merlinLabel() !== merlin.label) merlinFlagText();
 }
-/* ---------- 梅林四處走＋主動跟陌生人打招呼 ----------
- * 每個瀏覽器各自模擬一位梅林（不經轉播站），所以每位訪客看到的梅林都在照顧「自己」。
- * 「陌生人」＝還沒跟梅林說過話的訪客（creatorTownMerlin.met 為假）。導覽結束、進鎮幾秒後，梅林走過來打招呼：
+/* ---------- 雅典娜四處走＋主動跟陌生人打招呼 ----------
+ * 每個瀏覽器各自模擬一位雅典娜（不經轉播站），所以每位訪客看到的雅典娜都在照顧「自己」。
+ * 「陌生人」＝還沒跟雅典娜說過話的訪客（creatorTownMerlin.met 為假）。導覽結束、進鎮幾秒後，雅典娜走過來打招呼：
  *   好啊 → 開問答（met=true，以後不再主動靠近）；不用了／× → declined=true 永久不再打擾，散步也避開你；
  *   25 秒沒回應 → 這次來訪不再打擾，下次來訪再問一次。 */
 var KEY_MERLIN = 'creatorTownMerlin';
@@ -3558,7 +3586,7 @@ function merlinSay(text, ms){ merlin.say = text; merlin.sayUntil = performance.n
 function merlinLabel(){
   if (merlin.say && performance.now() < merlin.sayUntil) return merlin.say;
   if (merlin.mode === 'greet') return '👋 有什麼需要幫忙的嗎？';
-  return merlin.near ? '👋 點我發問！' : '🧙 智者梅林';
+  return merlin.near ? '👋 點我發問！' : '🦉 智慧女神雅典娜';
 }
 function merlinWantsToGreet(){
   if (mMem.met || mMem.declined || merlin.greetedVisit) return false;
@@ -3570,15 +3598,15 @@ function merlinGreet(){
   merlin.mode = 'greet'; merlin.path = []; merlin.greetAt = performance.now(); merlin.greetedVisit = true;
   merlinSay('👋 歡迎來到創作者小鎮！', 6000);
   var nm = escHtml(me && me.name ? me.name : '旅人');
-  $('mcMsg').innerHTML = '<b>🧙 智者梅林</b>：' + nm + '，第一次來創作者小鎮嗎？我是鎮上的智者，有什麼可以幫你的嗎？';
+  $('mcMsg').innerHTML = '<b>🦉 智慧女神雅典娜</b>：' + nm + '，第一次來創作者小鎮嗎？我是守護鎮上的智慧女神，有什麼可以幫你的嗎？';
   $('merlinCard').hidden = false;
-  addLog('智者梅林來打招呼');
+  addLog('智慧女神雅典娜來打招呼');
 }
 function merlinEndGreet(answer){                     // 'yes'｜'no'｜'ignore'
   $('merlinCard').hidden = true;
   if (answer === 'yes'){ mMem.met = true; mSave(); openMerlin(); return; }
   if (answer === 'no'){ mMem.declined = true; mSave(); merlinSay('好的，祝你一路順風！', 5000); }
-  else merlinSay('我先去散步，需要我就按「問梅林」。', 5500);
+  else merlinSay('我先去散步，需要我就按「問雅典娜」。', 5500);
   merlin.mode = 'leave'; merlin.wait = 1.2;
 }
 function merlinMove(dt){                              // tick 每格呼叫：走路、轉身、畫面位置
