@@ -776,16 +776,16 @@ function farLabel(text, y){
 }
 function flatM(c){ return new T3.MeshBasicMaterial({color:c}); }   // 完全不受光：眼白、瞳孔、嘴（雅典娜用；小鎮沒有紙紋材質）
 // 智慧女神雅典娜（立體）：修長的高腰象牙白長裙（車床曲線）＋上層短摺、青綠披風隨風擺、金項鍊與臂環；
-// 俐落的層次短髮＋旁分瀏海、大眼睛長睫毛、甜甜的笑；往後推的金戰盔＋紅色馬鬃盔冠、左肩貓頭鷹（轉頭眨眼）、左手橄欖枝、右手金矛矛尖發光；
+// 修長的成熟比例（小頭、長頸）、過下巴的俐落長鮑伯＋旁分瀏海、杏仁眼＋微揚眼線、玫瑰色雙唇、金耳墜；往後推的金戰盔＋紅色馬鬃盔冠、左肩貓頭鷹（轉頭眨眼）、左手橄欖枝、右手金矛矛尖發光；
 // 會轉身面向你，點她就開問答（index.html openMerlin）。內部仍沿用 merlin 這組變數／函式名稱（和創業島同一套行為程式），只換外型與文案。
 function buildMerlin(){
   var x0 = MERLIN_AT[0], z0 = MERLIN_AT[1], g = new T3.Group(); g.position.set(x0, landY(x0, z0) - .01, z0); scene.add(g);
   var body = new T3.Group(); g.add(body);
   var ivory = std('#fbf6e9'), ivory2 = std('#e6d9b8'), teal = std('#2b8a7e'), gold = std('#e8b23a', {emissive:'#e8b23a', emissiveIntensity:.2}), skin = std('#f8dcc6'), hair = std('#3a2620'), crestM = std('#c8453a'), shaftM = std('#b0822e'), leafM = std('#6f8f4a');
   var V2 = function(a){ return a.map(function(q){ return new T3.Vector2(q[0], q[1]); }); };
-  mesh(new T3.LatheGeometry(V2([[0, 0], [.235, 0], [.228, .035], [.19, .14], [.145, .26], [.104, .37], [.084, .44], [.092, .5], [.1, .54], [.075, .585], [0, .595]]), 36), ivory, 0, 0, 0, body);   // 修長高腰長裙
-  mesh(new T3.LatheGeometry(V2([[.082, .44], [.1, .35], [.138, .312], [.146, .325], [.116, .4], [.086, .455]]), 36), ivory, 0, 0, 0, body);   // 上層短摺
-  mesh(new T3.TorusGeometry(.142, .007, 6, 36), gold, 0, .318, 0, body).rotation.x = Math.PI / 2;
+  mesh(new T3.LatheGeometry(V2([[0, 0], [.235, 0], [.228, .035], [.19, .15], [.145, .29], [.104, .41], [.084, .51], [.092, .57], [.1, .61], [.075, .655], [0, .665]]), 36), ivory, 0, 0, 0, body);   // 修長高腰長裙
+  mesh(new T3.LatheGeometry(V2([[.082, .5], [.1, .41], [.138, .372], [.146, .385], [.116, .46], [.086, .515]]), 36), ivory, 0, 0, 0, body);   // 上層短摺
+  mesh(new T3.TorusGeometry(.142, .007, 6, 36), gold, 0, .378, 0, body).rotation.x = Math.PI / 2;
   for (var i = 0; i < 12; i++){                                                                     // 裙褶（貼著裙面）
     var a = i / 12 * Math.PI * 2, pl = mesh(new T3.CylinderGeometry(.005, .009, .27, 5), ivory2, Math.sin(a) * .188, .155, Math.cos(a) * .188, body);
     pl.rotation.x = -Math.cos(a) * .34; pl.rotation.z = Math.sin(a) * .34; pl.userData.noInk = true;
@@ -793,19 +793,19 @@ function buildMerlin(){
   mesh(new T3.TorusGeometry(.232, .016, 8, 36), gold, 0, .02, 0, body).rotation.x = Math.PI / 2;      // 金邊下擺
   mesh(new T3.TorusGeometry(.088, .013, 8, 28), gold, 0, .445, 0, body).rotation.x = Math.PI / 2;     // 高腰金腰帶
   var sash = mesh(new T3.BoxGeometry(.035, .2, .018), teal, -.01, .51, .088, body); sash.rotation.z = .85; sash.rotation.x = -.12;   // 斜披帶
-  var cape = new T3.Group(); cape.position.set(0, .575, -.07); body.add(cape);                       // 背後披風（從肩膀垂下，會隨風擺）
+  var cape = new T3.Group(); cape.position.set(0, .575, -.045); body.add(cape);                       // 背後披風（從肩膀垂下，會隨風擺）
   var capeM = mesh(new T3.CylinderGeometry(.11, .2, .56, 18, 1, true, Math.PI * .6, Math.PI * .8), teal, 0, -.28, -.02, cape); capeM.material = capeM.material.clone(); capeM.material.side = T3.DoubleSide;
   [-1, 1].forEach(function(s){ var cl = mesh(new T3.SphereGeometry(.022, 10, 8), gold, s * .085, .565, .02, body); cl.userData.noInk = true; });   // 肩上金別針
-  mesh(new T3.CylinderGeometry(.028, .032, .08, 12), skin, 0, .615, 0, body);                       // 脖子
+  mesh(new T3.CylinderGeometry(.026, .03, .13, 12), skin, 0, .6, 0, body);                         // 修長的脖子
   var neck = mesh(new T3.TorusGeometry(.04, .0075, 6, 22), gold, 0, .598, .006, body); neck.rotation.x = Math.PI / 2 - .25; neck.userData.noInk = true;   // 金項鍊
   var pend = mesh(new T3.SphereGeometry(.011, 8, 6), gold, 0, .582, .045, body); pend.userData.noInk = true;
   mesh(new T3.SphereGeometry(.094, 18, 12), ivory, 0, .55, 0, body).scale.set(1.18, .5, .78);        // 肩線
-  var armR = mesh(new T3.CylinderGeometry(.022, .026, .23, 10), skin, .13, .48, .055, body); armR.rotation.z = .62; armR.rotation.x = -.55;   // 右手（握矛）
-  var armL = mesh(new T3.CylinderGeometry(.022, .026, .21, 10), skin, -.115, .48, .05, body); armL.rotation.z = -.42; armL.rotation.x = -.75;   // 左手（拿橄欖枝）
+  var armR = mesh(new T3.CylinderGeometry(.019, .024, .23, 10), skin, .13, .48, .055, body); armR.rotation.z = .62; armR.rotation.x = -.55;   // 右手（握矛）
+  var armL = mesh(new T3.CylinderGeometry(.019, .024, .25, 10), skin, -.118, .5, .03, body); armL.rotation.z = -.25; armL.rotation.x = -.25;   // 左手（自然垂在身側，拿橄欖枝）
   [armR, armL].forEach(function(arm){ var ab = mesh(new T3.TorusGeometry(.027, .006, 6, 16), gold, 0, .05, 0, arm); ab.rotation.x = Math.PI / 2; ab.userData.noInk = true; });   // 金臂環
   mesh(new T3.SphereGeometry(.028, 12, 10), skin, .205, .39, .13, body);
-  mesh(new T3.SphereGeometry(.027, 12, 10), skin, -.155, .405, .135, body);
-  var olive = new T3.Group(); olive.position.set(-.16, .41, .14); olive.rotation.set(-.4, 0, .55); body.add(olive);   // 橄欖枝
+  mesh(new T3.SphereGeometry(.025, 12, 10), skin, -.15, .388, .065, body);
+  var olive = new T3.Group(); olive.position.set(-.158, .392, .075); olive.rotation.set(-.2, 0, .5); body.add(olive);   // 橄欖枝
   var twig = mesh(new T3.CylinderGeometry(.004, .006, .2, 5), std('#6b4b2a'), 0, .09, 0, olive); twig.userData.noInk = true;
   for (var j = 0; j < 7; j++){
     var side = j % 2 ? 1 : -1, lf = mesh(new T3.SphereGeometry(.02, 8, 6), leafM, side * .016, .04 + j * .022, 0, olive);
@@ -816,26 +816,29 @@ function buildMerlin(){
   mesh(new T3.SphereGeometry(HR, 24, 18), skin, 0, HY, 0, body).scale.set(1, 1.04, .96);            // 頭（臉略小、下巴收）
   function fz(x, y){ return Math.sqrt(Math.max(0, HR * HR - x * x - (y - HY) * (y - HY) / 1.08)) * .96 + .004; }
   mesh(new T3.SphereGeometry(.116, 22, 16), hair, 0, .712, -.02, body).scale.set(1.07, 1, 1);         // 層次短髮：後腦
-  mesh(new T3.SphereGeometry(.09, 16, 12), hair, 0, .645, -.055, body).scale.set(1.15, .78, .85);      // 後頸髮尾
+  mesh(new T3.SphereGeometry(.09, 16, 12), hair, 0, .63, -.055, body).scale.set(1.18, 1.05, .85);       // 後頸髮尾
   [-1, 1].forEach(function(s){
-    var sd = mesh(new T3.SphereGeometry(.06, 14, 10), hair, s * .094, .658, -.005, body); sd.scale.set(.5, 1.2, 1); sd.rotation.z = s * .12;   // 兩側到下巴的髮尾
-    var tip = mesh(new T3.ConeGeometry(.024, .05, 8), hair, s * .088, .6, .03, body); tip.rotation.z = s * -.35; tip.rotation.x = .3;   // 往內收的髮尖
+    var sd = mesh(new T3.SphereGeometry(.06, 14, 10), hair, s * .094, .645, -.01, body); sd.scale.set(.5, 1.55, 1); sd.rotation.z = s * .1;   // 兩側過下巴的俐落長鮑伯
+    var tip = mesh(new T3.ConeGeometry(.024, .05, 8), hair, s * .086, .565, .02, body); tip.rotation.z = s * -.35; tip.rotation.x = .3;   // 往內收的髮尾
   });
   var bang = mesh(new T3.SphereGeometry(.1, 20, 12), hair, .018, .763, .052, body); bang.scale.set(1.08, .42, .62); bang.rotation.z = -.28;   // 旁分瀏海
   var bang2 = mesh(new T3.SphereGeometry(.05, 12, 10), hair, -.06, .738, .07, body); bang2.scale.set(.75, .9, .45); bang2.rotation.z = .5;
   var faceParts = [];
-  [-1, 1].forEach(function(s){
-    var ex = s * .038, ey = .693;
-    var e = mesh(new T3.CapsuleGeometry(.014, .02, 4, 10), flatM('#2a1d1a'), ex, ey, fz(ex, ey), body); e.rotation.z = s * .08; faceParts.push(e);   // 大眼睛
-    var hl = mesh(new T3.SphereGeometry(.0055, 6, 5), flatM('#ffffff'), ex + .005, ey + .008, fz(ex, ey) + .009, body); faceParts.push(hl);
-    var hl2 = mesh(new T3.SphereGeometry(.003, 6, 5), flatM('#ffffff'), ex - .004, ey - .007, fz(ex, ey) + .009, body); faceParts.push(hl2);
-    var lash = mesh(new T3.TorusGeometry(.019, .003, 4, 12, Math.PI * .8), flatM('#2a1d1a'), ex, ey + .004, fz(ex, ey + .004) + .002, body); lash.rotation.z = Math.PI * .1; faceParts.push(lash);   // 睫毛（眼尾微翹）
-    var flick = mesh(new T3.BoxGeometry(.01, .0035, .004), flatM('#2a1d1a'), ex + s * .02, ey + .017, fz(ex + s * .02, ey + .017) + .001, body); flick.rotation.z = s * .5; faceParts.push(flick);
-    var br = mesh(new T3.CapsuleGeometry(.0035, .026, 3, 6), flatM('#3a2620'), ex, ey + .045, fz(ex, ey + .045) + .002, body); br.rotation.z = Math.PI / 2 + s * .1; faceParts.push(br);   // 細眉
-    var bl = mesh(new T3.CircleGeometry(.016, 12), new T3.MeshBasicMaterial({color:'#f2a99a', transparent:true, opacity:.6}), s * .062, .664, fz(s * .062, .664) - .002, body); bl.rotation.y = s * .6; faceParts.push(bl);
+  [-1, 1].forEach(function(s){                                                                     // 成熟的五官：杏仁眼＋眼線微揚、淡眼影、有弧度的眉、金耳墜
+    var ex = s * .037, ey = .694;
+    var sh = mesh(new T3.CircleGeometry(.02, 14), new T3.MeshBasicMaterial({color:'#b88a9a', transparent:true, opacity:.32}), ex + s * .002, ey + .011, fz(ex, ey + .011) - .001, body); sh.scale.set(1.3, .7, 1); sh.rotation.y = s * .35; faceParts.push(sh);   // 淡淡眼影
+    var e = mesh(new T3.SphereGeometry(.0125, 14, 10), flatM('#2a1d1a'), ex, ey, fz(ex, ey) - .002, body); e.scale.set(1.45, .85, .45); e.rotation.z = s * .12; faceParts.push(e);   // 杏仁眼
+    var hl = mesh(new T3.SphereGeometry(.004, 6, 5), flatM('#ffffff'), ex + .006, ey + .004, fz(ex, ey) + .006, body); faceParts.push(hl);
+    var lid = mesh(new T3.TorusGeometry(.02, .0032, 4, 12, Math.PI * .7), flatM('#1f1513'), ex, ey - .006, fz(ex, ey) + .001, body); lid.rotation.z = Math.PI * .15; lid.scale.set(1, .6, 1); faceParts.push(lid);   // 上眼線
+    var wing = mesh(new T3.BoxGeometry(.014, .0032, .004), flatM('#1f1513'), ex + s * .022, ey + .006, fz(ex + s * .022, ey + .006) + .001, body); wing.rotation.z = s * .4; faceParts.push(wing);   // 微微上揚的眼尾
+    var br = mesh(new T3.CapsuleGeometry(.0042, .03, 3, 6), flatM('#2e1e19'), ex + s * .003, ey + .03, fz(ex, ey + .03) + .002, body); br.rotation.z = Math.PI / 2 - s * .08; faceParts.push(br);   // 有弧度的眉
+    var bl = mesh(new T3.CircleGeometry(.016, 12), new T3.MeshBasicMaterial({color:'#e8a090', transparent:true, opacity:.3}), s * .062, .666, fz(s * .062, .666) - .002, body); bl.rotation.y = s * .6; faceParts.push(bl);
+    var ear = mesh(new T3.SphereGeometry(.008, 8, 6), gold, s * .09, .638, .04, body); faceParts.push(ear);   // 金耳墜
+    var drop = mesh(new T3.OctahedronGeometry(.011, 0), gold, s * .09, .618, .04, body); drop.scale.set(.7, 1.35, .7); faceParts.push(drop);
   });
-  var nose = mesh(new T3.SphereGeometry(.007, 8, 6), std('#efc3a8'), 0, .672, fz(0, .672), body); faceParts.push(nose);
-  var mouth = mesh(new T3.TorusGeometry(.017, .0035, 4, 12, Math.PI), flatM('#c0605a'), 0, .655, fz(0, .655) - .001, body); mouth.rotation.z = Math.PI; faceParts.push(mouth);   // 甜甜的笑
+  var nose = mesh(new T3.SphereGeometry(.008, 8, 6), std('#efc3a8'), 0, .673, fz(0, .673), body); faceParts.push(nose);
+  var lipU = mesh(new T3.SphereGeometry(.011, 12, 8), flatM('#a8404c'), 0, .654, fz(0, .654) - .003, body); lipU.scale.set(1.55, .42, .4); faceParts.push(lipU);   // 玫瑰色雙唇、含蓄的微笑
+  var lipL = mesh(new T3.SphereGeometry(.011, 12, 8), flatM('#bb5560'), 0, .647, fz(0, .647) - .003, body); lipL.scale.set(1.3, .55, .45); faceParts.push(lipL);
   faceParts.forEach(function(m){ m.userData.noInk = true; m.raycast = noPick; });
   var helm = new T3.Group(); helm.position.set(0, .755, -.025); helm.rotation.x = -.42; body.add(helm);   // 金戰盔（往後推、戴在短髮上，露出整張臉）
   mesh(new T3.SphereGeometry(.112, 24, 14, 0, Math.PI * 2, 0, Math.PI * .5), gold, 0, 0, 0, helm);
@@ -865,6 +868,11 @@ function buildMerlin(){
   var ribbon = mesh(new T3.BoxGeometry(.01, .12, .04), teal, .018, 1.08, .025, staff); ribbon.rotation.z = -.3;
   var halo = new T3.Sprite(new T3.SpriteMaterial({map:glowTex('rgba(255,236,170,.9)', 'rgba(232,178,58,0)'), transparent:true, depthWrite:false, blending:T3.AdditiveBlending}));
   halo.scale.set(.4, .4, 1); halo.position.y = 1.22; halo.raycast = noPick; staff.add(halo);
+  body.children.forEach(function(c){                     // 成熟比例：腰線以上整體拉高、頭部縮小一成、脖子拉長
+    var y = c.position.y;
+    if (y >= .625){ c.position.x *= .9; c.position.z *= .9; c.position.y = HY + (y - HY) * .9 + .02; c.scale.multiplyScalar(.9); }
+    if (y > .385) c.position.y += .07;
+  });
   g.scale.setScalar(1.18);
   inkAll(shadowAll(g), .01);
   g.traverse(function(m){ if (m.isMesh && !m.userData.ink){ m.userData.id = '__merlin'; O.pick.push(m); } });

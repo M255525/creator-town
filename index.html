@@ -3274,7 +3274,7 @@ $('sNext').addEventListener('click', function(){ if (storyI < STORY.length - 1){
 $('sPrev').addEventListener('click', function(){ if (storyI > 0){ storyI--; showStep(); } });
 $('sSkip').addEventListener('click', function(){ endStory(); setView('map'); birdview(); });
 
-// 智慧女神雅典娜（平面）：修長的高腰象牙白長裙＋上層短摺、青綠披風、金項鍊與臂環；俐落的層次短髮＋旁分瀏海、大眼睛甜笑；
+// 智慧女神雅典娜（平面）：修長的高腰象牙白長裙＋上層短摺、青綠披風、金項鍊與臂環；成熟風韻：過下巴的長鮑伯＋旁分瀏海、杏仁眼＋微揚眼線、玫瑰色雙唇、金耳墜；
 // 往後推的金戰盔＋紅色馬鬃盔冠、左肩貓頭鷹、左手橄欖枝、右手金矛；上方浮動青綠名牌「🦉 智慧女神雅典娜」
 // 內部仍沿用 merlin 這組變數／函式名稱（和創業島同一套行為程式），只換外型與文案。
 function drawMerlin2D(){
@@ -3313,17 +3313,20 @@ function drawMerlin2D(){
   el('rect', {x:-1.5, y:-45, width:3, height:4, fill:SKIN}, b);                                             // 脖子
   el('path', {d:'M-3.2 -42.3 Q0 -40.2 3.2 -42.3', fill:'none', stroke:GOLD, 'stroke-width':1.1}, b);        // 金項鍊
   el('circle', {cx:0, cy:-40.9, r:.9, fill:GOLD}, b);
-  el('path', {d:'M-9.4 -45 Q-10.6 -56 -6 -59.6 Q0 -62 6 -59.6 Q10.6 -56 9.4 -45 Q7.6 -43.6 5.6 -45 L-5.6 -45 Q-7.6 -43.6 -9.4 -45 Z', fill:HAIR, stroke:INKC, 'stroke-width':1}, b);   // 層次短髮（後）
+  el('path', {d:'M-9.4 -42.5 Q-10.6 -56 -6 -59.6 Q0 -62 6 -59.6 Q10.6 -56 9.4 -42.5 Q7.6 -41.4 5.6 -43 L-5.6 -43 Q-7.6 -41.4 -9.4 -42.5 Z', fill:HAIR, stroke:INKC, 'stroke-width':1}, b);   // 長鮑伯（後）
   el('circle', {cx:0, cy:-51, r:7.4, fill:SKIN, stroke:INKC, 'stroke-width':1.1}, b);                     // 臉
-  el('path', {d:'M-7.4 -53 Q-8.6 -48 -8.3 -45.4 Q-6.8 -45.6 -6 -46.8 Q-6.7 -50 -5.9 -53 Z M7.4 -53 Q8.6 -48 8.3 -45.4 Q6.8 -45.6 6 -46.8 Q6.7 -50 5.9 -53 Z', fill:HAIR}, b);   // 兩側髮尾
+  el('path', {d:'M-7.4 -53 Q-8.8 -47 -8.6 -43.2 Q-6.9 -43.4 -6.2 -45.2 Q-6.7 -50 -5.9 -53 Z M7.4 -53 Q8.8 -47 8.6 -43.2 Q6.9 -43.4 6.2 -45.2 Q6.7 -50 5.9 -53 Z', fill:HAIR}, b);   // 兩側過下巴的髮尾
   el('path', {d:'M-7.6 -53.4 Q-6 -58.6 1 -58.6 Q7.6 -58 7.7 -52.8 Q5 -55.4 2 -54.2 Q-2 -55.6 -4.6 -52.4 Q-6 -53.4 -7.6 -53.4 Z', fill:HAIR}, b);   // 旁分瀏海
-  [-1, 1].forEach(function(s){
-    el('ellipse', {cx:s * 3, cy:-50, rx:1.25, ry:1.85, fill:'#2a1d1a'}, b);                              // 大眼睛
-    el('circle', {cx:s * 3 + .45, cy:-50.7, r:.55, fill:'#fff'}, b);
-    el('path', {d:'M' + (s * 1.8) + ' -51.4 Q' + (s * 3) + ' -52.7 ' + (s * 4.3) + ' -51.6 l' + (s * .7) + ' -.5', fill:'none', stroke:'#2a1d1a', 'stroke-width':.7, 'stroke-linecap':'round'}, b);   // 睫毛
-    el('ellipse', {cx:s * 5, cy:-47.4, rx:1.5, ry:.9, fill:'#f2a99a', opacity:.7}, b);
+  [-1, 1].forEach(function(s){                                                                       // 成熟的五官
+    el('ellipse', {cx:s * 3, cy:-49.8, rx:1.75, ry:1.6, fill:'#c9a0ae', opacity:.35}, b);                   // 淡眼影
+    el('ellipse', {cx:s * 3, cy:-49.4, rx:1.45, ry:1.1, fill:'#2a1d1a', transform:'rotate(' + (s * -8) + ' ' + (s * 3) + ' -49.4)'}, b);   // 杏仁眼
+    el('circle', {cx:s * 3 + .5, cy:-49.8, r:.4, fill:'#fff'}, b);
+    el('path', {d:'M' + (s * 1.5) + ' -50 Q' + (s * 3) + ' -51.2 ' + (s * 4.6) + ' -50.2 l' + (s * .9) + ' -.7', fill:'none', stroke:'#1f1513', 'stroke-width':.75, 'stroke-linecap':'round'}, b);   // 眼線微揚
+    el('ellipse', {cx:s * 5.1, cy:-47.2, rx:1.4, ry:.75, fill:'#e8a090', opacity:.4}, b);
+    el('circle', {cx:s * 7.6, cy:-45.6, r:.7, fill:GOLD}, b);                                                 // 金耳墜
+    el('path', {d:'M' + (s * 7.6) + ' -45 l.7 1.6 l-.7 1.2 l-.7 -1.2 Z', fill:GOLD}, b);
   });
-  el('path', {d:'M-1.9 -46.6 Q0 -44.6 1.9 -46.6', fill:'none', stroke:LIP, 'stroke-width':1.1, 'stroke-linecap':'round'}, b);   // 甜甜的笑
+  el('path', {d:'M-1.9 -46.3 Q-1 -46.9 0 -46.5 Q1 -46.9 1.9 -46.3 Q1 -45.1 0 -45.1 Q-1 -45.1 -1.9 -46.3 Z', fill:'#a8404c'}, b);   // 玫瑰色雙唇
   el('path', {d:'M-7.6 -57.2 Q-8 -64.6 0 -65.6 Q8 -64.6 7.6 -57.2 Q0 -59.8 -7.6 -57.2 Z', fill:GOLD, stroke:INKC, 'stroke-width':1.1, 'stroke-linejoin':'round'}, b);   // 往後推的金戰盔
   el('path', {d:'M-7.6 -57.2 Q0 -59.8 7.6 -57.2', fill:'none', stroke:'#fbe7a6', 'stroke-width':1.2}, b);
   el('path', {d:'M-6 -63.6 Q-3 -76.5 6 -75.2 Q13 -73.4 14.2 -62.6 Q10 -67.2 5 -67.6 Q-1 -67.6 -6 -63.6 Z', fill:CREST, stroke:INKC, 'stroke-width':1.1, 'stroke-linejoin':'round'}, b);   // 紅色馬鬃盔冠
