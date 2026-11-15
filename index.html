@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>創作者小鎮 · 走進港邊倉庫，把靈感做成作品</title>
-<meta name="description" content="把 29 個 AI 內容創作工具放進一座港邊倉庫小鎮：手繪動畫風的紅瓦灰泥倉庫、貨櫃屋、運河、鐵道與碼頭，靈感草坪、提示詞看台、影音片場、插畫碼頭等九個地點、作品接力線、創作者的一天與兩年創作之路時間軸。">
+<meta name="description" content="把 31 個 AI 內容創作工具放進一座港邊倉庫小鎮：手繪動畫風的紅瓦灰泥倉庫、貨櫃屋、運河、鐵道與碼頭，靈感草坪、提示詞看台、影音片場、插畫碼頭等九個地點、作品接力線、創作者的一天與兩年創作之路時間軸。">
 <meta name="theme-color" content="#16566f">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
@@ -668,7 +668,7 @@ var ZONES = [
   {id:'strategy', name:'提示詞看台', en:'PROMPT STEPS',   color:'#9d8cf2', ground:null, label:[6.4,4.3,13],          desc:'坐上階梯看台把話說清楚：寫出 AI 聽得懂的提示詞，再整理成可以重複用的技能。'},
   {id:'school',   name:'創作學院', en:'CREATOR ACADEMY',  color:'#6672e0', ground:'var(--yard)', extra:[7.15,-.35,11.85,2.95], desc:'舊倉庫改建的教室與露天舞台：用卡牌遊戲練提示詞框架、用模擬遊戲當一年小編，把講義印成紙上桌遊，課堂練習也在這裡查。'},
   {id:'calc',     name:'影音片場', en:'STUDIO LOT',       color:'#2ec4b6', ground:'var(--paving)', extra:[12.45,1.75,17.15,5.15], desc:'挑高的鐵皮倉庫改成攝影棚：影片提示詞、配音合成、剪輯上字幕。'},
-  {id:'fund',     name:'聲音廣場', en:'SOUND PLAZA',      color:'#f08a4b', ground:'var(--paving)', extra:[15.4,10.7,16.6,11.9], desc:'紅瓦倉庫圍起的廣場：旁白配音和配樂都在這裡做。'},
+  {id:'fund',     name:'聲音廣場', en:'SOUND PLAZA',      color:'#f08a4b', ground:'var(--paving)', extra:[15.4,10.7,16.6,11.9], desc:'紅瓦倉庫圍著噴水池的廣場：旁白配音、配樂、品牌招牌音和環境背景音都在這裡做。'},
   {id:'brand',    name:'社群大街', en:'SOCIAL AVENUE',    color:'#ef6b8a', ground:'var(--paving)', desc:'灰泥店面一字排開：規劃方向、排內容檔期、寫貼文、發文前健診。'},
   {id:'ecom',     name:'插畫碼頭',   en:'ART PIER',         color:'#4f9dff', ground:'var(--wood)', desc:'貨櫃改建的畫室，窗外就是港口：生圖提示詞、漫畫分鏡、LINE 貼圖。'},
   {id:'ops',      name:'寫作巷',   en:'WRITERS LANE',     color:'#6bbf59', ground:'var(--lawn)', extra:[1.15,12.65,4.15,15.55], desc:'倉庫後巷的小工作室：把草稿整理成文件，替簡報換上風格。'},
@@ -717,6 +717,10 @@ var TOOLS = [
    role:'貼上文字稿，馬上產生旁白配音；也能把語音轉成文字。', input:'文字稿', output:'配音音檔'},
   {id:'ai-music-prompt-studio', zone:'fund', short:'音樂提示詞', name:'音樂提示詞產生器', lic:true, hour:[16,17], month:[12,18],
    role:'寫出 Suno 結構化標籤或 Gemini 自然語言的音樂提示詞，做配樂與片頭曲。', input:'曲風、情緒、用途', output:'音樂生成提示詞'},
+  {id:'sonic-logo-studio', zone:'fund', short:'聲音 Logo', name:'品牌聲音 Logo 產生器', hour:[10,11], month:[3,8],
+   role:'替品牌做一段 3～5 個音、一聽就認得的招牌聲音：用白話描述品牌，AI 幫你設定；可逐音調整、情境試聽，匯出 WAV、MIDI 和聲音品牌說明書。', input:'品牌名稱、產業、想給人的感覺', output:'聲音 Logo 音檔（短版／標準／加長）'},
+  {id:'ambient-sound-mixer', zone:'fund', short:'環境音', name:'環境音混音桌', hour:[21,23], month:[6,24],
+   role:'13 軌程式合成的環境音（雨、海浪、營火、咖啡廳…）像混音台一樣自己混，當讀書、工作背景音，也能匯出無縫循環 WAV 當影片、直播背景音。', input:'想要的氣氛', output:'無縫循環背景音 WAV'},
 
   {id:'coffee-ig-planner', zone:'brand', short:'社群規劃', name:'社群內容規劃報告產生器', hour:[9,10], month:[3,6],
    role:'整理品牌變數，產出一份社群經營規劃報告。', input:'品牌或個人定位', output:'社群規劃報告'},
@@ -768,6 +772,8 @@ var LINKS = [
   {id:'c17', name:'練習 → 存摺',        star:['practice-submission-lookup','crispe-game','costar-game'], desc:'課堂練習做完，到存摺查有沒有記錄到。'},
   {id:'c18', name:'內容工作流一條龍',   star:['content-workflow-studio-cf','SocialPost','social-post-grader'], desc:'工作流把貼文產生與健診串成一條線，每天自己跑。'},
   {id:'c20', name:'模擬當小編 → 內容規劃 → 寫貼文', chain:['social-editor-sim','coffee-ig-planner','SocialPost'], desc:'先在遊戲裡經營一年粉專，知道自己適合什麼平台和內容，再用真的工具排內容、寫貼文。'},
+  {id:'c22', name:'招牌聲音 → 片頭曲 → 影片片尾', chain:['sonic-logo-studio','ai-music-prompt-studio','video-editor'], desc:'先做一段 3～5 個音的品牌招牌聲音，再用音樂提示詞把它延伸成片頭曲，最後放進每支影片的片頭片尾。'},
+  {id:'c23', name:'旁白 → 背景音 → 剪輯', chain:['ai-voice-generator-play','ambient-sound-mixer','video-editor'], desc:'先產生旁白配音，再混一段雨聲或咖啡廳的無縫循環背景音墊底，一起帶進編輯器剪輯。'},
   {id:'c21', name:'整理講義 → 印成桌遊 → 課堂練習', chain:['text-organizer-studio','printable-game-maker','practice-submission-lookup'], desc:'先把講義草稿整理好，挑出名詞和流程印成紙上桌遊在課堂玩，課後學生再到練習存摺查自己的繳交。'},
   {id:'c19', name:'自製節點 → 工作流',  chain:['node-pack-designer-cf','content-workflow-studio-cf'], desc:'設計好的節點補充包，裝進內容工作流就能用。'}
 ];
@@ -928,7 +934,7 @@ var POS = {
   'crispe-game':[7.9,.4], 'costar-game':[9.4,.4], 'practice-submission-lookup':[7.9,2.2], 'social-editor-sim':[9.4,2.2], 'printable-game-maker':[8.65,4.1],
   'ai-video-prompt-studio':[13.2,2.5], 'ai-video-studio-play':[14.9,2.5], 'video-editor':[16.4,2.5],
   'content-workflow-studio-cf':[10.9,7.6], 'node-pack-designer-cf':[12.3,7.4],
-  'ai-voice-generator-play':[15.2,9.6], 'ai-music-prompt-studio':[16.9,9.6],
+  'ai-voice-generator-play':[15.2,9.6], 'ai-music-prompt-studio':[16.9,9.6], 'sonic-logo-studio':[14.7,11.6], 'ambient-sound-mixer':[17.4,11.4],
   'coffee-ig-planner':[6.1,12.4], 'annual-marketing-calendar':[8.5,12.4], 'SocialPost':[6.1,14.6], 'social-post-grader':[8.5,14.6],
   'ai-image-prompt-studio':[11.0,16.0], 'comic-prompt-studio':[12.6,16.0], 'line-sticker-studio':[11.0,17.7],
   'text-organizer-studio':[1.9,13.4], 'slide-style-yaml-studio':[3.4,13.4]
@@ -3364,7 +3370,7 @@ var M_ALIAS = {
   'ai-prompt-generator':['提示詞產生', '寫提示詞'], 'prompt-console':['crispe控制台', '控制台'], 'skill-prompt-studio':['技能', 'skill', 'gpts', 'gem', '逆向'], 'mentors-panel':['顧問團', '人物顧問'],
   'crispe-game':['crispe'], 'costar-game':['costar', 'co-star'], 'practice-submission-lookup':['練習存摺', '繳交', '作業'], 'social-editor-sim':['小編', '社群模擬', '經營模擬'], 'printable-game-maker':['桌遊', '列印', '賓果', '骰子', '教材'],
   'ai-video-prompt-studio':['sora', 'veo', 'kling', 'runway', '短影片'], 'ai-video-studio-play':['影音工坊', '合成影片'], 'video-editor':['剪輯', '剪片', '字幕', '影片編輯'],
-  'ai-voice-generator-play':['配音', '旁白', 'tts'], 'ai-music-prompt-studio':['音樂', '配樂', 'suno'],
+  'ai-voice-generator-play':['配音', '旁白', 'tts'], 'sonic-logo-studio':['聲音logo', '聲音 logo', '品牌音', '招牌音', '音效', 'jingle'], 'ambient-sound-mixer':['環境音', '白噪音', '雨聲', '背景音', '助眠', '混音'], 'ai-music-prompt-studio':['音樂', '配樂', 'suno'],
   'coffee-ig-planner':['instagram', 'ig規劃', '內容規劃'], 'annual-marketing-calendar':['行事曆', '檔期'], 'SocialPost':['發文', '臉書貼文'], 'social-post-grader':['貼文評分', '貼文打分', '健診'],
   'ai-image-prompt-studio':['繪圖', '生圖', 'midjourney'], 'comic-prompt-studio':['漫畫', '分鏡'], 'line-sticker-studio':['貼圖'],
   'text-organizer-studio':['整理文字', '文件整理', '講義'], 'slide-style-yaml-studio':['簡報', 'notebooklm', 'yaml'],
@@ -3374,7 +3380,7 @@ var M_ZONE_ALIAS = {idea:['靈感草坪', '草坪'], strategy:['提示詞看台'
 var M_TOPICS = [   // [問題裡出現的字, 拿來比對工具說明的字, 開場白]
   [/貼文|社群|ig|fb|臉書|粉絲|小編|threads|文案|曝光/, ['社群', '貼文', '小編', '檔期'], '經營社群，去社群大街：'],
   [/影片|影音|短影|youtube|reels|抖音|剪輯|剪片|字幕/, ['影片', '影音', '剪輯'], '做影片，影音片場都有：'],
-  [/配音|旁白|聲音|語音|音樂|配樂|歌/, ['語音', '音樂', '配音'], '聲音的事，去聲音廣場：'],
+  [/配音|旁白|聲音|語音|音樂|配樂|歌|音效|環境音|白噪音|背景音|雨聲|助眠|品牌音|招牌音/, ['語音', '音樂', '配音', '招牌聲音', '環境音'], '聲音的事，去聲音廣場：'],
   [/圖片|海報|插圖|畫圖|生圖|漫畫|貼圖|設計|繪圖/, ['繪圖', '漫畫', '貼圖', '圖'], '要做圖，插畫碼頭的畫室幫得上：'],
   [/提示詞|prompt|指令|chatgpt|gemini|claude|問ai|ai聽懂/, ['提示詞', 'ai'], '要讓 AI 聽懂你，上提示詞看台：'],
   [/點子|靈感|創意|想法|發想|腦力激盪|沒梗/, ['點子', '創意', '思考', '靈感'], '找靈感，去靈感草坪躺一下：'],
